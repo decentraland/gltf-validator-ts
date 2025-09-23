@@ -1,0 +1,65 @@
+{
+    "uri": "test/base/data/mesh/morph_unequal_targets_count.gltf",
+    "mimeType": "model/gltf+json",
+    "validatorVersion": "2.0.0-dev.3.8",
+    "issues": {
+        "numErrors": 4,
+        "numWarnings": 0,
+        "numInfos": 2,
+        "numHints": 0,
+        "messages": [
+            {
+                "code": "MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT",
+                "message": "All primitives must have the same number of morph targets.",
+                "severity": 0,
+                "pointer": "/meshes/0/primitives/1/targets"
+            },
+            {
+                "code": "MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT",
+                "message": "All primitives must have the same number of morph targets.",
+                "severity": 0,
+                "pointer": "/meshes/0/primitives/2"
+            },
+            {
+                "code": "MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT",
+                "message": "All primitives must have the same number of morph targets.",
+                "severity": 0,
+                "pointer": "/meshes/1/primitives/1/targets"
+            },
+            {
+                "code": "MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT",
+                "message": "All primitives must have the same number of morph targets.",
+                "severity": 0,
+                "pointer": "/meshes/1/primitives/2/targets"
+            },
+            {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/0"
+            },
+            {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/1"
+            }
+        ],
+        "truncated": false
+    },
+    "info": {
+        "version": "2.0",
+        "animationCount": 0,
+        "materialCount": 0,
+        "hasMorphTargets": true,
+        "hasSkins": false,
+        "hasTextures": false,
+        "hasDefaultScene": false,
+        "drawCallCount": 6,
+        "totalVertexCount": 18,
+        "totalTriangleCount": 6,
+        "maxUVs": 0,
+        "maxInfluences": 0,
+        "maxAttributes": 1
+    }
+}

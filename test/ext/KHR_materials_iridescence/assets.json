@@ -1,0 +1,12 @@
+{
+    "material": {
+        "name": "material.KHR_materials_iridescence",
+        "tests": {
+            "custom_property.gltf": "Custom property",
+            "unexpected_extension.gltf": "Unexpected extension object location",
+            "unused_thickness_texture.gltf": "Unused thickness texture",
+            "unused_thickness_minimum.gltf": "Unused thickness minimum",
+            "valid.gltf": "Valid"
+        }
+    }
+}

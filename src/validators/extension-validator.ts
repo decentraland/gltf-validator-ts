@@ -1,4 +1,4 @@
-import { GLTF, ValidationMessage, Severity } from '../types';
+import { GLTF, ValidationMessage, Severity } from "../types";
 
 export interface ExtensionValidator {
   extensionName: string;
@@ -8,28 +8,31 @@ export interface ExtensionValidator {
 export abstract class BaseExtensionValidator implements ExtensionValidator {
   abstract extensionName: string;
 
-  abstract validate(gltf: GLTF, addMessage: (message: ValidationMessage) => void): void;
+  abstract validate(
+    gltf: GLTF,
+    addMessage: (message: ValidationMessage) => void,
+  ): void;
 
   protected validateValueInRange(
-    value: any,
+    value: unknown,
     min: number,
     max: number,
     pointer: string,
     addMessage: (message: ValidationMessage) => void,
-    exclusive = false
+    exclusive = false,
   ): boolean {
-    if (typeof value !== 'number') return true;
+    if (typeof value !== "number") return true;
 
     const inRange = exclusive
-      ? (value > min && value < max)
-      : (value >= min && value <= max);
+      ? value > min && value < max
+      : value >= min && value <= max;
 
     if (!inRange) {
       addMessage({
-        code: 'VALUE_NOT_IN_RANGE',
+        code: "VALUE_NOT_IN_RANGE",
         message: `Value ${value} is out of range.`,
         severity: Severity.ERROR,
-        pointer
+        pointer,
       });
       return false;
     }
@@ -37,18 +40,18 @@ export abstract class BaseExtensionValidator implements ExtensionValidator {
   }
 
   protected validateValueInList(
-    value: any,
-    validValues: any[],
+    value: unknown,
+    validValues: unknown[],
     pointer: string,
-    addMessage: (message: ValidationMessage) => void
+    addMessage: (message: ValidationMessage) => void,
   ): boolean {
     if (!validValues.includes(value)) {
-      const validValuesStr = validValues.map(v => `'${v}'`).join(', ');
+      const validValuesStr = validValues.map((v) => `'${v}'`).join(", ");
       addMessage({
-        code: 'VALUE_NOT_IN_LIST',
+        code: "VALUE_NOT_IN_LIST",
         message: `Invalid value '${value}'. Valid values are (${validValuesStr}).`,
         severity: Severity.WARNING,
-        pointer
+        pointer,
       });
       return false;
     }
@@ -57,17 +60,18 @@ export abstract class BaseExtensionValidator implements ExtensionValidator {
 
   protected addIncompleteExtensionWarning(
     pointer: string,
-    addMessage: (message: ValidationMessage) => void
+    addMessage: (message: ValidationMessage) => void,
   ): void {
     addMessage({
-      code: 'INCOMPLETE_EXTENSION_SUPPORT',
-      message: 'Validation support for this extension is incomplete; the asset may have undetected issues.',
+      code: "INCOMPLETE_EXTENSION_SUPPORT",
+      message:
+        "Validation support for this extension is incomplete; the asset may have undetected issues.",
       severity: Severity.INFO,
-      pointer
+      pointer,
     });
   }
 
   protected escapeJsonPointer(str: string): string {
-    return str.replace(/~/g, '~0').replace(/\//g, '~1');
+    return str.replace(/~/g, "~0").replace(/\//g, "~1");
   }
 }

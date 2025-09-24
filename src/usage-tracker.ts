@@ -1,3 +1,5 @@
+import { GLTF } from './types';
+
 export class UsageTracker {
   private usedObjects = new Set<string>();
 
@@ -9,44 +11,48 @@ export class UsageTracker {
     return this.usedObjects.has(pointer);
   }
 
-  private trackMaterialExtensionTextures(extensions: any, _materialIndex: number): void {
+  private trackMaterialExtensionTextures(extensions: Record<string, unknown>, _materialIndex: number): void {
     for (const extensionName in extensions) {
       const ext = extensions[extensionName];
       if (ext && typeof ext === 'object') {
         // Track texture references from various material extensions
-        this.trackTextureFromExtension(ext, 'baseColorTexture');
-        this.trackTextureFromExtension(ext, 'metallicRoughnessTexture');
-        this.trackTextureFromExtension(ext, 'normalTexture');
-        this.trackTextureFromExtension(ext, 'occlusionTexture');
-        this.trackTextureFromExtension(ext, 'emissiveTexture');
-        this.trackTextureFromExtension(ext, 'diffuseTexture');
-        this.trackTextureFromExtension(ext, 'specularGlossinessTexture');
-        this.trackTextureFromExtension(ext, 'clearcoatTexture');
-        this.trackTextureFromExtension(ext, 'clearcoatRoughnessTexture');
-        this.trackTextureFromExtension(ext, 'clearcoatNormalTexture');
-        this.trackTextureFromExtension(ext, 'sheenColorTexture');
-        this.trackTextureFromExtension(ext, 'sheenRoughnessTexture');
-        this.trackTextureFromExtension(ext, 'specularTexture');
-        this.trackTextureFromExtension(ext, 'specularColorTexture');
-        this.trackTextureFromExtension(ext, 'transmissionTexture');
-        this.trackTextureFromExtension(ext, 'thicknessTexture');
-        this.trackTextureFromExtension(ext, 'iridescenceTexture');
-        this.trackTextureFromExtension(ext, 'iridescenceThicknessTexture');
-        this.trackTextureFromExtension(ext, 'anisotropyTexture');
-        this.trackTextureFromExtension(ext, 'anisotropyDirectionTexture');
-        this.trackTextureFromExtension(ext, 'dispersionTexture');
-        this.trackTextureFromExtension(ext, 'volumeThicknessTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'baseColorTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'metallicRoughnessTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'normalTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'occlusionTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'emissiveTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'diffuseTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'specularGlossinessTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'clearcoatTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'clearcoatRoughnessTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'clearcoatNormalTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'sheenColorTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'sheenRoughnessTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'specularTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'specularColorTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'transmissionTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'thicknessTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'iridescenceTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'iridescenceThicknessTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'anisotropyTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'anisotropyDirectionTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'dispersionTexture');
+        this.trackTextureFromExtension(ext as Record<string, unknown>, 'volumeThicknessTexture');
       }
     }
   }
 
-  private trackTextureFromExtension(ext: any, textureProperty: string): void {
-    if (ext[textureProperty] && ext[textureProperty].index !== undefined) {
-      this.markUsed(`/textures/${ext[textureProperty].index}`);
+  private trackTextureFromExtension(ext: Record<string, unknown>, textureProperty: string): void {
+    const textureInfo = ext[textureProperty];
+    if (textureInfo && typeof textureInfo === 'object' && textureInfo !== null && 'index' in textureInfo) {
+      const index = (textureInfo as { index: unknown }).index;
+      if (typeof index === 'number') {
+        this.markUsed(`/textures/${index}`);
+      }
     }
   }
 
-  getUnusedObjects(gltf: any): string[] {
+  getUnusedObjects(gltf: GLTF): string[] {
     const unused: string[] = [];
 
     // Strategy: Report unused objects in the exact order the reference validator expects
@@ -314,8 +320,9 @@ export class UsageTracker {
     // 14. Check extension objects (like lights, etc.)
     if (gltf.extensions) {
       // KHR_lights_punctual
-      if (gltf.extensions['KHR_lights_punctual'] && gltf.extensions['KHR_lights_punctual'].lights) {
-        for (let i = 0; i < gltf.extensions['KHR_lights_punctual'].lights.length; i++) {
+      const khrLights = gltf.extensions['KHR_lights_punctual'] as { lights?: unknown[] } | undefined;
+      if (khrLights && khrLights.lights && Array.isArray(khrLights.lights)) {
+        for (let i = 0; i < khrLights.lights.length; i++) {
           const pointer = `/extensions/KHR_lights_punctual/lights/${i}`;
           if (!this.isUsed(pointer)) {
             unused.push(pointer);
@@ -324,8 +331,9 @@ export class UsageTracker {
       }
 
       // KHR_materials_variants
-      if (gltf.extensions['KHR_materials_variants'] && gltf.extensions['KHR_materials_variants'].variants) {
-        for (let i = 0; i < gltf.extensions['KHR_materials_variants'].variants.length; i++) {
+      const khrVariants = gltf.extensions['KHR_materials_variants'] as { variants?: unknown[] } | undefined;
+      if (khrVariants && khrVariants.variants && Array.isArray(khrVariants.variants)) {
+        for (let i = 0; i < khrVariants.variants.length; i++) {
           const pointer = `/extensions/KHR_materials_variants/variants/${i}`;
           if (!this.isUsed(pointer)) {
             unused.push(pointer);
@@ -337,7 +345,7 @@ export class UsageTracker {
     return unused;
   }
 
-  trackReferences(gltf: any): void {
+  trackReferences(gltf: GLTF): void {
     // Step 1: First mark scenes and their directly referenced nodes as used
     const usedNodes = new Set<number>();
 
@@ -345,7 +353,7 @@ export class UsageTracker {
     if (gltf.scenes) {
       for (let i = 0; i < gltf.scenes.length; i++) {
         const scene = gltf.scenes[i];
-        if (scene.nodes) {
+        if (scene && scene.nodes) {
           for (const nodeIndex of scene.nodes) {
             usedNodes.add(nodeIndex);
             this.markUsed(`/nodes/${nodeIndex}`);
@@ -359,8 +367,9 @@ export class UsageTracker {
     if (gltf.scene !== undefined) {
       this.markUsed(`/scenes/${gltf.scene}`);
       // Also mark nodes from default scene as used
-      if (gltf.scenes && gltf.scenes[gltf.scene] && gltf.scenes[gltf.scene].nodes) {
-        for (const nodeIndex of gltf.scenes[gltf.scene].nodes) {
+      const defaultScene = gltf.scenes && gltf.scenes[gltf.scene];
+      if (defaultScene && defaultScene.nodes) {
+        for (const nodeIndex of defaultScene.nodes) {
           usedNodes.add(nodeIndex);
           this.markUsed(`/nodes/${nodeIndex}`);
         }
@@ -374,7 +383,7 @@ export class UsageTracker {
         usedNodes.add(nodeIndex);
         this.markUsed(`/nodes/${nodeIndex}`);
 
-        const node = gltf.nodes[nodeIndex];
+        const node = gltf.nodes?.[nodeIndex];
         if (node && node.children) {
           for (const childIndex of node.children) {
             markNodeHierarchy(childIndex);
@@ -383,7 +392,7 @@ export class UsageTracker {
       };
 
       // Process initial scene nodes
-      for (const nodeIndex of usedNodes) {
+      for (const nodeIndex of Array.from(usedNodes)) {
         const node = gltf.nodes[nodeIndex];
         if (node && node.children) {
           for (const childIndex of node.children) {
@@ -399,10 +408,10 @@ export class UsageTracker {
         if (!usedNodes.has(i)) continue; // Skip unused nodes
 
         const node = gltf.nodes[i];
-        if (node.mesh !== undefined) {
+        if (node && node.mesh !== undefined) {
           this.markUsed(`/meshes/${node.mesh}`);
         }
-        if (node.skin !== undefined) {
+        if (node && node.skin !== undefined) {
           this.markUsed(`/skins/${node.skin}`);
         }
       }
@@ -417,9 +426,12 @@ export class UsageTracker {
           this.markUsed(`/cameras/${node.camera}`);
         }
         // Mark lights referenced by nodes (KHR_lights_punctual)
-        if (node && node['extensions'] && node['extensions']['KHR_lights_punctual'] &&
-            node['extensions']['KHR_lights_punctual'].light !== undefined) {
-          this.markUsed(`/extensions/KHR_lights_punctual/lights/${node['extensions']['KHR_lights_punctual'].light}`);
+        if (node && node['extensions']) {
+          const nodeExtensions = node['extensions'] as Record<string, unknown>;
+          const khrLightExt = nodeExtensions['KHR_lights_punctual'] as { light?: number } | undefined;
+          if (khrLightExt && typeof khrLightExt.light === 'number') {
+            this.markUsed(`/extensions/KHR_lights_punctual/lights/${khrLightExt.light}`);
+          }
         }
       }
     }
@@ -429,7 +441,7 @@ export class UsageTracker {
     if (gltf.bufferViews) {
       for (let i = 0; i < gltf.bufferViews.length; i++) {
         const bufferView = gltf.bufferViews[i];
-        if (bufferView.buffer !== undefined) {
+        if (bufferView && bufferView.buffer !== undefined) {
           this.markUsed(`/buffers/${bufferView.buffer}`);
         }
       }
@@ -439,11 +451,11 @@ export class UsageTracker {
     if (gltf.accessors) {
       for (let i = 0; i < gltf.accessors.length; i++) {
         const accessor = gltf.accessors[i];
-        if (accessor.bufferView !== undefined) {
+        if (accessor && accessor.bufferView !== undefined) {
           this.markUsed(`/bufferViews/${accessor.bufferView}`);
         }
         // Track sparse accessor bufferView references
-        if (accessor.sparse) {
+        if (accessor && accessor.sparse) {
           if (accessor.sparse.indices && accessor.sparse.indices.bufferView !== undefined) {
             this.markUsed(`/bufferViews/${accessor.sparse.indices.bufferView}`);
           }
@@ -458,18 +470,20 @@ export class UsageTracker {
     if (gltf.textures) {
       for (let i = 0; i < gltf.textures.length; i++) {
         const texture = gltf.textures[i];
-        if (texture.source !== undefined) {
+        if (texture && texture.source !== undefined) {
           this.markUsed(`/images/${texture.source}`);
         }
-        if (texture.sampler !== undefined) {
+        if (texture && texture.sampler !== undefined) {
           this.markUsed(`/samplers/${texture.sampler}`);
         }
 
         // Track extension references
-        if (texture.extensions) {
+        if (texture && texture['extensions']) {
           // EXT_texture_webp
-          if (texture.extensions['EXT_texture_webp'] && texture.extensions['EXT_texture_webp'].source !== undefined) {
-            this.markUsed(`/images/${texture.extensions['EXT_texture_webp'].source}`);
+          const textureExtensions = texture['extensions'] as Record<string, unknown>;
+          const extTextureWebp = textureExtensions['EXT_texture_webp'] as { source?: number } | undefined;
+          if (extTextureWebp && typeof extTextureWebp.source === 'number') {
+            this.markUsed(`/images/${extTextureWebp.source}`);
           }
         }
       }
@@ -489,7 +503,7 @@ export class UsageTracker {
     if (gltf.materials) {
       for (let i = 0; i < gltf.materials.length; i++) {
         const material = gltf.materials[i];
-        if (material.pbrMetallicRoughness) {
+        if (material && material.pbrMetallicRoughness) {
           const pbr = material.pbrMetallicRoughness;
           if (pbr.baseColorTexture && pbr.baseColorTexture.index !== undefined) {
             this.markUsed(`/textures/${pbr.baseColorTexture.index}`);
@@ -498,19 +512,19 @@ export class UsageTracker {
             this.markUsed(`/textures/${pbr.metallicRoughnessTexture.index}`);
           }
         }
-        if (material.normalTexture && material.normalTexture.index !== undefined) {
+        if (material && material.normalTexture && material.normalTexture.index !== undefined) {
           this.markUsed(`/textures/${material.normalTexture.index}`);
         }
-        if (material.occlusionTexture && material.occlusionTexture.index !== undefined) {
+        if (material && material.occlusionTexture && material.occlusionTexture.index !== undefined) {
           this.markUsed(`/textures/${material.occlusionTexture.index}`);
         }
-        if (material.emissiveTexture && material.emissiveTexture.index !== undefined) {
+        if (material && material.emissiveTexture && material.emissiveTexture.index !== undefined) {
           this.markUsed(`/textures/${material.emissiveTexture.index}`);
         }
 
         // Track texture references from material extensions
-        if (material.extensions) {
-          this.trackMaterialExtensionTextures(material.extensions, i);
+        if (material && material['extensions']) {
+          this.trackMaterialExtensionTextures(material['extensions'] as Record<string, unknown>, i);
         }
       }
     }
@@ -551,20 +565,22 @@ export class UsageTracker {
           }
 
           // Track extension references from primitives
-          if (primitive.extensions) {
+          if (primitive['extensions']) {
             // KHR_materials_variants
-            if (primitive.extensions['KHR_materials_variants']) {
-              const variantsExt = primitive.extensions['KHR_materials_variants'];
+            const extensions = primitive['extensions'] as Record<string, unknown>;
+            if (extensions['KHR_materials_variants']) {
+              const variantsExt = extensions['KHR_materials_variants'] as Record<string, unknown>;
               // Only track material references if the extension is properly defined
               if (gltf.extensions && gltf.extensions['KHR_materials_variants']) {
                 if (variantsExt.mappings && Array.isArray(variantsExt.mappings)) {
                   for (const mapping of variantsExt.mappings) {
-                    if (mapping && mapping.material !== undefined) {
-                      this.markUsed(`/materials/${mapping.material}`);
+                    const mappingObj = mapping as Record<string, unknown>;
+                    if (mappingObj && mappingObj.material !== undefined) {
+                      this.markUsed(`/materials/${mappingObj.material}`);
                     }
                     // Track variant references
-                    if (mapping && mapping.variants && Array.isArray(mapping.variants)) {
-                      for (const variantIndex of mapping.variants) {
+                    if (mappingObj && mappingObj.variants && Array.isArray(mappingObj.variants)) {
+                      for (const variantIndex of mappingObj.variants) {
                         if (typeof variantIndex === 'number') {
                           this.markUsed(`/extensions/KHR_materials_variants/variants/${variantIndex}`);
                         }
@@ -586,7 +602,7 @@ export class UsageTracker {
         if (!this.isUsed(`/skins/${i}`)) continue; // Only process used skins
 
         const skin = gltf.skins[i];
-        if (skin.inverseBindMatrices !== undefined) {
+        if (skin && skin.inverseBindMatrices !== undefined) {
           this.markUsed(`/accessors/${skin.inverseBindMatrices}`);
         }
         // Note: Don't mark skeleton/joints as used just because they're referenced by skin
@@ -598,6 +614,7 @@ export class UsageTracker {
     if (gltf.animations) {
       for (let i = 0; i < gltf.animations.length; i++) {
         const animation = gltf.animations[i];
+        if (!animation) continue;
         // Mark animation as used (animations are considered top-level content)
         this.markUsed(`/animations/${i}`);
 
@@ -609,13 +626,13 @@ export class UsageTracker {
               usedNodes.add(channel.target.node);
             }
             // Mark sampler as used when referenced by a channel (but only if valid reference)
-            if (channel.sampler !== undefined && animation.samplers && channel.sampler < animation.samplers.length) {
+            if (channel.sampler !== undefined && animation && animation.samplers && channel.sampler < animation.samplers.length) {
               this.markUsed(`/animations/${i}/samplers/${channel.sampler}`);
             }
           }
         }
         // Mark animation samplers' accessors as used
-        if (animation.samplers) {
+        if (animation && animation.samplers) {
           for (const sampler of animation.samplers) {
             if (sampler.input !== undefined) {
               this.markUsed(`/accessors/${sampler.input}`);
@@ -629,7 +646,7 @@ export class UsageTracker {
     }
   }
 
-  getUnusedMeshWeights(gltf: any): string[] {
+  getUnusedMeshWeights(gltf: GLTF): string[] {
     const unusedMeshWeights: string[] = [];
 
     if (gltf.meshes && gltf.nodes) {

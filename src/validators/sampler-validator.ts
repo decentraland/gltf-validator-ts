@@ -1,31 +1,40 @@
-import { GLTFSampler, ValidationMessage, Severity } from '../types';
+import { GLTFSampler, ValidationMessage, Severity } from "../types";
 
 export class SamplerValidator {
   validate(sampler: GLTFSampler, index: number): ValidationMessage[] {
     const messages: ValidationMessage[] = [];
 
     // Check for unexpected properties
-    const expectedProperties = ['magFilter', 'minFilter', 'wrapS', 'wrapT', 'name', 'extensions', 'extras'];
+    const expectedProperties = [
+      "magFilter",
+      "minFilter",
+      "wrapS",
+      "wrapT",
+      "name",
+      "extensions",
+      "extras",
+    ];
     for (const key in sampler) {
       if (!expectedProperties.includes(key)) {
         messages.push({
-          code: 'UNEXPECTED_PROPERTY',
-          message: 'Unexpected property.',
+          code: "UNEXPECTED_PROPERTY",
+          message: "Unexpected property.",
           severity: Severity.WARNING,
-          pointer: `/samplers/${index}/${key}`
+          pointer: `/samplers/${index}/${key}`,
         });
       }
     }
 
     // Validate extensions on samplers
-    if (sampler['extensions']) {
-      for (const extensionName in sampler['extensions']) {
+    if (sampler["extensions"]) {
+      const extensions = sampler["extensions"] as Record<string, unknown>;
+      for (const extensionName in extensions) {
         if (!this.isExtensionAllowedOnSamplers(extensionName)) {
           messages.push({
-            code: 'UNEXPECTED_EXTENSION_OBJECT',
-            message: 'Unexpected location for this extension.',
+            code: "UNEXPECTED_EXTENSION_OBJECT",
+            message: "Unexpected location for this extension.",
             severity: Severity.ERROR,
-            pointer: `/samplers/${index}/extensions/${extensionName}`
+            pointer: `/samplers/${index}/extensions/${extensionName}`,
           });
         }
       }

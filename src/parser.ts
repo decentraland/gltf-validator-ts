@@ -1,4 +1,4 @@
-import { GLTF } from './types';
+import { GLTF, GLTFWithExplicitDefinitions, GLTFAsset } from './types';
 
 export class GLTFParser {
   parse(data: Uint8Array): GLTF {
@@ -27,54 +27,55 @@ export class GLTFParser {
     }
   }
 
-  private validateAndNormalize(json: any): GLTF {
+  private validateAndNormalize(json: unknown): GLTFWithExplicitDefinitions {
     // Basic structure validation - don't throw, let validator handle it
     // if (!json.asset || !json.asset.version) {
     //   throw new Error('GLTF must have an asset object with version');
     // }
 
     // Normalize arrays to ensure they exist
-    const gltf: GLTF = {
-      asset: json.asset,
-      scene: json.scene,
-      scenes: json.scenes || [],
-      nodes: json.nodes || [],
-      materials: json.materials || [],
-      accessors: json.accessors || [],
-      animations: json.animations || [],
-      buffers: json.buffers || [],
-      bufferViews: json.bufferViews || [],
-      cameras: json.cameras || [],
-      images: json.images || [],
-      meshes: json.meshes || [],
-      samplers: json.samplers || [],
-      skins: json.skins || [],
-      textures: json.textures || [],
-      extensions: json.extensions,
-      extras: json.extras
+    const jsonObj = json as Record<string, unknown>;
+    const gltf: GLTFWithExplicitDefinitions = {
+      asset: jsonObj['asset'] as GLTFAsset,
+      ...(jsonObj['scene'] !== undefined && { scene: jsonObj['scene'] as number }),
+      scenes: Array.isArray(jsonObj['scenes']) ? jsonObj['scenes'] as GLTF['scenes'] : [],
+      nodes: Array.isArray(jsonObj['nodes']) ? jsonObj['nodes'] as GLTF['nodes'] : [],
+      materials: Array.isArray(jsonObj['materials']) ? jsonObj['materials'] as GLTF['materials'] : [],
+      accessors: Array.isArray(jsonObj['accessors']) ? jsonObj['accessors'] as GLTF['accessors'] : [],
+      animations: Array.isArray(jsonObj['animations']) ? jsonObj['animations'] as GLTF['animations'] : [],
+      buffers: Array.isArray(jsonObj['buffers']) ? jsonObj['buffers'] as GLTF['buffers'] : [],
+      bufferViews: Array.isArray(jsonObj['bufferViews']) ? jsonObj['bufferViews'] as GLTF['bufferViews'] : [],
+      cameras: Array.isArray(jsonObj['cameras']) ? jsonObj['cameras'] as GLTF['cameras'] : [],
+      images: Array.isArray(jsonObj['images']) ? jsonObj['images'] as GLTF['images'] : [],
+      meshes: Array.isArray(jsonObj['meshes']) ? jsonObj['meshes'] as GLTF['meshes'] : [],
+      samplers: (jsonObj['samplers'] || []) as GLTF['samplers'],
+      skins: Array.isArray(jsonObj['skins']) ? jsonObj['skins'] as GLTF['skins'] : [],
+      textures: Array.isArray(jsonObj['textures']) ? jsonObj['textures'] as GLTF['textures'] : [],
+      extensions: jsonObj['extensions'] as Record<string, unknown> | undefined,
+      extras: jsonObj['extras']
     };
 
     // Track which properties were explicitly defined in the original JSON
-    (gltf as any)._explicitlyDefined = {
-      scenes: 'scenes' in json,
-      nodes: 'nodes' in json,
-      materials: 'materials' in json,
-      accessors: 'accessors' in json,
-      animations: 'animations' in json,
-      buffers: 'buffers' in json,
-      bufferViews: 'bufferViews' in json,
-      cameras: 'cameras' in json,
-      images: 'images' in json,
-      meshes: 'meshes' in json,
-      samplers: 'samplers' in json,
-      skins: 'skins' in json,
-      textures: 'textures' in json
+    gltf._explicitlyDefined = {
+      scenes: 'scenes' in jsonObj,
+      nodes: 'nodes' in jsonObj,
+      materials: 'materials' in jsonObj,
+      accessors: 'accessors' in jsonObj,
+      animations: 'animations' in jsonObj,
+      buffers: 'buffers' in jsonObj,
+      bufferViews: 'bufferViews' in jsonObj,
+      cameras: 'cameras' in jsonObj,
+      images: 'images' in jsonObj,
+      meshes: 'meshes' in jsonObj,
+      samplers: 'samplers' in jsonObj,
+      skins: 'skins' in jsonObj,
+      textures: 'textures' in jsonObj
     };
 
     // Copy any additional properties
-    for (const key in json) {
+    for (const key in jsonObj) {
       if (!(key in gltf)) {
-        (gltf as any)[key] = json[key];
+        (gltf as Record<string, unknown>)[key] = jsonObj[key];
       }
     }
 

@@ -1,13 +1,19 @@
-import { GLTF, GLBHeader, GLBChunk } from '../types';
+import { GLTF, GLTFAsset, GLBHeader, GLBChunk } from "../types";
 
 export class GLBValidator {
-  static async parseGLB(data: Uint8Array): Promise<{ gltf: GLTF; resources: any[]; warnings?: string[] }> {
+  static async parseGLB(
+    data: Uint8Array,
+  ): Promise<{ gltf: GLTF; resources: unknown[]; warnings?: string[] }> {
     // Check minimum file size for header
     if (data.length === 0) {
-      throw new Error('GLB_UNEXPECTED_END_OF_HEADER:Unexpected end of header.:1');
+      throw new Error(
+        "GLB_UNEXPECTED_END_OF_HEADER:Unexpected end of header.:1",
+      );
     }
     if (data.length < 12) {
-      throw new Error('GLB_UNEXPECTED_END_OF_HEADER:Unexpected end of header.:' + data.length);
+      throw new Error(
+        "GLB_UNEXPECTED_END_OF_HEADER:Unexpected end of header.:" + data.length,
+      );
     }
 
     const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
@@ -16,22 +22,27 @@ export class GLBValidator {
     const header: GLBHeader = {
       magic: view.getUint32(0, true), // little-endian
       version: view.getUint32(4, true), // little-endian
-      length: view.getUint32(8, true) // little-endian
+      length: view.getUint32(8, true), // little-endian
     };
 
     // Validate header
-    if (header.magic !== 0x46546C67) { // 'glTF'
-      throw new Error(`GLB_INVALID_MAGIC:Invalid GLB magic value (${header.magic}).:0`);
+    if (header.magic !== 0x46546c67) {
+      // 'glTF'
+      throw new Error(
+        `GLB_INVALID_MAGIC:Invalid GLB magic value (${header.magic}).:0`,
+      );
     }
 
     if (header.version !== 2) {
-      throw new Error(`GLB_INVALID_VERSION:Invalid GLB version value ${header.version}.:4`);
+      throw new Error(
+        `GLB_INVALID_VERSION:Invalid GLB version value ${header.version}.:4`,
+      );
     }
 
     // Handle length mismatch
-    let warnings: string[] = [];
-    let errors: string[] = [];
-    let allMessages: string[] = []; // Track all messages in order they occur
+    const warnings: string[] = [];
+    const errors: string[] = [];
+    const allMessages: string[] = []; // Track all messages in order they occur
     let lengthMismatchError: string | null = null;
     let actualDataLength = data.length;
     if (header.length !== data.length) {
@@ -44,7 +55,9 @@ export class GLBValidator {
           actualDataLength = data.length; // Use full data length to find more errors
         } else {
           // Extra data after GLB - this should be a warning, not an error
-          warnings.push(`GLB_EXTRA_DATA:Extra data after the end of GLB stream.:${header.length}`);
+          warnings.push(
+            `GLB_EXTRA_DATA:Extra data after the end of GLB stream.:${header.length}`,
+          );
           actualDataLength = header.length; // Only process up to declared length
         }
       } else {
@@ -66,12 +79,14 @@ export class GLBValidator {
     // Parse chunks
     let offset = 12;
     const chunks: GLBChunk[] = [];
-    const resources: any[] = [];
+    const resources: unknown[] = [];
     const seenChunkTypes = new Set<number>();
 
     while (offset < actualDataLength) {
       if (offset + 8 > actualDataLength) {
-        throw new Error(`GLB_UNEXPECTED_END_OF_CHUNK_HEADER:Unexpected end of chunk header.:${offset}`);
+        throw new Error(
+          `GLB_UNEXPECTED_END_OF_CHUNK_HEADER:Unexpected end of chunk header.:${offset}`,
+        );
       }
 
       const chunkLength = view.getUint32(offset, true); // little-endian
@@ -80,10 +95,14 @@ export class GLBValidator {
       // Check for empty chunk
       let isEmptyChunk = false;
       if (chunkLength === 0) {
-        const chunkTypeStr = chunkType.toString(16).toLowerCase().padStart(8, '0');
-        const knownChunkTypes = [0x4E4F534A, 0x004E4942]; // JSON and BIN
+        const chunkTypeStr = chunkType
+          .toString(16)
+          .toLowerCase()
+          .padStart(8, "0");
+        const knownChunkTypes = [0x4e4f534a, 0x004e4942]; // JSON and BIN
 
-        if (chunkType === 0x004E4942) { // BIN chunk
+        if (chunkType === 0x004e4942) {
+          // BIN chunk
           // Empty BIN chunks are info-level messages
           const msg = `GLB_EMPTY_BIN_CHUNK:Empty BIN chunk should be omitted.:${offset}`;
           warnings.push(msg);
@@ -100,7 +119,10 @@ export class GLBValidator {
 
       // Check if chunk length is too big for the remaining GLB
       if (offset + 8 + chunkLength > header.length) {
-        const chunkTypeStr = chunkType.toString(16).toLowerCase().padStart(8, '0');
+        const chunkTypeStr = chunkType
+          .toString(16)
+          .toLowerCase()
+          .padStart(8, "0");
         const msg = `GLB_CHUNK_TOO_BIG:Chunk (0x${chunkTypeStr}) length (${chunkLength}) does not fit total GLB length.:${offset}`;
         errors.push(msg);
         allMessages.push(msg);
@@ -116,7 +138,10 @@ export class GLBValidator {
 
       // Check for duplicate chunk types
       if (seenChunkTypes.has(chunkType)) {
-        const chunkTypeStr = chunkType.toString(16).toLowerCase().padStart(8, '0');
+        const chunkTypeStr = chunkType
+          .toString(16)
+          .toLowerCase()
+          .padStart(8, "0");
         const msg = `GLB_DUPLICATE_CHUNK:Chunk of type 0x${chunkTypeStr} has already been used.:${offset}`;
         errors.push(msg);
         allMessages.push(msg);
@@ -124,9 +149,12 @@ export class GLBValidator {
       seenChunkTypes.add(chunkType);
 
       // Check for unknown chunk types
-      const knownChunkTypes = [0x4E4F534A, 0x004E4942]; // JSON and BIN
+      const knownChunkTypes = [0x4e4f534a, 0x004e4942]; // JSON and BIN
       if (!knownChunkTypes.includes(chunkType)) {
-        const chunkTypeStr = chunkType.toString(16).toLowerCase().padStart(8, '0');
+        const chunkTypeStr = chunkType
+          .toString(16)
+          .toLowerCase()
+          .padStart(8, "0");
         const msg = `GLB_UNKNOWN_CHUNK_TYPE:Unknown GLB chunk type: 0x${chunkTypeStr}.:${offset}`;
         warnings.push(msg);
         allMessages.push(msg);
@@ -134,7 +162,9 @@ export class GLBValidator {
 
       // Check for 4-byte alignment
       if (chunkLength % 4 !== 0) {
-        throw new Error(`GLB_CHUNK_LENGTH_UNALIGNED:Length of 0x${chunkType.toString(16)} chunk is not aligned to 4-byte boundaries.:${offset}`);
+        throw new Error(
+          `GLB_CHUNK_LENGTH_UNALIGNED:Length of 0x${chunkType.toString(16)} chunk is not aligned to 4-byte boundaries.:${offset}`,
+        );
       }
 
       let chunkData: Uint8Array;
@@ -144,7 +174,10 @@ export class GLBValidator {
       } else if (isDataTruncated) {
         // Read what we can for truncated data
         const availableData = actualDataLength - (offset + 8);
-        chunkData = availableData > 0 ? data.slice(offset + 8, offset + 8 + availableData) : new Uint8Array(0);
+        chunkData =
+          availableData > 0
+            ? data.slice(offset + 8, offset + 8 + availableData)
+            : new Uint8Array(0);
         offset = actualDataLength; // Move to end of file
       } else {
         chunkData = data.slice(offset + 8, offset + 8 + chunkLength);
@@ -154,7 +187,7 @@ export class GLBValidator {
       chunks.push({
         length: chunkLength,
         type: chunkType,
-        data: chunkData
+        data: chunkData,
       });
 
       // Break after adding chunk if data was truncated
@@ -164,20 +197,22 @@ export class GLBValidator {
     }
 
     // Find JSON and BIN chunks
-    const jsonChunk = chunks.find(chunk => chunk.type === 0x4E4F534A); // 'JSON'
-    const binChunk = chunks.find(chunk => chunk.type === 0x004E4942); // 'BIN\0'
+    const jsonChunk = chunks.find((chunk) => chunk.type === 0x4e4f534a); // 'JSON'
+    const binChunk = chunks.find((chunk) => chunk.type === 0x004e4942); // 'BIN\0'
 
     // Check for first chunk validation and prioritize it
     let firstChunkError: string | null = null;
     if (!jsonChunk && chunks.length > 0 && chunks[0]) {
       const firstChunkType = chunks[0].type;
-      firstChunkError = `GLB_UNEXPECTED_FIRST_CHUNK:First chunk must be of JSON type. Found 0x${firstChunkType.toString(16).padStart(8, '0')} instead.:12`;
+      firstChunkError = `GLB_UNEXPECTED_FIRST_CHUNK:First chunk must be of JSON type. Found 0x${firstChunkType.toString(16).padStart(8, "0")} instead.:12`;
       allMessages.unshift(firstChunkError); // Add at beginning since it's at offset 12
     }
 
     // Check for BIN chunk position validation
     if (binChunk) {
-      const binChunkIndex = chunks.findIndex(chunk => chunk.type === 0x004E4942);
+      const binChunkIndex = chunks.findIndex(
+        (chunk) => chunk.type === 0x004e4942,
+      );
       if (binChunkIndex > 1) {
         // BIN chunk exists but is not the second chunk (index 1)
         // Calculate offset of the BIN chunk for error reporting
@@ -194,53 +229,69 @@ export class GLBValidator {
       }
     }
 
-
     // Collect JSON parsing errors even if we have chunk errors
-    let jsonParsingErrors: string[] = [];
+    const jsonParsingErrors: string[] = [];
 
     if (jsonChunk) {
       // Only try to parse JSON for empty chunks if we have multiple chunk errors
       // Single empty chunk should only report GLB_EMPTY_CHUNK
-      const shouldAttemptJsonParsing = jsonChunk.length > 0 || errors.length > 1;
+      const shouldAttemptJsonParsing =
+        jsonChunk.length > 0 || errors.length > 1;
 
       if (shouldAttemptJsonParsing) {
         try {
           const jsonText = new TextDecoder().decode(jsonChunk.data);
 
           // Check for BOM at the beginning of JSON (UTF-8 BOM is EF BB BF)
-          if (jsonChunk.data.length >= 3 &&
-              jsonChunk.data[0] === 0xEF &&
-              jsonChunk.data[1] === 0xBB &&
-              jsonChunk.data[2] === 0xBF) {
-            jsonParsingErrors.push('Invalid JSON data. Parser output: BOM found at the beginning of UTF-8 stream.');
+          if (
+            jsonChunk.data.length >= 3 &&
+            jsonChunk.data[0] === 0xef &&
+            jsonChunk.data[1] === 0xbb &&
+            jsonChunk.data[2] === 0xbf
+          ) {
+            jsonParsingErrors.push(
+              "Invalid JSON data. Parser output: BOM found at the beginning of UTF-8 stream.",
+            );
           } else {
             JSON.parse(jsonText); // This will throw if JSON is invalid (including empty string)
           }
         } catch (error) {
           // Convert JSON parsing errors to proper INVALID_JSON errors with expected format
           let errorMessage = `${error}`;
-          if (errorMessage.includes('Unexpected end of JSON input')) {
-            errorMessage = 'FormatException: Unexpected end of input (at offset 0)';
-          } else if (errorMessage.includes("Expected property name or '}' in JSON at position 1")) {
-            errorMessage = 'FormatException: Unexpected character (at offset 1)';
-          } else if (errorMessage.includes('SyntaxError:')) {
+          if (errorMessage.includes("Unexpected end of JSON input")) {
+            errorMessage =
+              "FormatException: Unexpected end of input (at offset 0)";
+          } else if (
+            errorMessage.includes(
+              "Expected property name or '}' in JSON at position 1",
+            )
+          ) {
+            errorMessage =
+              "FormatException: Unexpected character (at offset 1)";
+          } else if (errorMessage.includes("SyntaxError:")) {
             // Generic syntax error conversion
             const positionMatch = errorMessage.match(/at position (\d+)/);
-            const offset = positionMatch ? positionMatch[1] : '0';
+            const offset = positionMatch ? positionMatch[1] : "0";
             errorMessage = `FormatException: Unexpected character (at offset ${offset})`;
           }
-          jsonParsingErrors.push(`Invalid JSON data. Parser output: ${errorMessage}`);
+          jsonParsingErrors.push(
+            `Invalid JSON data. Parser output: ${errorMessage}`,
+          );
         }
       }
     }
 
     // Only abort GLTF parsing if we have JSON parsing errors, no JSON chunk, or empty JSON chunk
     // Allow GLTF parsing to continue even with GLB chunk structure errors
-    if (jsonParsingErrors.length > 0 || !jsonChunk || (jsonChunk && jsonChunk.length === 0)) {
+    if (
+      jsonParsingErrors.length > 0 ||
+      !jsonChunk ||
+      (jsonChunk && jsonChunk.length === 0)
+    ) {
       // Add length mismatch error if needed (after chunk validation errors)
       if (lengthMismatchError) {
-        const hasChunkTruncationError = allMessages.some(msg =>
-          msg.includes('GLB_UNEXPECTED_END_OF_CHUNK_DATA')
+        const hasChunkTruncationError = allMessages.some((msg) =>
+          msg.includes("GLB_UNEXPECTED_END_OF_CHUNK_DATA"),
         );
         if (!hasChunkTruncationError) {
           allMessages.push(lengthMismatchError);
@@ -255,26 +306,26 @@ export class GLBValidator {
         // Extract offset from message (format: CODE:MESSAGE:OFFSET)
         const getOffset = (msg: string) => {
           // JSON parsing errors don't have offsets - put them at the end
-          if (msg.includes('Invalid JSON data. Parser output:')) {
+          if (msg.includes("Invalid JSON data. Parser output:")) {
             return Number.MAX_SAFE_INTEGER;
           }
-          const parts = msg.split(':');
+          const parts = msg.split(":");
           if (parts.length < 3) return Number.MAX_SAFE_INTEGER;
           const offsetStr = parts[parts.length - 1];
           return offsetStr ? parseInt(offsetStr) || 0 : 0;
         };
         return getOffset(a) - getOffset(b);
       });
-      throw new Error(sortedMessages.join('|NEXT_ERROR|'));
+      throw new Error(sortedMessages.join("|NEXT_ERROR|"));
     }
 
     if (!jsonChunk) {
       // If no chunks at all, this is a different error
       if (chunks.length === 0) {
-        throw new Error('GLB missing JSON chunk');
+        throw new Error("GLB missing JSON chunk");
       }
       // First chunk validation was already handled above
-      throw new Error('GLB missing JSON chunk');
+      throw new Error("GLB missing JSON chunk");
     }
 
     // Parse JSON chunk
@@ -282,11 +333,15 @@ export class GLBValidator {
     let gltf: GLTF;
 
     // Check for BOM at the beginning of JSON (UTF-8 BOM is EF BB BF)
-    if (jsonChunk.data.length >= 3 && 
-        jsonChunk.data[0] === 0xEF && 
-        jsonChunk.data[1] === 0xBB && 
-        jsonChunk.data[2] === 0xBF) {
-      throw new Error(`Invalid JSON data. Parser output: BOM found at the beginning of UTF-8 stream.`);
+    if (
+      jsonChunk.data.length >= 3 &&
+      jsonChunk.data[0] === 0xef &&
+      jsonChunk.data[1] === 0xbb &&
+      jsonChunk.data[2] === 0xbf
+    ) {
+      throw new Error(
+        `Invalid JSON data. Parser output: BOM found at the beginning of UTF-8 stream.`,
+      );
     }
 
     try {
@@ -295,14 +350,18 @@ export class GLBValidator {
     } catch (error) {
       // Convert JSON parsing errors to proper INVALID_JSON errors with expected format
       let errorMessage = `${error}`;
-      if (errorMessage.includes('Unexpected end of JSON input')) {
-        errorMessage = 'FormatException: Unexpected end of input (at offset 0)';
-      } else if (errorMessage.includes("Expected property name or '}' in JSON at position 1")) {
-        errorMessage = 'FormatException: Unexpected character (at offset 1)';
-      } else if (errorMessage.includes('SyntaxError:')) {
+      if (errorMessage.includes("Unexpected end of JSON input")) {
+        errorMessage = "FormatException: Unexpected end of input (at offset 0)";
+      } else if (
+        errorMessage.includes(
+          "Expected property name or '}' in JSON at position 1",
+        )
+      ) {
+        errorMessage = "FormatException: Unexpected character (at offset 1)";
+      } else if (errorMessage.includes("SyntaxError:")) {
         // Generic syntax error conversion
         const positionMatch = errorMessage.match(/at position (\d+)/);
-        const offset = positionMatch ? positionMatch[1] : '0';
+        const offset = positionMatch ? positionMatch[1] : "0";
         errorMessage = `FormatException: Unexpected character (at offset ${offset})`;
       }
       throw new Error(`Invalid JSON data. Parser output: ${errorMessage}`);
@@ -311,24 +370,24 @@ export class GLBValidator {
     // Handle BIN chunk
     if (binChunk) {
       if (!gltf.buffers || gltf.buffers.length === 0) {
-        throw new Error('GLB has BIN chunk but no buffers defined');
+        throw new Error("GLB has BIN chunk but no buffers defined");
       }
 
       // Don't modify the original buffer - preserve it for validation
       // Just add resource information for the BIN chunk
       resources.push({
-        pointer: '/buffers/0',
-        mimeType: 'application/gltf-buffer',
-        storage: 'glb',
+        pointer: "/buffers/0",
+        mimeType: "application/gltf-buffer",
+        storage: "glb",
         byteLength: binChunk.data.length,
         actualByteLength: binChunk.data.length,
-        declaredByteLength: gltf.buffers[0]?.byteLength
+        declaredByteLength: gltf.buffers[0]?.byteLength,
       });
     }
 
     // Collect all GLB errors (chunk structure errors) as warnings to be reported by caller
     // Only fatal errors (like JSON parsing errors) should prevent GLTF validation
-    let glbErrors: string[] = [...errors];
+    const glbErrors: string[] = [...errors];
 
     // Add first chunk error if present
     if (firstChunkError) {
@@ -338,8 +397,8 @@ export class GLBValidator {
     // Add length mismatch error at the end (after chunk validation errors)
     // Only add length mismatch if we don't have chunk-level truncation errors
     if (lengthMismatchError) {
-      const hasChunkTruncationError = glbErrors.some(error =>
-        error.includes('GLB_UNEXPECTED_END_OF_CHUNK_DATA')
+      const hasChunkTruncationError = glbErrors.some((error) =>
+        error.includes("GLB_UNEXPECTED_END_OF_CHUNK_DATA"),
       );
       if (!hasChunkTruncationError) {
         glbErrors.push(lengthMismatchError);
@@ -348,42 +407,69 @@ export class GLBValidator {
 
     // Combine GLB errors as warnings for the caller to handle
     if (glbErrors.length > 0) {
-      const combinedError = glbErrors.join('|NEXT_ERROR|');
+      const combinedError = glbErrors.join("|NEXT_ERROR|");
       warnings.push(combinedError);
     }
 
     return { gltf, resources, warnings };
   }
 
-  private static normalizeGLTF(json: any): GLTF {
+  private static normalizeGLTF(json: unknown): GLTF {
     // Don't validate required properties here - let GLTF validation handle that
     // This ensures proper error messages with correct codes and pointers
 
     // Normalize arrays to ensure they exist
+    const jsonObj = json as Record<string, unknown>;
     const gltf: GLTF = {
-      asset: json.asset,
-      scene: json.scene,
-      scenes: json.scenes || [],
-      nodes: json.nodes || [],
-      materials: json.materials || [],
-      accessors: json.accessors || [],
-      animations: json.animations || [],
-      buffers: json.buffers || [],
-      bufferViews: json.bufferViews || [],
-      cameras: json.cameras || [],
-      images: json.images || [],
-      meshes: json.meshes || [],
-      samplers: json.samplers || [],
-      skins: json.skins || [],
-      textures: json.textures || [],
-      extensions: json.extensions,
-      extras: json.extras
+      asset: jsonObj["asset"] as GLTFAsset,
+      scene: jsonObj["scene"] as number | undefined,
+      scenes: (Array.isArray(jsonObj["scenes"])
+        ? jsonObj["scenes"]
+        : []) as GLTF["scenes"],
+      nodes: (Array.isArray(jsonObj["nodes"])
+        ? jsonObj["nodes"]
+        : []) as GLTF["nodes"],
+      materials: (Array.isArray(jsonObj["materials"])
+        ? jsonObj["materials"]
+        : []) as GLTF["materials"],
+      accessors: (Array.isArray(jsonObj["accessors"])
+        ? jsonObj["accessors"]
+        : []) as GLTF["accessors"],
+      animations: (Array.isArray(jsonObj["animations"])
+        ? jsonObj["animations"]
+        : []) as GLTF["animations"],
+      buffers: (Array.isArray(jsonObj["buffers"])
+        ? jsonObj["buffers"]
+        : []) as GLTF["buffers"],
+      bufferViews: (Array.isArray(jsonObj["bufferViews"])
+        ? jsonObj["bufferViews"]
+        : []) as GLTF["bufferViews"],
+      cameras: (Array.isArray(jsonObj["cameras"])
+        ? jsonObj["cameras"]
+        : []) as GLTF["cameras"],
+      images: (Array.isArray(jsonObj["images"])
+        ? jsonObj["images"]
+        : []) as GLTF["images"],
+      meshes: (Array.isArray(jsonObj["meshes"])
+        ? jsonObj["meshes"]
+        : []) as GLTF["meshes"],
+      samplers: (Array.isArray(jsonObj["samplers"])
+        ? jsonObj["samplers"]
+        : []) as GLTF["samplers"],
+      skins: (Array.isArray(jsonObj["skins"])
+        ? jsonObj["skins"]
+        : []) as GLTF["skins"],
+      textures: (Array.isArray(jsonObj["textures"])
+        ? jsonObj["textures"]
+        : []) as GLTF["textures"],
+      extensions: jsonObj["extensions"] as Record<string, unknown> | undefined,
+      extras: jsonObj["extras"],
     };
 
     // Copy any additional properties
-    for (const key in json) {
+    for (const key in jsonObj) {
       if (!(key in gltf)) {
-        (gltf as any)[key] = json[key];
+        (gltf as Record<string, unknown>)[key] = jsonObj[key];
       }
     }
 

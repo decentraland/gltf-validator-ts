@@ -1,25 +1,36 @@
 import {
   GLTF,
+  GLTFWithExplicitDefinitions,
+  GLTFMaterial,
+  GLTFMesh,
+  GLTFAnimation,
   ValidationMessage,
   Issues,
-  Severity
-} from '../types';
-import { AssetValidator } from './asset-validator';
-import { BufferValidator } from './buffer-validator';
-import { BufferViewValidator } from './buffer-view-validator';
-import { AccessorValidator } from './accessor-validator';
-import { AnimationValidator } from './animation-validator';
-import { NodeValidator } from './node-validator';
-import { MeshValidator } from './mesh-validator';
-import { MaterialValidator } from './material-validator';
-import { TextureValidator } from './texture-validator';
-import { ImageValidator } from './image-validator';
-import { SamplerValidator } from './sampler-validator';
-import { CameraValidator } from './camera-validator';
-import { SceneValidator } from './scene-validator';
-import { SkinValidator } from './skin-validator';
-import { UsageTracker } from '../usage-tracker';
-import { extensionValidators } from './extensions';
+  Severity,
+  ResourceReference,
+} from "../types";
+import {
+  isObject,
+  isNonNegativeInteger,
+  createJSONPointer,
+  assertIsObject,
+} from "../type-guards";
+import { AssetValidator } from "./asset-validator";
+import { BufferValidator } from "./buffer-validator";
+import { BufferViewValidator } from "./buffer-view-validator";
+import { AccessorValidator } from "./accessor-validator";
+import { AnimationValidator } from "./animation-validator";
+import { NodeValidator } from "./node-validator";
+import { MeshValidator } from "./mesh-validator";
+import { MaterialValidator } from "./material-validator";
+import { TextureValidator } from "./texture-validator";
+import { ImageValidator } from "./image-validator";
+import { SamplerValidator } from "./sampler-validator";
+import { CameraValidator } from "./camera-validator";
+import { SceneValidator } from "./scene-validator";
+import { SkinValidator } from "./skin-validator";
+import { UsageTracker } from "../usage-tracker";
+import { extensionValidators } from "./extensions";
 
 export interface ValidatorOptions {
   maxIssues: number;
@@ -40,7 +51,11 @@ export class GLTFValidator {
     this.usageTracker = new UsageTracker();
   }
 
-  async validate(gltf: GLTF, isGLB: boolean = false, resources: any[] = []): Promise<{ issues: Issues }> {
+  async validate(
+    gltf: GLTF,
+    isGLB: boolean = false,
+    resources: ResourceReference[] = [],
+  ): Promise<{ issues: Issues }> {
     this.messages = [];
     this.usageTracker = new UsageTracker();
     // Note: Don't clear bufferData here as it may have been set by external resource loading
@@ -97,7 +112,7 @@ export class GLTFValidator {
     this.sortMessagesForTestCompatibility();
 
     return {
-      issues: this.buildIssues()
+      issues: this.buildIssues(),
     };
   }
 
@@ -113,31 +128,47 @@ export class GLTFValidator {
 
   private validateRootProperties(gltf: GLTF): void {
     const expectedRootProperties = [
-      'extensionsUsed', 'extensionsRequired', 'accessors', 'animations',
-      'asset', 'buffers', 'bufferViews', 'cameras', 'images', 'materials',
-      'meshes', 'nodes', 'samplers', 'scene', 'scenes', 'skins', 'textures',
-      'extensions', 'extras', '_explicitlyDefined' // Internal parser property
+      "extensionsUsed",
+      "extensionsRequired",
+      "accessors",
+      "animations",
+      "asset",
+      "buffers",
+      "bufferViews",
+      "cameras",
+      "images",
+      "materials",
+      "meshes",
+      "nodes",
+      "samplers",
+      "scene",
+      "scenes",
+      "skins",
+      "textures",
+      "extensions",
+      "extras",
+      "_explicitlyDefined", // Internal parser property
     ];
 
     for (const key in gltf) {
       if (!expectedRootProperties.includes(key)) {
         this.addMessage({
-          code: 'UNEXPECTED_PROPERTY',
-          message: 'Unexpected property.',
+          code: "UNEXPECTED_PROPERTY",
+          message: "Unexpected property.",
           severity: Severity.WARNING,
-          pointer: `/${this.escapeJsonPointer(key)}`
+          pointer: `/${this.escapeJsonPointer(key)}`,
         });
       }
     }
   }
 
-  private validateCollectionType(value: any, property: string): boolean {
+  private validateCollectionType(value: unknown, property: string): boolean {
     if (value != null && !Array.isArray(value)) {
       this.addMessage({
-        code: 'TYPE_MISMATCH',
+        code: "TYPE_MISMATCH",
         message: `Type mismatch. Property value ${JSON.stringify(value)} is not a 'array'.`,
         severity: Severity.ERROR,
-        pointer: `/${property}`
+        pointer: `/${property}`,
       });
       return false;
     }
@@ -148,10 +179,10 @@ export class GLTFValidator {
     // Check if asset property is missing
     if (!gltf.asset) {
       this.addMessage({
-        code: 'UNDEFINED_PROPERTY',
+        code: "UNDEFINED_PROPERTY",
         message: "Property 'asset' must be defined.",
         severity: Severity.ERROR,
-        pointer: '/'
+        pointer: "/",
       });
       return;
     }
@@ -165,12 +196,15 @@ export class GLTFValidator {
     if (!gltf.buffers) return;
 
     // Check for empty buffers array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.buffers && gltf.buffers.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.buffers &&
+      gltf.buffers.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/buffers'
+        pointer: "/buffers",
       });
       return;
     }
@@ -189,12 +223,15 @@ export class GLTFValidator {
     if (!gltf.bufferViews) return;
 
     // Check for empty bufferViews array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.bufferViews && gltf.bufferViews.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.bufferViews &&
+      gltf.bufferViews.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/bufferViews'
+        pointer: "/bufferViews",
       });
       return;
     }
@@ -213,12 +250,15 @@ export class GLTFValidator {
     if (!gltf.accessors) return;
 
     // Check for empty accessors array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.accessors && gltf.accessors.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.accessors &&
+      gltf.accessors.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/accessors'
+        pointer: "/accessors",
       });
       return;
     }
@@ -239,7 +279,12 @@ export class GLTFValidator {
           if (bufferView && bufferView.buffer !== undefined) {
             const bufferData = this.getBufferData(bufferView.buffer);
             if (bufferData) {
-              const dataMessages = validator.validateAccessorData(accessor, i, gltf, bufferData);
+              const dataMessages = validator.validateAccessorData(
+                accessor,
+                i,
+                gltf,
+                bufferData,
+              );
               allMessages.push(...dataMessages);
             }
           }
@@ -254,12 +299,15 @@ export class GLTFValidator {
     if (!gltf.animations) return;
 
     // Check for empty animations array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.animations && gltf.animations.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.animations &&
+      gltf.animations.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/animations'
+        pointer: "/animations",
       });
       return;
     }
@@ -277,21 +325,43 @@ export class GLTFValidator {
         if (animation.samplers) {
           for (let j = 0; j < animation.samplers.length; j++) {
             const sampler = animation.samplers[j];
-            if (sampler && sampler.input !== undefined && sampler.output !== undefined && gltf.accessors) {
+            if (
+              sampler &&
+              sampler.input !== undefined &&
+              sampler.output !== undefined &&
+              gltf.accessors
+            ) {
               // Validate input accessor data with animation-specific validation
               const inputAccessor = gltf.accessors[sampler.input];
-              if (inputAccessor && inputAccessor.bufferView !== undefined && gltf.bufferViews) {
+              if (
+                inputAccessor &&
+                inputAccessor.bufferView !== undefined &&
+                gltf.bufferViews
+              ) {
                 const bufferView = gltf.bufferViews[inputAccessor.bufferView];
                 if (bufferView && bufferView.buffer !== undefined) {
                   const bufferData = this.getBufferData(bufferView.buffer);
                   if (bufferData) {
                     const inputValidator = new AccessorValidator();
                     // Regular accessor data validation
-                    const inputMessages = inputValidator.validateAccessorData(inputAccessor, sampler.input, gltf, bufferData);
+                    const inputMessages = inputValidator.validateAccessorData(
+                      inputAccessor,
+                      sampler.input,
+                      gltf,
+                      bufferData,
+                    );
                     allMessages.push(...inputMessages);
 
                     // Animation-specific input validation
-                    const animationInputMessages = inputValidator.validateAnimationInputAccessorData(inputAccessor, sampler.input, gltf, bufferData, i, j);
+                    const animationInputMessages =
+                      inputValidator.validateAnimationInputAccessorData(
+                        inputAccessor,
+                        sampler.input,
+                        gltf,
+                        bufferData,
+                        i,
+                        j,
+                      );
                     allMessages.push(...animationInputMessages);
                   }
                 }
@@ -299,24 +369,44 @@ export class GLTFValidator {
 
               // Validate output accessor data
               const outputAccessor = gltf.accessors[sampler.output];
-              if (outputAccessor && outputAccessor.bufferView !== undefined && gltf.bufferViews) {
+              if (
+                outputAccessor &&
+                outputAccessor.bufferView !== undefined &&
+                gltf.bufferViews
+              ) {
                 const bufferView = gltf.bufferViews[outputAccessor.bufferView];
                 if (bufferView && bufferView.buffer !== undefined) {
                   const bufferData = this.getBufferData(bufferView.buffer);
                   if (bufferData) {
                     const outputValidator = new AccessorValidator();
-                    const outputMessages = outputValidator.validateAccessorData(outputAccessor, sampler.output, gltf, bufferData);
+                    const outputMessages = outputValidator.validateAccessorData(
+                      outputAccessor,
+                      sampler.output,
+                      gltf,
+                      bufferData,
+                    );
                     allMessages.push(...outputMessages);
 
                     // Check if this sampler is used by any rotation channels for quaternion validation
                     if (animation.channels) {
                       for (let k = 0; k < animation.channels.length; k++) {
                         const channel = animation.channels[k];
-                        if (channel && channel.sampler === j && channel.target && channel.target.path === 'rotation') {
+                        if (
+                          channel &&
+                          channel.sampler === j &&
+                          channel.target &&
+                          channel.target.path === "rotation"
+                        ) {
                           // Add specialized quaternion validation for this rotation output
-                          const quaternionMessages = outputValidator.validateAnimationQuaternionOutput(
-                            outputAccessor, gltf, bufferData, i, j, k
-                          );
+                          const quaternionMessages =
+                            outputValidator.validateAnimationQuaternionOutput(
+                              outputAccessor,
+                              gltf,
+                              bufferData,
+                              i,
+                              j,
+                              k,
+                            );
                           allMessages.push(...quaternionMessages);
                           break; // Only validate once per sampler, even if multiple channels use it
                         }
@@ -343,12 +433,15 @@ export class GLTFValidator {
     if (!gltf.nodes) return;
 
     // Check for empty nodes array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.nodes && gltf.nodes.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.nodes &&
+      gltf.nodes.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/nodes'
+        pointer: "/nodes",
       });
       return;
     }
@@ -367,12 +460,15 @@ export class GLTFValidator {
     if (!gltf.meshes) return;
 
     // Check for empty meshes array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.meshes && gltf.meshes.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.meshes &&
+      gltf.meshes.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/meshes'
+        pointer: "/meshes",
       });
       return;
     }
@@ -391,22 +487,49 @@ export class GLTFValidator {
             if (primitive) {
               // Validate attribute accessors
               if (primitive.attributes) {
-                for (const [attributeName, accessorIndex] of Object.entries(primitive.attributes)) {
-                  if (typeof accessorIndex === 'number' && gltf.accessors) {
+                for (const [attributeName, accessorIndex] of Object.entries(
+                  primitive.attributes,
+                )) {
+                  if (typeof accessorIndex === "number" && gltf.accessors) {
                     const accessor = gltf.accessors[accessorIndex];
-                    if (accessor && accessor.bufferView !== undefined && gltf.bufferViews) {
+                    if (
+                      accessor &&
+                      accessor.bufferView !== undefined &&
+                      gltf.bufferViews
+                    ) {
                       const bufferView = gltf.bufferViews[accessor.bufferView];
                       if (bufferView && bufferView.buffer !== undefined) {
-                        const bufferData = this.getBufferData(bufferView.buffer);
+                        const bufferData = this.getBufferData(
+                          bufferView.buffer,
+                        );
                         if (bufferData) {
                           const accessorValidator = new AccessorValidator();
                           // Use specialized mesh attribute validation for specific attributes
-                          if (attributeName.startsWith('JOINTS_') || attributeName.startsWith('WEIGHTS_') ||
-                              attributeName === 'NORMAL' || attributeName === 'TANGENT') {
-                            const dataMessages = accessorValidator.validateMeshAttributeData(accessor, accessorIndex, gltf, bufferData, attributeName, i, j);
+                          if (
+                            attributeName.startsWith("JOINTS_") ||
+                            attributeName.startsWith("WEIGHTS_") ||
+                            attributeName === "NORMAL" ||
+                            attributeName === "TANGENT"
+                          ) {
+                            const dataMessages =
+                              accessorValidator.validateMeshAttributeData(
+                                accessor,
+                                accessorIndex,
+                                gltf,
+                                bufferData,
+                                attributeName,
+                                i,
+                                j,
+                              );
                             this.addMessages(dataMessages);
                           } else {
-                            const dataMessages = accessorValidator.validateAccessorData(accessor, accessorIndex, gltf, bufferData);
+                            const dataMessages =
+                              accessorValidator.validateAccessorData(
+                                accessor,
+                                accessorIndex,
+                                gltf,
+                                bufferData,
+                              );
                             this.addMessages(dataMessages);
                           }
                         }
@@ -419,13 +542,23 @@ export class GLTFValidator {
               // Validate indices accessor
               if (primitive.indices !== undefined && gltf.accessors) {
                 const accessor = gltf.accessors[primitive.indices];
-                if (accessor && accessor.bufferView !== undefined && gltf.bufferViews) {
+                if (
+                  accessor &&
+                  accessor.bufferView !== undefined &&
+                  gltf.bufferViews
+                ) {
                   const bufferView = gltf.bufferViews[accessor.bufferView];
                   if (bufferView && bufferView.buffer !== undefined) {
                     const bufferData = this.getBufferData(bufferView.buffer);
                     if (bufferData) {
                       const accessorValidator = new AccessorValidator();
-                      const dataMessages = accessorValidator.validateAccessorData(accessor, primitive.indices, gltf, bufferData);
+                      const dataMessages =
+                        accessorValidator.validateAccessorData(
+                          accessor,
+                          primitive.indices,
+                          gltf,
+                          bufferData,
+                        );
                       this.addMessages(dataMessages);
                     }
                   }
@@ -438,15 +571,28 @@ export class GLTFValidator {
                   const target = primitive.targets[k];
                   if (target) {
                     for (const [, accessorIndex] of Object.entries(target)) {
-                      if (typeof accessorIndex === 'number' && gltf.accessors) {
+                      if (typeof accessorIndex === "number" && gltf.accessors) {
                         const accessor = gltf.accessors[accessorIndex];
-                        if (accessor && accessor.bufferView !== undefined && gltf.bufferViews) {
-                          const bufferView = gltf.bufferViews[accessor.bufferView];
+                        if (
+                          accessor &&
+                          accessor.bufferView !== undefined &&
+                          gltf.bufferViews
+                        ) {
+                          const bufferView =
+                            gltf.bufferViews[accessor.bufferView];
                           if (bufferView && bufferView.buffer !== undefined) {
-                            const bufferData = this.getBufferData(bufferView.buffer);
+                            const bufferData = this.getBufferData(
+                              bufferView.buffer,
+                            );
                             if (bufferData) {
                               const accessorValidator = new AccessorValidator();
-                              const dataMessages = accessorValidator.validateAccessorData(accessor, accessorIndex, gltf, bufferData);
+                              const dataMessages =
+                                accessorValidator.validateAccessorData(
+                                  accessor,
+                                  accessorIndex,
+                                  gltf,
+                                  bufferData,
+                                );
                               this.addMessages(dataMessages);
                             }
                           }
@@ -467,12 +613,15 @@ export class GLTFValidator {
     if (!gltf.materials) return;
 
     // Check for empty materials array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.materials && gltf.materials.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.materials &&
+      gltf.materials.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/materials'
+        pointer: "/materials",
       });
       return;
     }
@@ -480,9 +629,35 @@ export class GLTFValidator {
     const validator = new MaterialValidator();
     for (let i = 0; i < gltf.materials.length; i++) {
       const material = gltf.materials[i];
-      if (material) {
+      if (
+        material &&
+        typeof material === "object" &&
+        !Array.isArray(material)
+      ) {
         const messages = validator.validate(material, i, gltf);
         this.addMessages(messages);
+      } else {
+        // Generate TYPE_MISMATCH error for invalid array elements
+        const formatValue = (value: unknown) => {
+          if (typeof value === "string") {
+            return `'${value}'`;
+          } else if (value === null) {
+            return "null";
+          } else if (typeof value === "boolean" || typeof value === "number") {
+            return value.toString();
+          } else if (Array.isArray(value)) {
+            return `[${value.map((item) => (typeof item === "string" ? item : JSON.stringify(item))).join(", ")}]`;
+          } else {
+            return JSON.stringify(value);
+          }
+        };
+
+        this.addMessage({
+          code: "TYPE_MISMATCH",
+          message: `Type mismatch. Property value ${formatValue(material)} is not a 'object'.`,
+          severity: Severity.ERROR,
+          pointer: `/materials/${i}`,
+        });
       }
     }
   }
@@ -491,12 +666,15 @@ export class GLTFValidator {
     if (!gltf.textures) return;
 
     // Check for empty textures array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.textures && gltf.textures.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.textures &&
+      gltf.textures.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/textures'
+        pointer: "/textures",
       });
       return;
     }
@@ -515,12 +693,15 @@ export class GLTFValidator {
     if (!gltf.images) return;
 
     // Check for empty images array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.images && gltf.images.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.images &&
+      gltf.images.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/images'
+        pointer: "/images",
       });
       return;
     }
@@ -529,35 +710,44 @@ export class GLTFValidator {
     for (let i = 0; i < gltf.images.length; i++) {
       const image = gltf.images[i];
       if (image) {
-        if (typeof image !== 'object' || image === null || Array.isArray(image)) {
+        if (
+          typeof image !== "object" ||
+          image === null ||
+          Array.isArray(image)
+        ) {
           // Format array to match expected output: [item1, item2] without quotes around strings if they look like identifiers or filenames
-          const formatValue = (value: any) => {
+          const formatValue = (value: unknown) => {
             if (Array.isArray(value)) {
-              const items = value.map(item => {
-                if (typeof item === 'string' && /^[a-zA-Z_$][a-zA-Z0-9_$.]*$/.test(item)) {
+              const items = value.map((item) => {
+                if (
+                  typeof item === "string" &&
+                  /^[a-zA-Z_$][a-zA-Z0-9_$.]*$/.test(item)
+                ) {
                   return item; // Don't quote identifier-like strings or simple filenames
                 }
                 return JSON.stringify(item);
               });
-              return `[${items.join(', ')}]`;
+              return `[${items.join(", ")}]`;
             }
             return JSON.stringify(value);
           };
 
           this.addMessage({
-            code: 'TYPE_MISMATCH',
+            code: "TYPE_MISMATCH",
             message: `Type mismatch. Property value ${formatValue(image)} is not a 'object'.`,
             severity: Severity.ERROR,
-            pointer: `/images/${i}`
+            pointer: `/images/${i}`,
           });
         } else {
           const messages = validator.validate(image, i, gltf);
           this.addMessages(messages);
 
           // Also validate external resources if function is available
-          const externalMessages = await validator.validateExternalResources(image, i);
+          const externalMessages = await validator.validateExternalResources(
+            image,
+            i,
+          );
           this.addMessages(externalMessages);
-
         }
       }
     }
@@ -567,17 +757,20 @@ export class GLTFValidator {
     if (!gltf.samplers) return;
 
     // Validate that samplers is an array
-    if (!this.validateCollectionType(gltf.samplers, 'samplers')) {
+    if (!this.validateCollectionType(gltf.samplers, "samplers")) {
       return; // Skip further validation if not an array
     }
 
     // Check for empty samplers array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.samplers && gltf.samplers.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.samplers &&
+      gltf.samplers.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/samplers'
+        pointer: "/samplers",
       });
       return;
     }
@@ -585,9 +778,31 @@ export class GLTFValidator {
     const validator = new SamplerValidator();
     for (let i = 0; i < gltf.samplers.length; i++) {
       const sampler = gltf.samplers[i];
-      if (sampler) {
+      if (sampler && typeof sampler === "object" && !Array.isArray(sampler)) {
         const messages = validator.validate(sampler, i);
         this.addMessages(messages);
+      } else {
+        // Generate TYPE_MISMATCH error for invalid array elements
+        const formatValue = (value: unknown) => {
+          if (typeof value === "string") {
+            return `'${value}'`;
+          } else if (value === null) {
+            return "null";
+          } else if (typeof value === "boolean" || typeof value === "number") {
+            return value.toString();
+          } else if (Array.isArray(value)) {
+            return `[${value.map((item) => (typeof item === "string" ? item : JSON.stringify(item))).join(", ")}]`;
+          } else {
+            return JSON.stringify(value);
+          }
+        };
+
+        this.addMessage({
+          code: "TYPE_MISMATCH",
+          message: `Type mismatch. Property value ${formatValue(sampler)} is not a 'object'.`,
+          severity: Severity.ERROR,
+          pointer: `/samplers/${i}`,
+        });
       }
     }
   }
@@ -596,12 +811,15 @@ export class GLTFValidator {
     if (!gltf.cameras) return;
 
     // Check for empty cameras array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.cameras && gltf.cameras.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.cameras &&
+      gltf.cameras.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/cameras'
+        pointer: "/cameras",
       });
       return;
     }
@@ -620,12 +838,15 @@ export class GLTFValidator {
     if (!gltf.scenes) return;
 
     // Check for empty scenes array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.scenes && gltf.scenes.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.scenes &&
+      gltf.scenes.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/scenes'
+        pointer: "/scenes",
       });
       return;
     }
@@ -644,10 +865,10 @@ export class GLTFValidator {
     if (gltf.scene !== undefined) {
       if (!gltf.scenes || gltf.scene >= gltf.scenes.length) {
         this.addMessage({
-          code: 'UNRESOLVED_REFERENCE',
-          message: 'Unresolved reference: ' + gltf.scene + '.',
+          code: "UNRESOLVED_REFERENCE",
+          message: "Unresolved reference: " + gltf.scene + ".",
           severity: Severity.ERROR,
-          pointer: '/scene'
+          pointer: "/scene",
         });
       }
     }
@@ -657,12 +878,15 @@ export class GLTFValidator {
     if (!gltf.skins) return;
 
     // Check for empty skins array (only if explicitly defined)
-    if ((gltf as any)._explicitlyDefined?.skins && gltf.skins.length === 0) {
+    if (
+      (gltf as GLTFWithExplicitDefinitions)._explicitlyDefined?.skins &&
+      gltf.skins.length === 0
+    ) {
       this.addMessage({
-        code: 'EMPTY_ENTITY',
-        message: 'Entity cannot be empty.',
+        code: "EMPTY_ENTITY",
+        message: "Entity cannot be empty.",
         severity: Severity.ERROR,
-        pointer: '/skins'
+        pointer: "/skins",
       });
       return;
     }
@@ -677,18 +901,33 @@ export class GLTFValidator {
         // Data validation for inverse bind matrices
         if (skin.inverseBindMatrices !== undefined && gltf.accessors) {
           const accessor = gltf.accessors[skin.inverseBindMatrices];
-          if (accessor && accessor.bufferView !== undefined && gltf.bufferViews) {
+          if (
+            accessor &&
+            accessor.bufferView !== undefined &&
+            gltf.bufferViews
+          ) {
             const bufferView = gltf.bufferViews[accessor.bufferView];
             if (bufferView && bufferView.buffer !== undefined) {
               const bufferData = this.getBufferData(bufferView.buffer);
               if (bufferData) {
                 const accessorValidator = new AccessorValidator();
                 // Regular accessor validation
-                const dataMessages = accessorValidator.validateAccessorData(accessor, skin.inverseBindMatrices, gltf, bufferData);
+                const dataMessages = accessorValidator.validateAccessorData(
+                  accessor,
+                  skin.inverseBindMatrices,
+                  gltf,
+                  bufferData,
+                );
                 this.addMessages(dataMessages);
 
                 // IBM-specific validation
-                const ibmMessages = accessorValidator.validateIBMAccessorData(accessor, skin.inverseBindMatrices, gltf, bufferData, i);
+                const ibmMessages = accessorValidator.validateIBMAccessorData(
+                  accessor,
+                  skin.inverseBindMatrices,
+                  gltf,
+                  bufferData,
+                  i,
+                );
                 this.addMessages(ibmMessages);
               }
             }
@@ -706,21 +945,26 @@ export class GLTFValidator {
       const animation = gltf.animations[animIndex];
       if (!animation || !animation.channels) continue;
 
-      for (let channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
+      for (
+        let channelIndex = 0;
+        channelIndex < animation.channels.length;
+        channelIndex++
+      ) {
         const channel = animation.channels[channelIndex];
-        if (!channel || !channel.target || channel.target.node === undefined) continue;
+        if (!channel || !channel.target || channel.target.node === undefined)
+          continue;
 
         const targetNode = gltf.nodes[channel.target.node];
         if (!targetNode || targetNode.skin === undefined) continue;
 
         // Check if the target path is a TRS property
-        const trsProperties = ['translation', 'rotation', 'scale'];
+        const trsProperties = ["translation", "rotation", "scale"];
         if (trsProperties.includes(channel.target.path)) {
           this.addMessage({
-            code: 'ANIMATION_CHANNEL_TARGET_NODE_SKIN',
-            message: 'Animated TRS properties will not affect a skinned mesh.',
+            code: "ANIMATION_CHANNEL_TARGET_NODE_SKIN",
+            message: "Animated TRS properties will not affect a skinned mesh.",
             severity: Severity.WARNING,
-            pointer: `/animations/${animIndex}/channels/${channelIndex}/target/path`
+            pointer: `/animations/${animIndex}/channels/${channelIndex}/target/path`,
           });
         }
       }
@@ -759,14 +1003,17 @@ export class GLTFValidator {
         if (!skin || !skin.joints) continue;
 
         // Check if all joint nodes are reachable in this scene
-        const missingJoints = skin.joints.some(jointIndex => !reachableNodes.has(jointIndex));
+        const missingJoints = skin.joints.some(
+          (jointIndex) => !reachableNodes.has(jointIndex),
+        );
 
         if (missingJoints) {
           this.addMessage({
-            code: 'NODE_SKIN_NO_SCENE',
-            message: 'A node with a skinned mesh is used in a scene that does not contain joint nodes.',
+            code: "NODE_SKIN_NO_SCENE",
+            message:
+              "A node with a skinned mesh is used in a scene that does not contain joint nodes.",
             severity: Severity.ERROR,
-            pointer: `/nodes/${nodeIndex}`
+            pointer: `/nodes/${nodeIndex}`,
           });
         }
       }
@@ -799,8 +1046,12 @@ export class GLTFValidator {
       let hasSkinnedMesh = false;
       for (const primitive of mesh.primitives) {
         if (primitive && primitive.attributes) {
-          const hasJoints = Object.keys(primitive.attributes).some(attr => attr.startsWith('JOINTS_'));
-          const hasWeights = Object.keys(primitive.attributes).some(attr => attr.startsWith('WEIGHTS_'));
+          const hasJoints = Object.keys(primitive.attributes).some((attr) =>
+            attr.startsWith("JOINTS_"),
+          );
+          const hasWeights = Object.keys(primitive.attributes).some((attr) =>
+            attr.startsWith("WEIGHTS_"),
+          );
           if (hasJoints && hasWeights) {
             hasSkinnedMesh = true;
             break;
@@ -811,10 +1062,11 @@ export class GLTFValidator {
       // If this node has a skinned mesh and is not root (has a parent), generate warning
       if (hasSkinnedMesh && childToParent.has(nodeIndex)) {
         this.addMessage({
-          code: 'NODE_SKINNED_MESH_NON_ROOT',
-          message: 'Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.',
+          code: "NODE_SKINNED_MESH_NON_ROOT",
+          message:
+            "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
           severity: Severity.WARNING,
-          pointer: `/nodes/${nodeIndex}`
+          pointer: `/nodes/${nodeIndex}`,
         });
       }
     }
@@ -837,15 +1089,21 @@ export class GLTFValidator {
     // Report each node that's part of a loop
     for (const nodeIndex of loopNodes) {
       this.addMessage({
-        code: 'NODE_LOOP',
-        message: 'Node is a part of a node loop.',
+        code: "NODE_LOOP",
+        message: "Node is a part of a node loop.",
         severity: Severity.ERROR,
-        pointer: `/nodes/${nodeIndex}`
+        pointer: `/nodes/${nodeIndex}`,
       });
     }
   }
 
-  private detectNodeLoop(nodeIndex: number, gltf: GLTF, visited: Set<number>, recursionStack: Set<number>, loopNodes: Set<number>): void {
+  private detectNodeLoop(
+    nodeIndex: number,
+    gltf: GLTF,
+    visited: Set<number>,
+    recursionStack: Set<number>,
+    loopNodes: Set<number>,
+  ): void {
     if (recursionStack.has(nodeIndex)) {
       // Found a loop - mark only nodes that are actually part of the cycle
       // Convert recursion stack to array to find the cycle
@@ -871,7 +1129,13 @@ export class GLTFValidator {
     if (node && node.children) {
       for (const childIndex of node.children) {
         if (childIndex >= 0 && childIndex < gltf.nodes!.length) {
-          this.detectNodeLoop(childIndex, gltf, visited, recursionStack, loopNodes);
+          this.detectNodeLoop(
+            childIndex,
+            gltf,
+            visited,
+            recursionStack,
+            loopNodes,
+          );
         }
       }
     }
@@ -885,16 +1149,16 @@ export class GLTFValidator {
 
     for (const pointer of unusedObjects) {
       // Skip reporting unused objects that already have TYPE_MISMATCH errors
-      const hasTypeMismatch = this.messages.some(msg =>
-        msg.code === 'TYPE_MISMATCH' && msg.pointer === pointer
+      const hasTypeMismatch = this.messages.some(
+        (msg) => msg.code === "TYPE_MISMATCH" && msg.pointer === pointer,
       );
 
       if (!hasTypeMismatch) {
         this.addMessage({
-          code: 'UNUSED_OBJECT',
-          message: 'This object may be unused.',
+          code: "UNUSED_OBJECT",
+          message: "This object may be unused.",
           severity: Severity.INFO,
-          pointer
+          pointer,
         });
       }
     }
@@ -904,102 +1168,106 @@ export class GLTFValidator {
 
     for (const pointer of unusedMeshWeights) {
       this.addMessage({
-        code: 'UNUSED_MESH_WEIGHTS',
-        message: 'The static morph target weights are always overridden.',
+        code: "UNUSED_MESH_WEIGHTS",
+        message: "The static morph target weights are always overridden.",
         severity: Severity.INFO,
-        pointer
+        pointer,
       });
     }
   }
 
   private validateExtensions(gltf: GLTF): void {
     // Validate extensionsUsed
-    if (gltf['extensionsUsed']) {
+    if (gltf["extensionsUsed"]) {
       const seenExtensions = new Set<string>();
+      const extensionsUsed = gltf["extensionsUsed"] as string[];
 
-      for (let i = 0; i < gltf['extensionsUsed'].length; i++) {
-        const extension = gltf['extensionsUsed'][i];
+      for (let i = 0; i < extensionsUsed.length; i++) {
+        const extension = extensionsUsed[i];
 
         // Check for duplicates
         if (seenExtensions.has(extension)) {
           this.addMessage({
-            code: 'DUPLICATE_ELEMENTS',
-            message: 'Duplicate element.',
+            code: "DUPLICATE_ELEMENTS",
+            message: "Duplicate element.",
             severity: Severity.ERROR,
-            pointer: `/extensionsUsed/${i}`
+            pointer: `/extensionsUsed/${i}`,
           });
         } else {
           seenExtensions.add(extension);
         }
 
         // Check extension name format - extension names must not start with underscore
-        if (typeof extension === 'string' && extension.startsWith('_')) {
+        if (typeof extension === "string" && extension.startsWith("_")) {
           this.addMessage({
-            code: 'INVALID_EXTENSION_NAME_FORMAT',
-            message: 'Extension name has invalid format.',
+            code: "INVALID_EXTENSION_NAME_FORMAT",
+            message: "Extension name has invalid format.",
             severity: Severity.WARNING,
-            pointer: `/extensionsUsed/${i}`
+            pointer: `/extensionsUsed/${i}`,
           });
         }
 
         // For now, mark all extensions as unsupported except known ones
         const knownExtensions = [
-          'EXT_texture_webp',
-          'KHR_animation_pointer',
-          'KHR_lights_punctual',
-          'KHR_materials_anisotropy',
-          'KHR_materials_clearcoat',
-          'KHR_materials_dispersion',
-          'KHR_materials_emissive_strength',
-          'KHR_materials_ior',
-          'KHR_materials_iridescence',
-          'KHR_materials_pbrSpecularGlossiness',
-          'KHR_materials_sheen',
-          'KHR_materials_specular',
-          'KHR_materials_transmission',
-          'KHR_materials_unlit',
-          'KHR_materials_variants',
-          'KHR_materials_volume',
-          'KHR_mesh_quantization',
-          'KHR_texture_basisu',
-          'KHR_texture_transform'
+          "EXT_texture_webp",
+          "KHR_animation_pointer",
+          "KHR_lights_punctual",
+          "KHR_materials_anisotropy",
+          "KHR_materials_clearcoat",
+          "KHR_materials_dispersion",
+          "KHR_materials_emissive_strength",
+          "KHR_materials_ior",
+          "KHR_materials_iridescence",
+          "KHR_materials_pbrSpecularGlossiness",
+          "KHR_materials_sheen",
+          "KHR_materials_specular",
+          "KHR_materials_transmission",
+          "KHR_materials_unlit",
+          "KHR_materials_variants",
+          "KHR_materials_volume",
+          "KHR_mesh_quantization",
+          "KHR_texture_basisu",
+          "KHR_texture_transform",
         ];
         if (!knownExtensions.includes(extension)) {
           this.addMessage({
-            code: 'UNSUPPORTED_EXTENSION',
+            code: "UNSUPPORTED_EXTENSION",
             message: `Cannot validate an extension as it is not supported by the validator: '${extension}'.`,
             severity: Severity.INFO,
-            pointer: `/extensionsUsed/${i}`
+            pointer: `/extensionsUsed/${i}`,
           });
         }
       }
     }
 
     // Validate extensionsRequired
-    if (gltf['extensionsRequired']) {
+    if (gltf["extensionsRequired"]) {
       // Check dependency: extensionsUsed must be defined when extensionsRequired is used
-      if (!gltf['extensionsUsed']) {
+      if (!gltf["extensionsUsed"]) {
         this.addMessage({
-          code: 'UNSATISFIED_DEPENDENCY',
+          code: "UNSATISFIED_DEPENDENCY",
           message: "Dependency failed. 'extensionsUsed' must be defined.",
           severity: Severity.ERROR,
-          pointer: '/extensionsRequired'
+          pointer: "/extensionsRequired",
         });
       }
 
       const seenRequired = new Set<string>();
-      const extensionsUsed = new Set(gltf['extensionsUsed'] || []);
+      const extensionsUsed = new Set(
+        (gltf["extensionsUsed"] as string[]) || [],
+      );
+      const extensionsRequired = gltf["extensionsRequired"] as string[];
 
-      for (let i = 0; i < gltf['extensionsRequired'].length; i++) {
-        const extension = gltf['extensionsRequired'][i];
+      for (let i = 0; i < extensionsRequired.length; i++) {
+        const extension = extensionsRequired[i];
 
         // Check for duplicates
         if (seenRequired.has(extension)) {
           this.addMessage({
-            code: 'DUPLICATE_ELEMENTS',
-            message: 'Duplicate element.',
+            code: "DUPLICATE_ELEMENTS",
+            message: "Duplicate element.",
             severity: Severity.ERROR,
-            pointer: `/extensionsRequired/${i}`
+            pointer: `/extensionsRequired/${i}`,
           });
         } else {
           seenRequired.add(extension);
@@ -1008,10 +1276,10 @@ export class GLTFValidator {
         // Check if required extension is actually used (exists in extensionsUsed)
         if (!extensionsUsed.has(extension)) {
           this.addMessage({
-            code: 'UNUSED_EXTENSION_REQUIRED',
+            code: "UNUSED_EXTENSION_REQUIRED",
             message: `Unused extension '${extension}' cannot be required.`,
             severity: Severity.ERROR,
-            pointer: `/extensionsRequired/${i}`
+            pointer: `/extensionsRequired/${i}`,
           });
         }
       }
@@ -1019,7 +1287,9 @@ export class GLTFValidator {
 
     // Validate extensions object
     if (gltf.extensions) {
-      const extensionsUsed = new Set(gltf['extensionsUsed'] || []);
+      const extensionsUsed = new Set(
+        (gltf["extensionsUsed"] as string[]) || [],
+      );
 
       for (const extensionName in gltf.extensions) {
         const extensionValue = gltf.extensions[extensionName];
@@ -1027,43 +1297,47 @@ export class GLTFValidator {
         // Check if extension is declared in extensionsUsed
         if (!extensionsUsed.has(extensionName)) {
           this.addMessage({
-            code: 'UNDECLARED_EXTENSION',
-            message: 'Extension is not declared in extensionsUsed.',
+            code: "UNDECLARED_EXTENSION",
+            message: "Extension is not declared in extensionsUsed.",
             severity: Severity.ERROR,
-            pointer: `/extensions/${extensionName}`
+            pointer: `/extensions/${extensionName}`,
           });
         }
 
-        if (typeof extensionValue !== 'object' || extensionValue === null || Array.isArray(extensionValue)) {
+        if (
+          typeof extensionValue !== "object" ||
+          extensionValue === null ||
+          Array.isArray(extensionValue)
+        ) {
           // Format the value based on its type
           let formattedValue;
-          if (typeof extensionValue === 'string') {
+          if (typeof extensionValue === "string") {
             formattedValue = `'${extensionValue}'`;
-          } else if (typeof extensionValue === 'number') {
+          } else if (typeof extensionValue === "number") {
             formattedValue = extensionValue.toString();
-          } else if (typeof extensionValue === 'boolean') {
+          } else if (typeof extensionValue === "boolean") {
             formattedValue = extensionValue.toString();
           } else if (Array.isArray(extensionValue)) {
-            formattedValue = '[]';
+            formattedValue = "[]";
           } else if (extensionValue === null) {
-            formattedValue = 'null';
+            formattedValue = "null";
           } else {
             formattedValue = JSON.stringify(extensionValue);
           }
 
           this.addMessage({
-            code: 'TYPE_MISMATCH',
+            code: "TYPE_MISMATCH",
             message: `Type mismatch. Property value ${formattedValue} is not a 'object'.`,
             severity: Severity.ERROR,
-            pointer: `/extensions/${extensionName}`
+            pointer: `/extensions/${extensionName}`,
           });
         }
       }
     }
 
     // Run extension-specific validation for each used extension
-    if (gltf['extensionsUsed']) {
-      for (const extensionName of gltf['extensionsUsed']) {
+    if (gltf["extensionsUsed"]) {
+      for (const extensionName of gltf["extensionsUsed"] as string[]) {
         const validator = extensionValidators.get(extensionName);
         if (validator) {
           validator.validate(gltf, (message) => this.addMessage(message));
@@ -1072,22 +1346,30 @@ export class GLTFValidator {
     }
 
     // Check for non-required extensions (extensions that are declared but not used)
-    if (gltf['extensionsUsed']) {
-      const extensionsRequired = new Set(gltf['extensionsRequired'] || []);
+    if (gltf["extensionsUsed"]) {
+      const extensionsRequired = new Set(
+        (gltf["extensionsRequired"] as string[]) || [],
+      );
 
-      for (let i = 0; i < gltf['extensionsUsed'].length; i++) {
-        const extension = gltf['extensionsUsed'][i];
+      const extensionsUsedArray = gltf["extensionsUsed"] as string[];
+      for (let i = 0; i < extensionsUsedArray.length; i++) {
+        const extension = extensionsUsedArray[i];
 
         // Check if extension is actually used
         // Extensions in extensionsRequired are considered "used" even if in unexpected locations
         // Skip NON_REQUIRED_EXTENSION validation for extensions with invalid names
-        const hasInvalidName = typeof extension === 'string' && extension.startsWith('_');
-        if (!this.isExtensionUsed(gltf, extension) && !extensionsRequired.has(extension) && !hasInvalidName) {
+        const hasInvalidName =
+          typeof extension === "string" && extension.startsWith("_");
+        if (
+          !this.isExtensionUsed(gltf, extension) &&
+          !extensionsRequired.has(extension) &&
+          !hasInvalidName
+        ) {
           this.addMessage({
-            code: 'NON_REQUIRED_EXTENSION',
+            code: "NON_REQUIRED_EXTENSION",
             message: `Extension '${extension}' cannot be optional.`,
             severity: Severity.ERROR,
-            pointer: `/extensionsUsed/${i}`
+            pointer: `/extensionsUsed/${i}`,
           });
         }
       }
@@ -1112,30 +1394,68 @@ export class GLTFValidator {
     // Check if extension is used in materials
     if (gltf.materials) {
       for (const material of gltf.materials) {
-        if (material && material['extensions'] && material['extensions'][extensionName]) {
+        if (
+          material &&
+          material["extensions"] &&
+          material["extensions"][extensionName]
+        ) {
           return true;
         }
         // Also check for material extensions in incorrect locations (like pbrMetallicRoughness/extensions)
         // This prevents NON_REQUIRED_EXTENSION errors for extensions that are used but in wrong places
-        if (material && material.pbrMetallicRoughness && material.pbrMetallicRoughness['extensions'] && material.pbrMetallicRoughness['extensions'][extensionName]) {
+        if (
+          material &&
+          material.pbrMetallicRoughness &&
+          material.pbrMetallicRoughness["extensions"] &&
+          material.pbrMetallicRoughness["extensions"][extensionName]
+        ) {
           return true;
         }
         // Check texture info extensions
         if (material && material.pbrMetallicRoughness) {
-          if (material.pbrMetallicRoughness.baseColorTexture && material.pbrMetallicRoughness.baseColorTexture['extensions'] && material.pbrMetallicRoughness.baseColorTexture['extensions'][extensionName]) {
+          if (
+            material.pbrMetallicRoughness.baseColorTexture &&
+            material.pbrMetallicRoughness.baseColorTexture["extensions"] &&
+            material.pbrMetallicRoughness.baseColorTexture["extensions"][
+              extensionName
+            ]
+          ) {
             return true;
           }
-          if (material.pbrMetallicRoughness.metallicRoughnessTexture && material.pbrMetallicRoughness.metallicRoughnessTexture['extensions'] && material.pbrMetallicRoughness.metallicRoughnessTexture['extensions'][extensionName]) {
+          if (
+            material.pbrMetallicRoughness.metallicRoughnessTexture &&
+            material.pbrMetallicRoughness.metallicRoughnessTexture[
+              "extensions"
+            ] &&
+            material.pbrMetallicRoughness.metallicRoughnessTexture[
+              "extensions"
+            ][extensionName]
+          ) {
             return true;
           }
         }
-        if (material && material.normalTexture && material.normalTexture['extensions'] && material.normalTexture['extensions'][extensionName]) {
+        if (
+          material &&
+          material.normalTexture &&
+          material.normalTexture["extensions"] &&
+          material.normalTexture["extensions"][extensionName]
+        ) {
           return true;
         }
-        if (material && material.occlusionTexture && material.occlusionTexture['extensions'] && material.occlusionTexture['extensions'][extensionName]) {
+        if (
+          material &&
+          material.occlusionTexture &&
+          material.occlusionTexture["extensions"] &&
+          material.occlusionTexture["extensions"][extensionName]
+        ) {
           return true;
         }
-        if (material && material.emissiveTexture && material.emissiveTexture['extensions'] && material.emissiveTexture['extensions'][extensionName]) {
+        if (
+          material &&
+          material.emissiveTexture &&
+          material.emissiveTexture["extensions"] &&
+          material.emissiveTexture["extensions"][extensionName]
+        ) {
           return true;
         }
       }
@@ -1144,7 +1464,11 @@ export class GLTFValidator {
     // Check if extension is used in textures
     if (gltf.textures) {
       for (const texture of gltf.textures) {
-        if (texture && texture['extensions'] && texture['extensions'][extensionName]) {
+        if (
+          texture &&
+          texture["extensions"] &&
+          texture["extensions"][extensionName]
+        ) {
           return true;
         }
       }
@@ -1153,7 +1477,11 @@ export class GLTFValidator {
     // Check if extension is used in samplers (check all samplers, regardless of whether extension is allowed)
     if (gltf.samplers) {
       for (const sampler of gltf.samplers) {
-        if (sampler && sampler['extensions'] && sampler['extensions'][extensionName]) {
+        if (
+          sampler &&
+          sampler["extensions"] &&
+          sampler["extensions"][extensionName]
+        ) {
           return true;
         }
       }
@@ -1162,7 +1490,7 @@ export class GLTFValidator {
     // Check if extension is used in nodes
     if (gltf.nodes) {
       for (const node of gltf.nodes) {
-        if (node && node['extensions'] && node['extensions'][extensionName]) {
+        if (node && node["extensions"] && node["extensions"][extensionName]) {
           return true;
         }
       }
@@ -1171,12 +1499,16 @@ export class GLTFValidator {
     // Check if extension is used in meshes
     if (gltf.meshes) {
       for (const mesh of gltf.meshes) {
-        if (mesh && mesh['extensions'] && mesh['extensions'][extensionName]) {
+        if (mesh && mesh["extensions"] && mesh["extensions"][extensionName]) {
           return true;
         }
         if (mesh && mesh.primitives) {
           for (const primitive of mesh.primitives) {
-            if (primitive && primitive['extensions'] && primitive['extensions'][extensionName]) {
+            if (
+              primitive &&
+              primitive["extensions"] &&
+              primitive["extensions"][extensionName]
+            ) {
               return true;
             }
           }
@@ -1187,15 +1519,28 @@ export class GLTFValidator {
     // Check if extension is used in animations
     if (gltf.animations) {
       for (const animation of gltf.animations) {
-        if (animation && animation['extensions'] && animation['extensions'][extensionName]) {
+        if (
+          animation &&
+          animation["extensions"] &&
+          animation["extensions"][extensionName]
+        ) {
           return true;
         }
         if (animation && animation.channels) {
           for (const channel of animation.channels) {
-            if (channel && channel['extensions'] && channel['extensions'][extensionName]) {
+            if (
+              channel &&
+              channel["extensions"] &&
+              channel["extensions"][extensionName]
+            ) {
               return true;
             }
-            if (channel && channel.target && channel.target['extensions'] && channel.target['extensions'][extensionName]) {
+            if (
+              channel &&
+              channel.target &&
+              channel.target["extensions"] &&
+              channel.target["extensions"][extensionName]
+            ) {
               return true;
             }
           }
@@ -1206,7 +1551,11 @@ export class GLTFValidator {
     // Check if extension is used in cameras
     if (gltf.cameras) {
       for (const camera of gltf.cameras) {
-        if (camera && camera['extensions'] && camera['extensions'][extensionName]) {
+        if (
+          camera &&
+          camera["extensions"] &&
+          camera["extensions"][extensionName]
+        ) {
           return true;
         }
       }
@@ -1215,7 +1564,11 @@ export class GLTFValidator {
     // Check if extension is used in scenes
     if (gltf.scenes) {
       for (const scene of gltf.scenes) {
-        if (scene && scene['extensions'] && scene['extensions'][extensionName]) {
+        if (
+          scene &&
+          scene["extensions"] &&
+          scene["extensions"][extensionName]
+        ) {
           return true;
         }
       }
@@ -1224,7 +1577,11 @@ export class GLTFValidator {
     // Check if extension is used in accessors (check all accessors, regardless of whether extension is allowed)
     if (gltf.accessors) {
       for (const accessor of gltf.accessors) {
-        if (accessor && accessor['extensions'] && accessor['extensions'][extensionName]) {
+        if (
+          accessor &&
+          accessor["extensions"] &&
+          accessor["extensions"][extensionName]
+        ) {
           return true;
         }
       }
@@ -1233,26 +1590,30 @@ export class GLTFValidator {
     // Check if extension is used in images
     if (gltf.images) {
       for (const image of gltf.images) {
-        if (image && image['extensions'] && image['extensions'][extensionName]) {
+        if (
+          image &&
+          image["extensions"] &&
+          image["extensions"][extensionName]
+        ) {
           return true;
         }
       }
     }
 
     // Special case for EXT_texture_webp: if there are WebP images, the extension is considered used
-    if (extensionName === 'EXT_texture_webp' && gltf.images) {
+    if (extensionName === "EXT_texture_webp" && gltf.images) {
       for (const image of gltf.images) {
         if (image) {
           // Check for WebP MIME type
-          if (image.mimeType === 'image/webp') {
+          if (image.mimeType === "image/webp") {
             return true;
           }
           // Check for WebP data URI
-          if (image.uri && image.uri.startsWith('data:image/webp')) {
+          if (image.uri && image.uri.startsWith("data:image/webp")) {
             return true;
           }
           // Check for WebP file extension in URI
-          if (image.uri && image.uri.toLowerCase().endsWith('.webp')) {
+          if (image.uri && image.uri.toLowerCase().endsWith(".webp")) {
             return true;
           }
         }
@@ -1261,7 +1622,6 @@ export class GLTFValidator {
 
     return false;
   }
-
 
   private addMessage(message: ValidationMessage): void {
     // Apply severity overrides
@@ -1278,20 +1638,23 @@ export class GLTFValidator {
 
     // Apply onlyIssues filter
     if (this.options.onlyIssues.length > 0) {
-      filteredMessages = filteredMessages.filter(message =>
-        this.options.onlyIssues.includes(message.code)
+      filteredMessages = filteredMessages.filter((message) =>
+        this.options.onlyIssues.includes(message.code),
       );
     }
 
     // Apply ignoredIssues filter
     if (this.options.ignoredIssues.length > 0) {
-      filteredMessages = filteredMessages.filter(message =>
-        !this.options.ignoredIssues.includes(message.code)
+      filteredMessages = filteredMessages.filter(
+        (message) => !this.options.ignoredIssues.includes(message.code),
       );
     }
 
     // Apply maxIssues limit
-    if (this.options.maxIssues > 0 && filteredMessages.length > this.options.maxIssues) {
+    if (
+      this.options.maxIssues > 0 &&
+      filteredMessages.length > this.options.maxIssues
+    ) {
       filteredMessages = filteredMessages.slice(0, this.options.maxIssues);
     }
 
@@ -1305,7 +1668,7 @@ export class GLTFValidator {
       numInfos: 0,
       numHints: 0,
       messages: [],
-      truncated: false
+      truncated: false,
     };
 
     for (const message of this.messages) {
@@ -1333,124 +1696,239 @@ export class GLTFValidator {
     // Sort messages to match expected test order
     this.messages.sort((a, b) => {
       // Special ordering for extensions: UNSUPPORTED_EXTENSION before TYPE_MISMATCH
-      if (a.code === 'UNSUPPORTED_EXTENSION' && b.code === 'TYPE_MISMATCH' &&
-          a.pointer?.startsWith('/extensionsUsed/') && b.pointer?.startsWith('/extensions/')) {
+      if (
+        a.code === "UNSUPPORTED_EXTENSION" &&
+        b.code === "TYPE_MISMATCH" &&
+        a.pointer?.startsWith("/extensionsUsed/") &&
+        b.pointer?.startsWith("/extensions/")
+      ) {
         return -1;
       }
-      if (a.code === 'TYPE_MISMATCH' && b.code === 'UNSUPPORTED_EXTENSION' &&
-          a.pointer?.startsWith('/extensions/') && b.pointer?.startsWith('/extensionsUsed/')) {
+      if (
+        a.code === "TYPE_MISMATCH" &&
+        b.code === "UNSUPPORTED_EXTENSION" &&
+        a.pointer?.startsWith("/extensions/") &&
+        b.pointer?.startsWith("/extensionsUsed/")
+      ) {
         return 1;
       }
 
       // Special ordering: UNSUPPORTED_EXTENSION before UNUSED_OBJECT
-      if (a.code === 'UNSUPPORTED_EXTENSION' && b.code === 'UNUSED_OBJECT') {
+      if (a.code === "UNSUPPORTED_EXTENSION" && b.code === "UNUSED_OBJECT") {
         return -1;
       }
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'UNSUPPORTED_EXTENSION') {
+      if (a.code === "UNUSED_OBJECT" && b.code === "UNSUPPORTED_EXTENSION") {
         return 1;
       }
 
       // Special ordering: UNSUPPORTED_EXTENSION before NODE_EMPTY
-      if (a.code === 'UNSUPPORTED_EXTENSION' && b.code === 'NODE_EMPTY') {
+      if (a.code === "UNSUPPORTED_EXTENSION" && b.code === "NODE_EMPTY") {
         return -1;
       }
-      if (a.code === 'NODE_EMPTY' && b.code === 'UNSUPPORTED_EXTENSION') {
+      if (a.code === "NODE_EMPTY" && b.code === "UNSUPPORTED_EXTENSION") {
         return 1;
       }
 
       // Special ordering for buffer GLB padding: UNUSED_OBJECT before BUFFER_GLB_CHUNK_TOO_BIG
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'BUFFER_GLB_CHUNK_TOO_BIG' && a.pointer === b.pointer) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "BUFFER_GLB_CHUNK_TOO_BIG" &&
+        a.pointer === b.pointer
+      ) {
         return -1;
       }
-      if (a.code === 'BUFFER_GLB_CHUNK_TOO_BIG' && b.code === 'UNUSED_OBJECT' && a.pointer === b.pointer) {
+      if (
+        a.code === "BUFFER_GLB_CHUNK_TOO_BIG" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer === b.pointer
+      ) {
         return 1;
       }
 
       // Special ordering for image validation: UNUSED_OBJECT before IMAGE_UNRECOGNIZED_FORMAT
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'IMAGE_UNRECOGNIZED_FORMAT' && a.pointer === b.pointer) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "IMAGE_UNRECOGNIZED_FORMAT" &&
+        a.pointer === b.pointer
+      ) {
         return -1;
       }
-      if (a.code === 'IMAGE_UNRECOGNIZED_FORMAT' && b.code === 'UNUSED_OBJECT' && a.pointer === b.pointer) {
+      if (
+        a.code === "IMAGE_UNRECOGNIZED_FORMAT" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer === b.pointer
+      ) {
         return 1;
       }
       // Special ordering for image validation: UNUSED_OBJECT before IMAGE_DATA_INVALID
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'IMAGE_DATA_INVALID' && a.pointer === b.pointer) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "IMAGE_DATA_INVALID" &&
+        a.pointer === b.pointer
+      ) {
         return -1;
       }
-      if (a.code === 'IMAGE_DATA_INVALID' && b.code === 'UNUSED_OBJECT' && a.pointer === b.pointer) {
+      if (
+        a.code === "IMAGE_DATA_INVALID" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer === b.pointer
+      ) {
         return 1;
       }
       // Special ordering for image validation: UNUSED_OBJECT before IMAGE_UNEXPECTED_EOS
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'IMAGE_UNEXPECTED_EOS' && a.pointer === b.pointer) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "IMAGE_UNEXPECTED_EOS" &&
+        a.pointer === b.pointer
+      ) {
         return -1;
       }
-      if (a.code === 'IMAGE_UNEXPECTED_EOS' && b.code === 'UNUSED_OBJECT' && a.pointer === b.pointer) {
+      if (
+        a.code === "IMAGE_UNEXPECTED_EOS" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer === b.pointer
+      ) {
         return 1;
       }
       // Special ordering for mesh validation: UNUSED_OBJECT before ACCESSOR_INDEX_OOB
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'ACCESSOR_INDEX_OOB' &&
-          a.pointer && b.pointer && b.pointer.startsWith(a.pointer + '/')) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "ACCESSOR_INDEX_OOB" &&
+        a.pointer &&
+        b.pointer &&
+        b.pointer.startsWith(a.pointer + "/")
+      ) {
         return -1;
       }
-      if (a.code === 'ACCESSOR_INDEX_OOB' && b.code === 'UNUSED_OBJECT' &&
-          a.pointer && b.pointer && a.pointer.startsWith(b.pointer + '/')) {
+      if (
+        a.code === "ACCESSOR_INDEX_OOB" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer &&
+        b.pointer &&
+        a.pointer.startsWith(b.pointer + "/")
+      ) {
         return 1;
       }
       // Special ordering for mesh validation: UNUSED_OBJECT before ACCESSOR_INDEX_PRIMITIVE_RESTART
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'ACCESSOR_INDEX_PRIMITIVE_RESTART' &&
-          a.pointer && b.pointer && b.pointer.startsWith(a.pointer + '/')) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "ACCESSOR_INDEX_PRIMITIVE_RESTART" &&
+        a.pointer &&
+        b.pointer &&
+        b.pointer.startsWith(a.pointer + "/")
+      ) {
         return -1;
       }
-      if (a.code === 'ACCESSOR_INDEX_PRIMITIVE_RESTART' && b.code === 'UNUSED_OBJECT' &&
-          a.pointer && b.pointer && a.pointer.startsWith(b.pointer + '/')) {
+      if (
+        a.code === "ACCESSOR_INDEX_PRIMITIVE_RESTART" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer &&
+        b.pointer &&
+        a.pointer.startsWith(b.pointer + "/")
+      ) {
         return 1;
       }
       // Special ordering for mesh validation: UNUSED_OBJECT before ACCESSOR_NON_CLAMPED
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'ACCESSOR_NON_CLAMPED' &&
-          a.pointer && b.pointer && b.pointer.startsWith(a.pointer + '/')) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "ACCESSOR_NON_CLAMPED" &&
+        a.pointer &&
+        b.pointer &&
+        b.pointer.startsWith(a.pointer + "/")
+      ) {
         return -1;
       }
-      if (a.code === 'ACCESSOR_NON_CLAMPED' && b.code === 'UNUSED_OBJECT' &&
-          a.pointer && b.pointer && a.pointer.startsWith(b.pointer + '/')) {
+      if (
+        a.code === "ACCESSOR_NON_CLAMPED" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer &&
+        b.pointer &&
+        a.pointer.startsWith(b.pointer + "/")
+      ) {
         return 1;
       }
       // Special ordering for joints_weights_complex test: UNUSED_OBJECT before ACCESSOR_JOINTS and ACCESSOR_WEIGHTS messages
-      if (a.code === 'UNUSED_OBJECT' && (b.code === 'ACCESSOR_JOINTS_INDEX_OOB' || b.code === 'ACCESSOR_JOINTS_USED_ZERO_WEIGHT' || b.code === 'ACCESSOR_WEIGHTS_NEGATIVE' || b.code === 'ACCESSOR_WEIGHTS_NON_NORMALIZED')) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        (b.code === "ACCESSOR_JOINTS_INDEX_OOB" ||
+          b.code === "ACCESSOR_JOINTS_USED_ZERO_WEIGHT" ||
+          b.code === "ACCESSOR_WEIGHTS_NEGATIVE" ||
+          b.code === "ACCESSOR_WEIGHTS_NON_NORMALIZED")
+      ) {
         return -1;
       }
-      if ((a.code === 'ACCESSOR_JOINTS_INDEX_OOB' || a.code === 'ACCESSOR_JOINTS_USED_ZERO_WEIGHT' || a.code === 'ACCESSOR_WEIGHTS_NEGATIVE' || a.code === 'ACCESSOR_WEIGHTS_NON_NORMALIZED') && b.code === 'UNUSED_OBJECT') {
+      if (
+        (a.code === "ACCESSOR_JOINTS_INDEX_OOB" ||
+          a.code === "ACCESSOR_JOINTS_USED_ZERO_WEIGHT" ||
+          a.code === "ACCESSOR_WEIGHTS_NEGATIVE" ||
+          a.code === "ACCESSOR_WEIGHTS_NON_NORMALIZED") &&
+        b.code === "UNUSED_OBJECT"
+      ) {
         return 1;
       }
       // Special ordering for mesh validation: UNUSED_OBJECT before ACCESSOR_INDEX_TRIANGLE_DEGENERATE
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'ACCESSOR_INDEX_TRIANGLE_DEGENERATE' &&
-          a.pointer && b.pointer && b.pointer.startsWith(a.pointer + '/')) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "ACCESSOR_INDEX_TRIANGLE_DEGENERATE" &&
+        a.pointer &&
+        b.pointer &&
+        b.pointer.startsWith(a.pointer + "/")
+      ) {
         return -1;
       }
-      if (a.code === 'ACCESSOR_INDEX_TRIANGLE_DEGENERATE' && b.code === 'UNUSED_OBJECT' &&
-          a.pointer && b.pointer && a.pointer.startsWith(b.pointer + '/')) {
+      if (
+        a.code === "ACCESSOR_INDEX_TRIANGLE_DEGENERATE" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer &&
+        b.pointer &&
+        a.pointer.startsWith(b.pointer + "/")
+      ) {
         return 1;
       }
       // Special ordering for mesh validation: MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT before UNUSED_OBJECT
-      if (a.code === 'MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT' && b.code === 'UNUSED_OBJECT' &&
-          a.pointer && b.pointer && a.pointer.startsWith(b.pointer + '/')) {
+      if (
+        a.code === "MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer &&
+        b.pointer &&
+        a.pointer.startsWith(b.pointer + "/")
+      ) {
         return -1;
       }
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT' &&
-          a.pointer && b.pointer && b.pointer.startsWith(a.pointer + '/')) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT" &&
+        a.pointer &&
+        b.pointer &&
+        b.pointer.startsWith(a.pointer + "/")
+      ) {
         return 1;
       }
 
       // Special ordering for image validation: UNUSED_OBJECT before IMAGE_MIME_TYPE_INVALID
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'IMAGE_MIME_TYPE_INVALID' &&
-          a.pointer && b.pointer && b.pointer.startsWith(a.pointer + '/')) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "IMAGE_MIME_TYPE_INVALID" &&
+        a.pointer &&
+        b.pointer &&
+        b.pointer.startsWith(a.pointer + "/")
+      ) {
         return -1;
       }
-      if (a.code === 'IMAGE_MIME_TYPE_INVALID' && b.code === 'UNUSED_OBJECT' &&
-          b.pointer && a.pointer && a.pointer.startsWith(b.pointer + '/')) {
+      if (
+        a.code === "IMAGE_MIME_TYPE_INVALID" &&
+        b.code === "UNUSED_OBJECT" &&
+        b.pointer &&
+        a.pointer &&
+        a.pointer.startsWith(b.pointer + "/")
+      ) {
         return 1;
       }
       // Special ordering for texture validation: UNUSED_OBJECT before TEXTURE_INVALID_IMAGE_MIME_TYPE
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'TEXTURE_INVALID_IMAGE_MIME_TYPE') {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "TEXTURE_INVALID_IMAGE_MIME_TYPE"
+      ) {
         // Check if both relate to the same texture object
         const aTexture = a.pointer?.match(/\/textures\/(\d+)$/);
         const bTexture = b.pointer?.match(/\/textures\/(\d+)\//);
@@ -1458,7 +1936,10 @@ export class GLTFValidator {
           return -1;
         }
       }
-      if (a.code === 'TEXTURE_INVALID_IMAGE_MIME_TYPE' && b.code === 'UNUSED_OBJECT') {
+      if (
+        a.code === "TEXTURE_INVALID_IMAGE_MIME_TYPE" &&
+        b.code === "UNUSED_OBJECT"
+      ) {
         // Check if both relate to the same texture object
         const aTexture = a.pointer?.match(/\/textures\/(\d+)\//);
         const bTexture = b.pointer?.match(/\/textures\/(\d+)$/);
@@ -1467,22 +1948,22 @@ export class GLTFValidator {
         }
       }
       // General rule: UNUSED_OBJECT comes before IMAGE_MIME_TYPE_INVALID when they don't share parent-child relationship
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'IMAGE_MIME_TYPE_INVALID') {
+      if (a.code === "UNUSED_OBJECT" && b.code === "IMAGE_MIME_TYPE_INVALID") {
         return -1;
       }
-      if (a.code === 'IMAGE_MIME_TYPE_INVALID' && b.code === 'UNUSED_OBJECT') {
+      if (a.code === "IMAGE_MIME_TYPE_INVALID" && b.code === "UNUSED_OBJECT") {
         return 1;
       }
       // Special ordering: EXTRA_PROPERTY comes before UNUSED_OBJECT for the same object
-      if (a.code === 'EXTRA_PROPERTY' && b.code === 'UNUSED_OBJECT') {
-        const aBase = a.pointer?.replace(/\/[^/]+$/, ''); // Remove last segment
+      if (a.code === "EXTRA_PROPERTY" && b.code === "UNUSED_OBJECT") {
+        const aBase = a.pointer?.replace(/\/[^/]+$/, ""); // Remove last segment
         const bPointer = b.pointer;
         if (aBase === bPointer) {
           return -1;
         }
       }
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'EXTRA_PROPERTY') {
-        const bBase = b.pointer?.replace(/\/[^/]+$/, ''); // Remove last segment
+      if (a.code === "UNUSED_OBJECT" && b.code === "EXTRA_PROPERTY") {
+        const bBase = b.pointer?.replace(/\/[^/]+$/, ""); // Remove last segment
         const aPointer = a.pointer;
         if (bBase === aPointer) {
           return 1;
@@ -1490,18 +1971,18 @@ export class GLTFValidator {
       }
       // Special ordering for animation pointer extension messages
       const extensionMessageOrder = [
-        'UNEXPECTED_EXTENSION_OBJECT',
-        'UNEXPECTED_PROPERTY',
-        'UNDEFINED_PROPERTY',
-        'PATTERN_MISMATCH',
-        'VALUE_NOT_IN_LIST',
-        'INCOMPLETE_EXTENSION_SUPPORT',
-        'KHR_ANIMATION_POINTER_ANIMATION_CHANNEL_TARGET_NODE',
-        'KHR_ANIMATION_POINTER_ANIMATION_CHANNEL_TARGET_PATH',
-        'KHR_MATERIALS_IRIDESCENCE_THICKNESS_RANGE_WITHOUT_TEXTURE',
-        'KHR_MATERIALS_IRIDESCENCE_THICKNESS_TEXTURE_UNUSED',
-        'NODE_EMPTY',
-        'UNUSED_OBJECT'
+        "UNEXPECTED_EXTENSION_OBJECT",
+        "UNEXPECTED_PROPERTY",
+        "UNDEFINED_PROPERTY",
+        "PATTERN_MISMATCH",
+        "VALUE_NOT_IN_LIST",
+        "INCOMPLETE_EXTENSION_SUPPORT",
+        "KHR_ANIMATION_POINTER_ANIMATION_CHANNEL_TARGET_NODE",
+        "KHR_ANIMATION_POINTER_ANIMATION_CHANNEL_TARGET_PATH",
+        "KHR_MATERIALS_IRIDESCENCE_THICKNESS_RANGE_WITHOUT_TEXTURE",
+        "KHR_MATERIALS_IRIDESCENCE_THICKNESS_TEXTURE_UNUSED",
+        "NODE_EMPTY",
+        "UNUSED_OBJECT",
       ];
       const aIndex = extensionMessageOrder.indexOf(a.code);
       const bIndex = extensionMessageOrder.indexOf(b.code);
@@ -1510,83 +1991,147 @@ export class GLTFValidator {
       }
 
       // Special ordering for image validation: UNUSED_OBJECT before IMAGE_NPOT_DIMENSIONS
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'IMAGE_NPOT_DIMENSIONS' && a.pointer === b.pointer) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code === "IMAGE_NPOT_DIMENSIONS" &&
+        a.pointer === b.pointer
+      ) {
         return -1;
       }
-      if (a.code === 'IMAGE_NPOT_DIMENSIONS' && b.code === 'UNUSED_OBJECT' && a.pointer === b.pointer) {
+      if (
+        a.code === "IMAGE_NPOT_DIMENSIONS" &&
+        b.code === "UNUSED_OBJECT" &&
+        a.pointer === b.pointer
+      ) {
         return 1;
       }
 
-
       // Special ordering for mesh validation: MESH_PRIMITIVE_INVALID_ATTRIBUTE before MESH_PRIMITIVE_MORPH_TARGET_NO_BASE_ACCESSOR (general rule)
-      if (a.code === 'MESH_PRIMITIVE_INVALID_ATTRIBUTE' && b.code === 'MESH_PRIMITIVE_MORPH_TARGET_NO_BASE_ACCESSOR') {
+      if (
+        a.code === "MESH_PRIMITIVE_INVALID_ATTRIBUTE" &&
+        b.code === "MESH_PRIMITIVE_MORPH_TARGET_NO_BASE_ACCESSOR"
+      ) {
         return -1;
       }
-      if (a.code === 'MESH_PRIMITIVE_MORPH_TARGET_NO_BASE_ACCESSOR' && b.code === 'MESH_PRIMITIVE_INVALID_ATTRIBUTE') {
+      if (
+        a.code === "MESH_PRIMITIVE_MORPH_TARGET_NO_BASE_ACCESSOR" &&
+        b.code === "MESH_PRIMITIVE_INVALID_ATTRIBUTE"
+      ) {
         return 1;
       }
 
       // Special ordering for mesh validation: MESH_PRIMITIVE_TANGENT_WITHOUT_NORMAL before MESH_PRIMITIVE_GENERATED_TANGENT_SPACE
-      if (a.code === 'MESH_PRIMITIVE_TANGENT_WITHOUT_NORMAL' && b.code === 'MESH_PRIMITIVE_GENERATED_TANGENT_SPACE') {
+      if (
+        a.code === "MESH_PRIMITIVE_TANGENT_WITHOUT_NORMAL" &&
+        b.code === "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+      ) {
         return -1;
       }
-      if (a.code === 'MESH_PRIMITIVE_GENERATED_TANGENT_SPACE' && b.code === 'MESH_PRIMITIVE_TANGENT_WITHOUT_NORMAL') {
+      if (
+        a.code === "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE" &&
+        b.code === "MESH_PRIMITIVE_TANGENT_WITHOUT_NORMAL"
+      ) {
         return 1;
       }
 
       // Special ordering: UNUSED_OBJECT before ACCESSOR validation messages (only for mesh-specific cases)
-      if (a.code === 'UNUSED_OBJECT' && b.code?.startsWith('ACCESSOR_') &&
-          (b.code === 'ACCESSOR_VECTOR3_NON_UNIT' || b.code === 'ACCESSOR_INVALID_SIGN')) {
+      if (
+        a.code === "UNUSED_OBJECT" &&
+        b.code?.startsWith("ACCESSOR_") &&
+        (b.code === "ACCESSOR_VECTOR3_NON_UNIT" ||
+          b.code === "ACCESSOR_INVALID_SIGN")
+      ) {
         return -1;
       }
-      if ((a.code === 'ACCESSOR_VECTOR3_NON_UNIT' || a.code === 'ACCESSOR_INVALID_SIGN') && b.code === 'UNUSED_OBJECT') {
+      if (
+        (a.code === "ACCESSOR_VECTOR3_NON_UNIT" ||
+          a.code === "ACCESSOR_INVALID_SIGN") &&
+        b.code === "UNUSED_OBJECT"
+      ) {
         return 1;
       }
 
       // Special ordering: NODE_PARENT_OVERRIDE before SCENE_NON_ROOT_NODE
-      if (a.code === 'NODE_PARENT_OVERRIDE' && b.code === 'SCENE_NON_ROOT_NODE') {
+      if (
+        a.code === "NODE_PARENT_OVERRIDE" &&
+        b.code === "SCENE_NON_ROOT_NODE"
+      ) {
         return -1;
       }
-      if (a.code === 'SCENE_NON_ROOT_NODE' && b.code === 'NODE_PARENT_OVERRIDE') {
+      if (
+        a.code === "SCENE_NON_ROOT_NODE" &&
+        b.code === "NODE_PARENT_OVERRIDE"
+      ) {
         return 1;
       }
 
       // Special ordering for GLB buffer URI messages: URI_GLB before INVALID_URI
-      if (a.code === 'URI_GLB' && b.code === 'INVALID_URI' && a.pointer === b.pointer) {
+      if (
+        a.code === "URI_GLB" &&
+        b.code === "INVALID_URI" &&
+        a.pointer === b.pointer
+      ) {
         return -1;
       }
-      if (a.code === 'INVALID_URI' && b.code === 'URI_GLB' && a.pointer === b.pointer) {
+      if (
+        a.code === "INVALID_URI" &&
+        b.code === "URI_GLB" &&
+        a.pointer === b.pointer
+      ) {
         return 1;
       }
 
       // Special ordering for GLB buffer URI messages: URI_GLB before DATA_URI_GLB
-      if (a.code === 'URI_GLB' && b.code === 'DATA_URI_GLB' && a.pointer === b.pointer) {
+      if (
+        a.code === "URI_GLB" &&
+        b.code === "DATA_URI_GLB" &&
+        a.pointer === b.pointer
+      ) {
         return -1;
       }
-      if (a.code === 'DATA_URI_GLB' && b.code === 'URI_GLB' && a.pointer === b.pointer) {
+      if (
+        a.code === "DATA_URI_GLB" &&
+        b.code === "URI_GLB" &&
+        a.pointer === b.pointer
+      ) {
         return 1;
       }
 
       // Special ordering for matrix alignment tests: ACCESSOR_MATRIX_ALIGNMENT before ACCESSOR_TOO_LONG
-      if (a.code === 'ACCESSOR_MATRIX_ALIGNMENT' && b.code === 'ACCESSOR_TOO_LONG') {
+      if (
+        a.code === "ACCESSOR_MATRIX_ALIGNMENT" &&
+        b.code === "ACCESSOR_TOO_LONG"
+      ) {
         return -1;
       }
-      if (a.code === 'ACCESSOR_TOO_LONG' && b.code === 'ACCESSOR_MATRIX_ALIGNMENT') {
+      if (
+        a.code === "ACCESSOR_TOO_LONG" &&
+        b.code === "ACCESSOR_MATRIX_ALIGNMENT"
+      ) {
         return 1;
       }
 
       // Special case for accessor_data tests: UNUSED_OBJECT comes first even before ERROR severity messages
-      const aIsUnused = a.code === 'UNUSED_OBJECT';
-      const bIsUnused = b.code === 'UNUSED_OBJECT';
+      const aIsUnused = a.code === "UNUSED_OBJECT";
+      const bIsUnused = b.code === "UNUSED_OBJECT";
 
       // For accessor_data tests ONLY: UNUSED_OBJECT should come before any ACCESSOR_ messages
       // Only apply this special ordering for ACCESSOR_INVALID_FLOAT, ACCESSOR_MIN_MISMATCH, etc.
-      const accessorDataCodes = ['ACCESSOR_INVALID_FLOAT', 'ACCESSOR_MIN_MISMATCH', 'ACCESSOR_MAX_MISMATCH', 'ACCESSOR_ELEMENT_OUT_OF_MIN_BOUND', 'ACCESSOR_ELEMENT_OUT_OF_MAX_BOUND', 'ACCESSOR_INVALID_IBM'];
+      const accessorDataCodes = [
+        "ACCESSOR_INVALID_FLOAT",
+        "ACCESSOR_MIN_MISMATCH",
+        "ACCESSOR_MAX_MISMATCH",
+        "ACCESSOR_ELEMENT_OUT_OF_MIN_BOUND",
+        "ACCESSOR_ELEMENT_OUT_OF_MAX_BOUND",
+        "ACCESSOR_INVALID_IBM",
+      ];
       if (aIsUnused && accessorDataCodes.includes(b.code)) {
         // Special case for IBM: skin-level UNUSED_OBJECT should come before skin-level ACCESSOR_INVALID_IBM
-        if (b.code === 'ACCESSOR_INVALID_IBM') {
+        if (b.code === "ACCESSOR_INVALID_IBM") {
           const aSkinMatch = a.pointer.match(/\/skins\/(\d+)$/);
-          const bSkinMatch = b.pointer.match(/\/skins\/(\d+)\/inverseBindMatrices$/);
+          const bSkinMatch = b.pointer.match(
+            /\/skins\/(\d+)\/inverseBindMatrices$/,
+          );
           if (aSkinMatch && bSkinMatch && aSkinMatch[1] === bSkinMatch[1]) {
             return -1; // UNUSED_OBJECT comes first for same skin in IBM tests
           }
@@ -1594,14 +2139,20 @@ export class GLTFValidator {
 
         const aAccessorMatch = a.pointer.match(/\/accessors\/(\d+)$/);
         const bAccessorMatch = b.pointer.match(/\/accessors\/(\d+)/);
-        if (aAccessorMatch && bAccessorMatch && aAccessorMatch[1] === bAccessorMatch[1]) {
+        if (
+          aAccessorMatch &&
+          bAccessorMatch &&
+          aAccessorMatch[1] === bAccessorMatch[1]
+        ) {
           return -1; // UNUSED_OBJECT comes first for same accessor in accessor_data tests
         }
       }
       if (bIsUnused && accessorDataCodes.includes(a.code)) {
         // Special case for IBM: skin-level ACCESSOR_INVALID_IBM should come after skin-level UNUSED_OBJECT
-        if (a.code === 'ACCESSOR_INVALID_IBM') {
-          const aSkinMatch = a.pointer.match(/\/skins\/(\d+)\/inverseBindMatrices$/);
+        if (a.code === "ACCESSOR_INVALID_IBM") {
+          const aSkinMatch = a.pointer.match(
+            /\/skins\/(\d+)\/inverseBindMatrices$/,
+          );
           const bSkinMatch = b.pointer.match(/\/skins\/(\d+)$/);
           if (aSkinMatch && bSkinMatch && aSkinMatch[1] === bSkinMatch[1]) {
             return 1; // ACCESSOR_INVALID_IBM comes after UNUSED_OBJECT for same skin
@@ -1610,39 +2161,52 @@ export class GLTFValidator {
 
         const aAccessorMatch = a.pointer.match(/\/accessors\/(\d+)/);
         const bAccessorMatch = b.pointer.match(/\/accessors\/(\d+)$/);
-        if (aAccessorMatch && bAccessorMatch && aAccessorMatch[1] === bAccessorMatch[1]) {
+        if (
+          aAccessorMatch &&
+          bAccessorMatch &&
+          aAccessorMatch[1] === bAccessorMatch[1]
+        ) {
           return 1; // UNUSED_OBJECT comes first for same accessor in accessor_data tests
         }
       }
 
       // UNRESOLVED_REFERENCE should come before UNUSED_OBJECT (for animation tests)
-      if (a.code === 'UNRESOLVED_REFERENCE' && b.code === 'UNUSED_OBJECT') {
+      if (a.code === "UNRESOLVED_REFERENCE" && b.code === "UNUSED_OBJECT") {
         return -1; // UNRESOLVED_REFERENCE comes first
       }
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'UNRESOLVED_REFERENCE') {
+      if (a.code === "UNUSED_OBJECT" && b.code === "UNRESOLVED_REFERENCE") {
         return 1; // UNRESOLVED_REFERENCE comes first
       }
 
       // UNDEFINED_PROPERTY should come before UNUSED_OBJECT in general
-      if (a.code === 'UNDEFINED_PROPERTY' && b.code === 'UNUSED_OBJECT') {
+      if (a.code === "UNDEFINED_PROPERTY" && b.code === "UNUSED_OBJECT") {
         return -1; // UNDEFINED_PROPERTY comes first
       }
-      if (a.code === 'UNUSED_OBJECT' && b.code === 'UNDEFINED_PROPERTY') {
+      if (a.code === "UNUSED_OBJECT" && b.code === "UNDEFINED_PROPERTY") {
         return 1; // UNDEFINED_PROPERTY comes first
       }
 
       // Special ordering for buffer messages
-      const bufferErrorCodes = ['BUFFER_MISSING_GLB_DATA', 'BUFFER_BYTE_LENGTH_MISMATCH'];
+      const bufferErrorCodes = [
+        "BUFFER_MISSING_GLB_DATA",
+        "BUFFER_BYTE_LENGTH_MISMATCH",
+      ];
 
       // UNDEFINED_PROPERTY should come before BUFFER_BYTE_LENGTH_MISMATCH for same buffer
-      if (a.code === 'UNDEFINED_PROPERTY' && b.code === 'BUFFER_BYTE_LENGTH_MISMATCH') {
+      if (
+        a.code === "UNDEFINED_PROPERTY" &&
+        b.code === "BUFFER_BYTE_LENGTH_MISMATCH"
+      ) {
         const aBufferMatch = a.pointer.match(/\/buffers\/(\d+)$/);
         const bBufferMatch = b.pointer.match(/\/buffers\/(\d+)$/);
         if (aBufferMatch && bBufferMatch) {
           return -1; // UNDEFINED_PROPERTY comes first
         }
       }
-      if (a.code === 'BUFFER_BYTE_LENGTH_MISMATCH' && b.code === 'UNDEFINED_PROPERTY') {
+      if (
+        a.code === "BUFFER_BYTE_LENGTH_MISMATCH" &&
+        b.code === "UNDEFINED_PROPERTY"
+      ) {
         const aBufferMatch = a.pointer.match(/\/buffers\/(\d+)$/);
         const bBufferMatch = b.pointer.match(/\/buffers\/(\d+)$/);
         if (aBufferMatch && bBufferMatch) {
@@ -1667,10 +2231,10 @@ export class GLTFValidator {
       }
 
       // Special ordering for extension validation: UNEXPECTED_EXTENSION_OBJECT before NODE_EMPTY (across different severities)
-      if (a.code === 'UNEXPECTED_EXTENSION_OBJECT' && b.code === 'NODE_EMPTY') {
+      if (a.code === "UNEXPECTED_EXTENSION_OBJECT" && b.code === "NODE_EMPTY") {
         return -1;
       }
-      if (a.code === 'NODE_EMPTY' && b.code === 'UNEXPECTED_EXTENSION_OBJECT') {
+      if (a.code === "NODE_EMPTY" && b.code === "UNEXPECTED_EXTENSION_OBJECT") {
         return 1;
       }
 
@@ -1681,93 +2245,129 @@ export class GLTFValidator {
       if (a.severity !== b.severity) {
         // Special case: if one is animation-related and they have different severities,
         // follow the expected test order where warnings come first
-        const aIsAnim = a.pointer && a.pointer.startsWith('/animations/');
-        const bIsAnim = b.pointer && b.pointer.startsWith('/animations/');
+        const aIsAnim = a.pointer && a.pointer.startsWith("/animations/");
+        const bIsAnim = b.pointer && b.pointer.startsWith("/animations/");
         if (aIsAnim || bIsAnim) {
           // For animations: warnings (1) before errors (0) - reverse normal order
           return b.severity - a.severity;
         }
 
         // Special case: for images, handle specific ordering rules first
-        const aIsImage = a.pointer && a.pointer.startsWith('/images/');
-        const bIsImage = b.pointer && b.pointer.startsWith('/images/');
+        const aIsImage = a.pointer && a.pointer.startsWith("/images/");
+        const bIsImage = b.pointer && b.pointer.startsWith("/images/");
         if (aIsImage && bIsImage) {
           // VALUE_NOT_IN_LIST should come before all other image messages
-          if (a.code === 'VALUE_NOT_IN_LIST' && b.code !== 'VALUE_NOT_IN_LIST') {
+          if (
+            a.code === "VALUE_NOT_IN_LIST" &&
+            b.code !== "VALUE_NOT_IN_LIST"
+          ) {
             return -1;
           }
-          if (a.code !== 'VALUE_NOT_IN_LIST' && b.code === 'VALUE_NOT_IN_LIST') {
+          if (
+            a.code !== "VALUE_NOT_IN_LIST" &&
+            b.code === "VALUE_NOT_IN_LIST"
+          ) {
             return 1;
           }
 
           // UNUSED_OBJECT should come before IMAGE_NON_ENABLED_MIME_TYPE across all images
-          if (a.code === 'UNUSED_OBJECT' && b.code === 'IMAGE_NON_ENABLED_MIME_TYPE') {
+          if (
+            a.code === "UNUSED_OBJECT" &&
+            b.code === "IMAGE_NON_ENABLED_MIME_TYPE"
+          ) {
             return -1;
           }
-          if (a.code === 'IMAGE_NON_ENABLED_MIME_TYPE' && b.code === 'UNUSED_OBJECT') {
+          if (
+            a.code === "IMAGE_NON_ENABLED_MIME_TYPE" &&
+            b.code === "UNUSED_OBJECT"
+          ) {
             return 1;
           }
           const aImageMatch = a.pointer.match(/^\/images\/(\d+)(?:\/|$)/);
           const bImageMatch = b.pointer.match(/^\/images\/(\d+)(?:\/|$)/);
           if (aImageMatch && bImageMatch) {
-            const aImageIndex = parseInt(aImageMatch[1] || '0');
-            const bImageIndex = parseInt(bImageMatch[1] || '0');
+            const aImageIndex = parseInt(aImageMatch[1] || "0");
+            const bImageIndex = parseInt(bImageMatch[1] || "0");
             if (aImageIndex !== bImageIndex) {
               return aImageIndex - bImageIndex; // Sort by image index first
             }
 
             // Same image - handle specific ordering rules
             // INVALID_URI should come before UNUSED_OBJECT
-            if (a.code === 'INVALID_URI' && b.code === 'UNUSED_OBJECT') {
+            if (a.code === "INVALID_URI" && b.code === "UNUSED_OBJECT") {
               return -1;
             }
-            if (a.code === 'UNUSED_OBJECT' && b.code === 'INVALID_URI') {
+            if (a.code === "UNUSED_OBJECT" && b.code === "INVALID_URI") {
               return 1;
             }
 
             // UNUSED_OBJECT should come before IMAGE_MIME_TYPE_INVALID
-            if (a.code === 'UNUSED_OBJECT' && b.code === 'IMAGE_MIME_TYPE_INVALID') {
+            if (
+              a.code === "UNUSED_OBJECT" &&
+              b.code === "IMAGE_MIME_TYPE_INVALID"
+            ) {
               return -1;
             }
-            if (a.code === 'IMAGE_MIME_TYPE_INVALID' && b.code === 'UNUSED_OBJECT') {
+            if (
+              a.code === "IMAGE_MIME_TYPE_INVALID" &&
+              b.code === "UNUSED_OBJECT"
+            ) {
               return 1;
             }
 
             // VALUE_NOT_IN_LIST should come before IMAGE_NON_ENABLED_MIME_TYPE
-            if (a.code === 'VALUE_NOT_IN_LIST' && b.code === 'IMAGE_NON_ENABLED_MIME_TYPE') {
+            if (
+              a.code === "VALUE_NOT_IN_LIST" &&
+              b.code === "IMAGE_NON_ENABLED_MIME_TYPE"
+            ) {
               return -1;
             }
-            if (a.code === 'IMAGE_NON_ENABLED_MIME_TYPE' && b.code === 'VALUE_NOT_IN_LIST') {
+            if (
+              a.code === "IMAGE_NON_ENABLED_MIME_TYPE" &&
+              b.code === "VALUE_NOT_IN_LIST"
+            ) {
               return 1;
             }
           }
         }
 
         // Special case: for mesh primitives, sort by property hierarchy
-        const aIsMeshPrimitive = a.pointer && a.pointer.match(/^\/meshes\/\d+\/primitives\/\d+\//);
-        const bIsMeshPrimitive = b.pointer && b.pointer.match(/^\/meshes\/\d+\/primitives\/\d+\//);
+        const aIsMeshPrimitive =
+          a.pointer && a.pointer.match(/^\/meshes\/\d+\/primitives\/\d+\//);
+        const bIsMeshPrimitive =
+          b.pointer && b.pointer.match(/^\/meshes\/\d+\/primitives\/\d+\//);
         if (aIsMeshPrimitive && bIsMeshPrimitive) {
           // Extract the primitive base path to check if it's the same primitive
-          const aBasePath = a.pointer.match(/^(\/meshes\/\d+\/primitives\/\d+)/);
-          const bBasePath = b.pointer.match(/^(\/meshes\/\d+\/primitives\/\d+)/);
+          const aBasePath = a.pointer.match(
+            /^(\/meshes\/\d+\/primitives\/\d+)/,
+          );
+          const bBasePath = b.pointer.match(
+            /^(\/meshes\/\d+\/primitives\/\d+)/,
+          );
           if (aBasePath && bBasePath && aBasePath[1] === bBasePath[1]) {
             // Same primitive - sort attributes before indices
-            const aIsAttribute = a.pointer.includes('/attributes/');
-            const bIsAttribute = b.pointer.includes('/attributes/');
-            const aIsIndices = a.pointer.includes('/indices');
-            const bIsIndices = b.pointer.includes('/indices');
+            const aIsAttribute = a.pointer.includes("/attributes/");
+            const bIsAttribute = b.pointer.includes("/attributes/");
+            const aIsIndices = a.pointer.includes("/indices");
+            const bIsIndices = b.pointer.includes("/indices");
 
             if (aIsAttribute && bIsIndices) return -1; // attributes before indices
-            if (aIsIndices && bIsAttribute) return 1;  // attributes before indices
+            if (aIsIndices && bIsAttribute) return 1; // attributes before indices
           }
         }
 
         // Special case: BUFFER_VIEW_TARGET_MISSING should come before MESH_PRIMITIVE_INDICES_ACCESSOR_WITH_BYTESTRIDE for same pointer
         if (a.pointer === b.pointer) {
-          if (a.code === 'BUFFER_VIEW_TARGET_MISSING' && b.code === 'MESH_PRIMITIVE_INDICES_ACCESSOR_WITH_BYTESTRIDE') {
+          if (
+            a.code === "BUFFER_VIEW_TARGET_MISSING" &&
+            b.code === "MESH_PRIMITIVE_INDICES_ACCESSOR_WITH_BYTESTRIDE"
+          ) {
             return -1;
           }
-          if (a.code === 'MESH_PRIMITIVE_INDICES_ACCESSOR_WITH_BYTESTRIDE' && b.code === 'BUFFER_VIEW_TARGET_MISSING') {
+          if (
+            a.code === "MESH_PRIMITIVE_INDICES_ACCESSOR_WITH_BYTESTRIDE" &&
+            b.code === "BUFFER_VIEW_TARGET_MISSING"
+          ) {
             return 1;
           }
         }
@@ -1777,34 +2377,59 @@ export class GLTFValidator {
       }
 
       // For accessor messages, sort by component index within each accessor
-      const accessorCodes = ['ACCESSOR_MIN_MISMATCH', 'ACCESSOR_ELEMENT_OUT_OF_MIN_BOUND',
-                           'ACCESSOR_MAX_MISMATCH', 'ACCESSOR_ELEMENT_OUT_OF_MAX_BOUND',
-                           'ACCESSOR_INVALID_FLOAT'];
+      const accessorCodes = [
+        "ACCESSOR_MIN_MISMATCH",
+        "ACCESSOR_ELEMENT_OUT_OF_MIN_BOUND",
+        "ACCESSOR_MAX_MISMATCH",
+        "ACCESSOR_ELEMENT_OUT_OF_MAX_BOUND",
+        "ACCESSOR_INVALID_FLOAT",
+      ];
 
       const aIsAccessor = accessorCodes.includes(a.code);
       const bIsAccessor = accessorCodes.includes(b.code);
 
       if (aIsAccessor && bIsAccessor) {
         // Handle ACCESSOR_INVALID_FLOAT separately (different pointer format)
-        if (a.code === 'ACCESSOR_INVALID_FLOAT' || b.code === 'ACCESSOR_INVALID_FLOAT') {
+        if (
+          a.code === "ACCESSOR_INVALID_FLOAT" ||
+          b.code === "ACCESSOR_INVALID_FLOAT"
+        ) {
           // Extract accessor index for invalid float messages
           const aAccessorMatch = a.pointer.match(/\/accessors\/(\d+)$/);
           const bAccessorMatch = b.pointer.match(/\/accessors\/(\d+)$/);
-          const aMinMaxMatch = a.pointer.match(/\/accessors\/(\d+)\/(min|max)\/(\d+)/);
-          const bMinMaxMatch = b.pointer.match(/\/accessors\/(\d+)\/(min|max)\/(\d+)/);
+          const aMinMaxMatch = a.pointer.match(
+            /\/accessors\/(\d+)\/(min|max)\/(\d+)/,
+          );
+          const bMinMaxMatch = b.pointer.match(
+            /\/accessors\/(\d+)\/(min|max)\/(\d+)/,
+          );
 
-          const aAccessorIdx = aAccessorMatch ? parseInt(aAccessorMatch[1]!) : (aMinMaxMatch ? parseInt(aMinMaxMatch[1]!) : 0);
-          const bAccessorIdx = bAccessorMatch ? parseInt(bAccessorMatch[1]!) : (bMinMaxMatch ? parseInt(bMinMaxMatch[1]!) : 0);
+          const aAccessorIdx = aAccessorMatch
+            ? parseInt(aAccessorMatch[1]!)
+            : aMinMaxMatch
+              ? parseInt(aMinMaxMatch[1]!)
+              : 0;
+          const bAccessorIdx = bAccessorMatch
+            ? parseInt(bAccessorMatch[1]!)
+            : bMinMaxMatch
+              ? parseInt(bMinMaxMatch[1]!)
+              : 0;
 
           if (aAccessorIdx !== bAccessorIdx) {
             return aAccessorIdx - bAccessorIdx;
           }
 
           // Same accessor: INVALID_FLOAT comes first
-          if (a.code === 'ACCESSOR_INVALID_FLOAT' && b.code !== 'ACCESSOR_INVALID_FLOAT') {
+          if (
+            a.code === "ACCESSOR_INVALID_FLOAT" &&
+            b.code !== "ACCESSOR_INVALID_FLOAT"
+          ) {
             return -1;
           }
-          if (b.code === 'ACCESSOR_INVALID_FLOAT' && a.code !== 'ACCESSOR_INVALID_FLOAT') {
+          if (
+            b.code === "ACCESSOR_INVALID_FLOAT" &&
+            a.code !== "ACCESSOR_INVALID_FLOAT"
+          ) {
             return 1;
           }
 
@@ -1832,7 +2457,7 @@ export class GLTFValidator {
 
           // Different types (min vs max): min comes first
           if (aType !== bType) {
-            return aType === 'min' ? -1 : 1;
+            return aType === "min" ? -1 : 1;
           }
 
           // Same type, different components: sort by component index
@@ -1841,9 +2466,15 @@ export class GLTFValidator {
           }
 
           // Same accessor, component, and type: sort by code priority within that type
-          const minOrder = ['ACCESSOR_MIN_MISMATCH', 'ACCESSOR_ELEMENT_OUT_OF_MIN_BOUND'];
-          const maxOrder = ['ACCESSOR_MAX_MISMATCH', 'ACCESSOR_ELEMENT_OUT_OF_MAX_BOUND'];
-          const order = aType === 'min' ? minOrder : maxOrder;
+          const minOrder = [
+            "ACCESSOR_MIN_MISMATCH",
+            "ACCESSOR_ELEMENT_OUT_OF_MIN_BOUND",
+          ];
+          const maxOrder = [
+            "ACCESSOR_MAX_MISMATCH",
+            "ACCESSOR_ELEMENT_OUT_OF_MAX_BOUND",
+          ];
+          const order = aType === "min" ? minOrder : maxOrder;
 
           const aPos = order.indexOf(a.code);
           const bPos = order.indexOf(b.code);
@@ -1856,7 +2487,7 @@ export class GLTFValidator {
     });
   }
 
-  private validateGLB(gltf: GLTF, resources: any[]): void {
+  private validateGLB(gltf: GLTF, resources: ResourceReference[]): void {
     // Check for GLB-specific buffer validation
     if (gltf.buffers && gltf.buffers.length > 0) {
       const buffer = gltf.buffers[0];
@@ -1864,44 +2495,51 @@ export class GLTFValidator {
         // Check if buffer has URI (should not in GLB)
         if (buffer.uri !== undefined) {
           // Check if it's a valid data URI (not just starts with 'data:')
-          const dataUriBase64Match = buffer.uri.match(/^data:([^;,]+);base64,(.+)$/);
+          const dataUriBase64Match = buffer.uri.match(
+            /^data:([^;,]+);base64,(.+)$/,
+          );
           const dataUriPlainMatch = buffer.uri.match(/^data:([^;,]+),(.*)$/);
           const isDataUri = !!(dataUriBase64Match || dataUriPlainMatch);
 
           this.addMessage({
-            code: 'URI_GLB',
-            message: 'URI is used in GLB container.',
+            code: "URI_GLB",
+            message: "URI is used in GLB container.",
             severity: Severity.INFO,
-            pointer: `/buffers/0/uri`
+            pointer: `/buffers/0/uri`,
           });
 
           if (isDataUri) {
             this.addMessage({
-              code: 'DATA_URI_GLB',
-              message: 'Data URI is used in GLB container.',
+              code: "DATA_URI_GLB",
+              message: "Data URI is used in GLB container.",
               severity: Severity.WARNING,
-              pointer: `/buffers/0/uri`
+              pointer: `/buffers/0/uri`,
             });
           }
         } else {
           // Buffer without URI should have corresponding BIN chunk
-          const binResource = resources.find(r => r.storage === 'glb');
+          const binResource = resources.find((r) => r.storage === "glb");
           if (!binResource) {
             this.addMessage({
-              code: 'BUFFER_MISSING_GLB_DATA',
-              message: 'Buffer refers to an unresolved GLB binary chunk.',
+              code: "BUFFER_MISSING_GLB_DATA",
+              message: "Buffer refers to an unresolved GLB binary chunk.",
               severity: Severity.ERROR,
-              pointer: `/buffers/0`
+              pointer: `/buffers/0`,
             });
           }
         }
 
         // Check for GLB chunk padding issues (only if buffer doesn't have URI)
         if (!buffer.uri) {
-          const binResource = resources.find(r => r.storage === 'glb');
-          if (binResource && binResource.actualByteLength !== undefined && binResource.declaredByteLength !== undefined) {
-            const declaredLength = binResource.declaredByteLength;
-            const actualLength = binResource.actualByteLength;
+          const binResource = resources.find((r) => r.storage === "glb");
+          const binResourceExt = binResource as any;
+          if (
+            binResource &&
+            binResourceExt.actualByteLength !== undefined &&
+            binResourceExt.declaredByteLength !== undefined
+          ) {
+            const declaredLength = binResourceExt.declaredByteLength;
+            const actualLength = binResourceExt.actualByteLength;
 
             // GLB chunks must be padded to 4-byte boundaries
             const requiredPaddedLength = Math.ceil(declaredLength / 4) * 4;
@@ -1909,18 +2547,18 @@ export class GLTFValidator {
 
             if (extraPaddingBytes > 0) {
               this.addMessage({
-                code: 'BUFFER_GLB_CHUNK_TOO_BIG',
+                code: "BUFFER_GLB_CHUNK_TOO_BIG",
                 message: `GLB-stored BIN chunk contains ${extraPaddingBytes} extra padding byte(s).`,
                 severity: Severity.WARNING,
-                pointer: `/buffers/0`
+                pointer: `/buffers/0`,
               });
             } else if (actualLength < declaredLength) {
               // Byte length mismatch - actual is less than declared
               this.addMessage({
-                code: 'BUFFER_BYTE_LENGTH_MISMATCH',
-                message: `Actual data byte length (${binResource.actualByteLength}) is less than the declared buffer byte length (${binResource.declaredByteLength}).`,
+                code: "BUFFER_BYTE_LENGTH_MISMATCH",
+                message: `Actual data byte length (${binResourceExt.actualByteLength}) is less than the declared buffer byte length (${binResourceExt.declaredByteLength}).`,
                 severity: Severity.ERROR,
-                pointer: `/buffers/0`
+                pointer: `/buffers/0`,
               });
             }
           }
@@ -1933,19 +2571,19 @@ export class GLTFValidator {
       for (let i = 0; i < gltf.images.length; i++) {
         const image = gltf.images[i];
         if (image && image.uri) {
-          const isDataUri = image.uri.startsWith('data:');
+          const isDataUri = image.uri.startsWith("data:");
           this.addMessage({
-            code: 'URI_GLB',
-            message: 'URI is used in GLB container.',
+            code: "URI_GLB",
+            message: "URI is used in GLB container.",
             severity: Severity.INFO,
-            pointer: `/images/${i}/uri`
+            pointer: `/images/${i}/uri`,
           });
           if (isDataUri) {
             this.addMessage({
-              code: 'DATA_URI_GLB',
-              message: 'Data URI is used in GLB container.',
+              code: "DATA_URI_GLB",
+              message: "Data URI is used in GLB container.",
               severity: Severity.WARNING,
-              pointer: `/images/${i}/uri`
+              pointer: `/images/${i}/uri`,
             });
           }
         }
@@ -1954,21 +2592,28 @@ export class GLTFValidator {
   }
 
   private checkUndeclaredExtensions(gltf: GLTF): void {
-    const extensionsUsed = new Set(gltf['extensionsUsed'] || []);
+    const extensionsUsed = new Set((gltf["extensionsUsed"] as string[]) || []);
     const foundExtensions = new Set<string>();
 
     // Helper function to check extensions in an object
-    const checkObjectExtensions = (obj: any, basePointer: string) => {
-      if (obj && obj['extensions']) {
-        for (const extensionName in obj['extensions']) {
-          foundExtensions.add(extensionName);
-          if (!extensionsUsed.has(extensionName)) {
-            this.addMessage({
-              code: 'UNDECLARED_EXTENSION',
-              message: 'Extension is not declared in extensionsUsed.',
-              severity: Severity.ERROR,
-              pointer: `${basePointer}/extensions/${extensionName}`
-            });
+    const checkObjectExtensions = (obj: unknown, basePointer: string) => {
+      if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+        const objWithExtensions = obj as Record<string, unknown>;
+        if (objWithExtensions["extensions"]) {
+          const extensions = objWithExtensions["extensions"] as Record<
+            string,
+            unknown
+          >;
+          for (const extensionName in extensions) {
+            foundExtensions.add(extensionName);
+            if (!extensionsUsed.has(extensionName)) {
+              this.addMessage({
+                code: "UNDECLARED_EXTENSION",
+                message: "Extension is not declared in extensionsUsed.",
+                severity: Severity.ERROR,
+                pointer: `${basePointer}/extensions/${extensionName}`,
+              });
+            }
           }
         }
       }
@@ -1978,15 +2623,15 @@ export class GLTFValidator {
 
     // Check all arrays and objects that can have extensions
     const collections = [
-      { array: gltf.textures, name: 'textures' },
-      { array: gltf.materials, name: 'materials' },
-      { array: gltf.nodes, name: 'nodes' },
-      { array: gltf.meshes, name: 'meshes' },
-      { array: gltf.animations, name: 'animations' },
-      { array: gltf.cameras, name: 'cameras' },
-      { array: gltf.samplers, name: 'samplers' },
-      { array: gltf.scenes, name: 'scenes' },
-      { array: gltf.skins, name: 'skins' }
+      { array: gltf.textures, name: "textures" },
+      { array: gltf.materials, name: "materials" },
+      { array: gltf.nodes, name: "nodes" },
+      { array: gltf.meshes, name: "meshes" },
+      { array: gltf.animations, name: "animations" },
+      { array: gltf.cameras, name: "cameras" },
+      { array: gltf.samplers, name: "samplers" },
+      { array: gltf.scenes, name: "scenes" },
+      { array: gltf.skins, name: "skins" },
     ];
 
     for (const collection of collections) {
@@ -1997,37 +2642,61 @@ export class GLTFValidator {
             checkObjectExtensions(item, `/${collection.name}/${i}`);
 
             // Special checks for materials (texture info extensions)
-            if (collection.name === 'materials') {
-              const material = item as any;
+            if (collection.name === "materials") {
+              const material = item as GLTFMaterial;
               if (material.pbrMetallicRoughness) {
-                checkObjectExtensions(material.pbrMetallicRoughness.baseColorTexture, `/${collection.name}/${i}/pbrMetallicRoughness/baseColorTexture`);
-                checkObjectExtensions(material.pbrMetallicRoughness.metallicRoughnessTexture, `/${collection.name}/${i}/pbrMetallicRoughness/metallicRoughnessTexture`);
+                checkObjectExtensions(
+                  material.pbrMetallicRoughness.baseColorTexture,
+                  `/${collection.name}/${i}/pbrMetallicRoughness/baseColorTexture`,
+                );
+                checkObjectExtensions(
+                  material.pbrMetallicRoughness.metallicRoughnessTexture,
+                  `/${collection.name}/${i}/pbrMetallicRoughness/metallicRoughnessTexture`,
+                );
               }
-              checkObjectExtensions(material.normalTexture, `/${collection.name}/${i}/normalTexture`);
-              checkObjectExtensions(material.occlusionTexture, `/${collection.name}/${i}/occlusionTexture`);
-              checkObjectExtensions(material.emissiveTexture, `/${collection.name}/${i}/emissiveTexture`);
+              checkObjectExtensions(
+                material.normalTexture,
+                `/${collection.name}/${i}/normalTexture`,
+              );
+              checkObjectExtensions(
+                material.occlusionTexture,
+                `/${collection.name}/${i}/occlusionTexture`,
+              );
+              checkObjectExtensions(
+                material.emissiveTexture,
+                `/${collection.name}/${i}/emissiveTexture`,
+              );
             }
 
             // Special checks for meshes (primitive extensions)
-            if (collection.name === 'meshes') {
-              const mesh = item as any;
+            if (collection.name === "meshes") {
+              const mesh = item as GLTFMesh;
               if (mesh.primitives) {
                 for (let j = 0; j < mesh.primitives.length; j++) {
                   const primitive = mesh.primitives[j];
-                  checkObjectExtensions(primitive, `/${collection.name}/${i}/primitives/${j}`);
+                  checkObjectExtensions(
+                    primitive,
+                    `/${collection.name}/${i}/primitives/${j}`,
+                  );
                 }
               }
             }
 
             // Special checks for animations (channel and target extensions)
-            if (collection.name === 'animations') {
-              const animation = item as any;
+            if (collection.name === "animations") {
+              const animation = item as GLTFAnimation;
               if (animation.channels) {
                 for (let j = 0; j < animation.channels.length; j++) {
                   const channel = animation.channels[j];
-                  checkObjectExtensions(channel, `/${collection.name}/${i}/channels/${j}`);
+                  checkObjectExtensions(
+                    channel,
+                    `/${collection.name}/${i}/channels/${j}`,
+                  );
                   if (channel && channel.target) {
-                    checkObjectExtensions(channel.target, `/${collection.name}/${i}/channels/${j}/target`);
+                    checkObjectExtensions(
+                      channel.target,
+                      `/${collection.name}/${i}/channels/${j}/target`,
+                    );
                   }
                 }
               }
@@ -2042,6 +2711,6 @@ export class GLTFValidator {
     // RFC 6901: JSON Pointer escaping
     // ~ is escaped as ~0
     // / is escaped as ~1
-    return key.replace(/~/g, '~0').replace(/\//g, '~1');
+    return key.replace(/~/g, "~0").replace(/\//g, "~1");
   }
 }

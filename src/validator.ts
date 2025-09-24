@@ -2,7 +2,9 @@ import {
   ValidationResult,
   ValidationOptions,
   GLTF,
-  PrimitiveMode
+  PrimitiveMode,
+  ResourceReference,
+  ValidationMessage
 } from './types';
 import { GLTFParser } from './parser';
 import { GLTFValidator } from './validators/gltf-validator';
@@ -59,14 +61,14 @@ export async function validateBytes(
 
   // Parse the data with proper exception handling
   let gltf: GLTF;
-  let resources: any[] = [];
-  let parsingErrors: any[] = [];
+  let resources: ResourceReference[] = [];
+  let parsingErrors: ValidationMessage[] = [];
 
   if (detectedFormat === 'glb') {
     try {
       const glbResult = await GLBValidator.parseGLB(data);
       gltf = glbResult.gltf;
-      resources = glbResult.resources;
+      resources = glbResult.resources as ResourceReference[];
       // Convert GLB warnings to validation messages
       if (glbResult.warnings && glbResult.warnings.length > 0) {
         for (const warning of glbResult.warnings) {
@@ -122,7 +124,7 @@ export async function validateBytes(
             mimeType = 'application/gltf-buffer';
           }
 
-          const resource: any = {
+          const resource: ResourceReference = {
             pointer: `/buffers/${i}`,
             mimeType,
             storage,
@@ -172,7 +174,7 @@ export async function validateBytes(
             }
           }
 
-          const resource: any = {
+          const resource: ResourceReference = {
             pointer: `/images/${i}`,
             storage
           };
@@ -189,8 +191,8 @@ export async function validateBytes(
   }
 
   // Validate the GLTF structure
-  const validatorOptions: any = {
-    maxIssues,
+  const validatorOptions: ValidationOptions = {
+    maxIssues: maxIssues ?? 100,
     ignoredIssues,
     onlyIssues,
     severityOverrides
@@ -198,7 +200,7 @@ export async function validateBytes(
   if (externalResourceFunction) {
     validatorOptions.externalResourceFunction = externalResourceFunction;
   }
-  const validator = new GLTFValidator(validatorOptions);
+  const validator = new GLTFValidator(validatorOptions as any);
 
   // Load buffer data for validation if external resource function is provided
   if (gltf.buffers && externalResourceFunction) {
@@ -345,7 +347,10 @@ export async function validateBytes(
     issues: validationResult.issues,
     info: {
       version: gltf.asset?.version || 'unknown',
-      resources,
+      resources: resources.map(r => ({
+        ...r,
+        mimeType: r.mimeType || 'application/octet-stream'
+      })),
       animationCount: gltf.animations?.length || 0,
       materialCount: gltf.materials?.length || 0,
       hasMorphTargets: hasMorphTargets(gltf),
@@ -506,13 +511,13 @@ function calculateMaxAttributes(gltf: GLTF): number {
   return maxAttributes;
 }
 
-function convertGLBExceptionToValidationMessages(error: Error, _data: Uint8Array): any[] {
+function convertGLBExceptionToValidationMessages(error: Error, _data: Uint8Array): ValidationMessage[] {
   const message = error.message;
 
   // Handle combined errors (multiple errors separated by |NEXT_ERROR|)
   if (message.includes('|NEXT_ERROR|')) {
     const errorParts = message.split('|NEXT_ERROR|');
-    const allMessages: any[] = [];
+    const allMessages: ValidationMessage[] = [];
     for (const errorPart of errorParts) {
       // Recursively process each error part
       allMessages.push(...convertGLBExceptionToValidationMessages(new Error(errorPart), _data));
@@ -811,7 +816,7 @@ function convertGLBExceptionToValidationMessages(error: Error, _data: Uint8Array
   }];
 }
 
-function convertGLTFExceptionToValidationMessages(error: Error): any[] {
+function convertGLTFExceptionToValidationMessages(error: Error): ValidationMessage[] {
   const message = error.message;
 
   // Handle BOM error specifically first - should be INVALID_JSON not GLB_PARSE_ERROR

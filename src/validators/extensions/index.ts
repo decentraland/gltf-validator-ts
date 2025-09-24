@@ -1,5 +1,24 @@
 import { ExtensionValidator, BaseExtensionValidator } from '../extension-validator';
-import { GLTF, ValidationMessage, Severity } from '../../types';
+import {
+  GLTF,
+  ValidationMessage,
+  Severity,
+  LightDefinition,
+  SpotLight,
+  MaterialWithExtensions,
+  KHRMaterialsAnisotropyExtension,
+  KHRMaterialsClearcoatExtension,
+  KHRMaterialsDispersionExtension,
+  KHRMaterialsEmissiveStrengthExtension,
+  KHRMaterialsIORExtension,
+  KHRMaterialsIridescenceExtension,
+  KHRMaterialsPbrSpecularGlossinessExtension,
+  KHRMaterialsSheenExtension,
+  KHRMaterialsSpecularExtension,
+  KHRMaterialsTransmissionExtension,
+  KHRMaterialsVolumeExtension,
+  TextureInfoWithExtensions
+} from '../../types';
 
 // EXT_texture_webp validator
 class EXTTextureWebPValidator extends BaseExtensionValidator {
@@ -11,7 +30,8 @@ class EXTTextureWebPValidator extends BaseExtensionValidator {
       for (let i = 0; i < gltf.textures.length; i++) {
         const texture = gltf.textures[i];
         if (texture && texture['extensions'] && texture['extensions']['EXT_texture_webp']) {
-          const webpExt = texture['extensions']['EXT_texture_webp'];
+          const extensions = texture['extensions'] as Record<string, unknown>;
+          const webpExt = extensions['EXT_texture_webp'];
 
           // Validate regular texture source when EXT_texture_webp is present
           if (texture.source !== undefined && gltf.images && gltf.images[texture.source]) {
@@ -57,16 +77,17 @@ class EXTTextureWebPValidator extends BaseExtensionValidator {
           }
 
           // Validate webp source
-          if (webpExt.source !== undefined) {
-            if (typeof webpExt.source !== 'number' || webpExt.source < 0) {
+          const webpExtObj = webpExt as Record<string, unknown>;
+          if (webpExtObj.source !== undefined) {
+            if (typeof webpExtObj.source !== 'number' || webpExtObj.source < 0) {
               addMessage({
                 code: 'INVALID_EXTENSION_VALUE',
                 message: 'Invalid source index for EXT_texture_webp.',
                 severity: Severity.ERROR,
                 pointer: `/textures/${i}/extensions/EXT_texture_webp/source`
               });
-            } else if (gltf.images && gltf.images[webpExt.source]) {
-              const image = gltf.images[webpExt.source];
+            } else if (gltf.images && typeof webpExtObj.source === 'number' && gltf.images[webpExtObj.source]) {
+              const image = gltf.images[webpExtObj.source];
               if (image) {
                 let isValidWebP = false;
 
@@ -121,20 +142,23 @@ class KHRLightsPunctualValidator extends BaseExtensionValidator {
     if (gltf.scenes) {
       for (let i = 0; i < gltf.scenes.length; i++) {
         const scene = gltf.scenes[i];
-        if (scene && scene['extensions'] && scene['extensions']['KHR_lights_punctual']) {
-          addMessage({
-            code: 'UNEXPECTED_EXTENSION_OBJECT',
-            message: 'Unexpected location for this extension.',
-            severity: Severity.ERROR,
-            pointer: `/scenes/${i}/extensions/KHR_lights_punctual`
-          });
+        if (scene && scene['extensions']) {
+          const sceneExtensions = scene['extensions'] as Record<string, unknown>;
+          if (sceneExtensions['KHR_lights_punctual']) {
+            addMessage({
+              code: 'UNEXPECTED_EXTENSION_OBJECT',
+              message: 'Unexpected location for this extension.',
+              severity: Severity.ERROR,
+              pointer: `/scenes/${i}/extensions/KHR_lights_punctual`
+            });
+          }
         }
       }
     }
 
     // Validate root extension
     if (gltf.extensions && gltf.extensions['KHR_lights_punctual']) {
-      const lightsExt = gltf.extensions['KHR_lights_punctual'];
+      const lightsExt = gltf.extensions['KHR_lights_punctual'] as Record<string, unknown>;
 
       if (lightsExt.lights === undefined) {
         addMessage({
@@ -195,7 +219,7 @@ class KHRLightsPunctualValidator extends BaseExtensionValidator {
               const rootExt = gltf.extensions && gltf.extensions['KHR_lights_punctual'];
 
               if (rootExt) {
-                const lights = rootExt.lights;
+                const lights = (rootExt as any).lights;
                 if (!lights || !Array.isArray(lights) || nodeExt.light >= lights.length) {
                   addMessage({
                     code: 'UNRESOLVED_REFERENCE',
@@ -236,7 +260,7 @@ class KHRLightsPunctualValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateLight(light: any, index: number, addMessage: (message: ValidationMessage) => void): void {
+  private validateLight(light: LightDefinition, index: number, addMessage: (message: ValidationMessage) => void): void {
     const pointer = `/extensions/KHR_lights_punctual/lights/${index}`;
 
     // Check for unexpected properties
@@ -346,7 +370,7 @@ class KHRLightsPunctualValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateSpot(spot: any, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
+  private validateSpot(spot: SpotLight, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
     const pointer = `${basePointer}/spot`;
 
     // Validate innerConeAngle
@@ -445,11 +469,11 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
 
           // Validate materials with this extension in the correct location
           if (material['extensions'] && material['extensions'][this.extensionName]) {
-            this.validateMaterialExtension(material['extensions'][this.extensionName], i, material, addMessage);
+            this.validateMaterialExtension(material['extensions'][this.extensionName], i, material as any, addMessage);
 
             // Special volume transmission dependency check
             if (this.extensionName === 'KHR_materials_volume') {
-              this.validateVolumeTransmissionDependencyWithMaterial(material, i, addMessage);
+              this.validateVolumeTransmissionDependencyWithMaterial(material as any, i, addMessage);
             }
           }
         }
@@ -457,7 +481,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateMaterialExtension(ext: any, materialIndex: number, material: any, addMessage: (message: ValidationMessage) => void): void {
+  private validateMaterialExtension(ext: MaterialWithExtensions, materialIndex: number, material: MaterialWithExtensions, addMessage: (message: ValidationMessage) => void): void {
     const basePointer = `/materials/${materialIndex}/extensions/${this.extensionName}`;
 
     // Validate extension-specific properties
@@ -501,7 +525,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateAnisotropy(ext: any, basePointer: string, material: any, addMessage: (message: ValidationMessage) => void): void {
+  private validateAnisotropy(ext: KHRMaterialsAnisotropyExtension, basePointer: string, material: MaterialWithExtensions, addMessage: (message: ValidationMessage) => void): void {
     if (ext.anisotropyStrength !== undefined) {
       this.validateValueInRange(ext.anisotropyStrength, 0, 1, `${basePointer}/anisotropyStrength`, addMessage);
     }
@@ -525,7 +549,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateClearcoat(ext: any, basePointer: string, material: any, addMessage: (message: ValidationMessage) => void): void {
+  private validateClearcoat(ext: KHRMaterialsClearcoatExtension, basePointer: string, material: MaterialWithExtensions, addMessage: (message: ValidationMessage) => void): void {
     if (ext.clearcoatFactor !== undefined) {
       this.validateValueInRange(ext.clearcoatFactor, 0, 1, `${basePointer}/clearcoatFactor`, addMessage);
     }
@@ -549,7 +573,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateDispersion(ext: any, basePointer: string, material: any, addMessage: (message: ValidationMessage) => void): void {
+  private validateDispersion(ext: KHRMaterialsDispersionExtension, basePointer: string, material: MaterialWithExtensions, addMessage: (message: ValidationMessage) => void): void {
     if (ext.dispersion !== undefined) {
       this.validateValueInRange(ext.dispersion, 0, 1, `${basePointer}/dispersion`, addMessage);
     }
@@ -566,7 +590,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateEmissiveStrength(ext: any, basePointer: string, material: any, addMessage: (message: ValidationMessage) => void): void {
+  private validateEmissiveStrength(ext: KHRMaterialsEmissiveStrengthExtension, basePointer: string, material: MaterialWithExtensions, addMessage: (message: ValidationMessage) => void): void {
     if (ext.emissiveStrength !== undefined) {
       // Validate range first (should be >= 0)
       const isValidRange = !(typeof ext.emissiveStrength === 'number' && ext.emissiveStrength < 0);
@@ -597,7 +621,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateIOR(ext: any, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
+  private validateIOR(ext: KHRMaterialsIORExtension, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
     if (ext.ior !== undefined) {
       // IOR must be 0 (disabled) or >= 1 (physical values)
       if (typeof ext.ior === 'number' && ext.ior !== 0 && ext.ior < 1) {
@@ -618,7 +642,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateIridescence(ext: any, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
+  private validateIridescence(ext: KHRMaterialsIridescenceExtension, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
     if (ext.iridescenceFactor !== undefined) {
       this.validateValueInRange(ext.iridescenceFactor, 0, 1, `${basePointer}/iridescenceFactor`, addMessage);
     }
@@ -667,7 +691,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validatePbrSpecularGlossiness(ext: any, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
+  private validatePbrSpecularGlossiness(ext: KHRMaterialsPbrSpecularGlossinessExtension, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
     if (ext.diffuseFactor !== undefined) {
       if (!Array.isArray(ext.diffuseFactor) || ext.diffuseFactor.length !== 4) {
         addMessage({
@@ -693,7 +717,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateSheen(ext: any, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
+  private validateSheen(ext: KHRMaterialsSheenExtension, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
     if (ext.sheenColorFactor !== undefined) {
       if (!Array.isArray(ext.sheenColorFactor) || ext.sheenColorFactor.length !== 3) {
         addMessage({
@@ -709,7 +733,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateSpecular(ext: any, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
+  private validateSpecular(ext: KHRMaterialsSpecularExtension, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
     if (ext.specularFactor !== undefined) {
       this.validateValueInRange(ext.specularFactor, 0, 1, `${basePointer}/specularFactor`, addMessage);
     }
@@ -730,13 +754,13 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateTransmission(ext: any, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
+  private validateTransmission(ext: KHRMaterialsTransmissionExtension, basePointer: string, addMessage: (message: ValidationMessage) => void): void {
     if (ext.transmissionFactor !== undefined) {
       this.validateValueInRange(ext.transmissionFactor, 0, 1, `${basePointer}/transmissionFactor`, addMessage);
     }
   }
 
-  private validateVolume(ext: any, basePointer: string, material: any, addMessage: (message: ValidationMessage) => void): void {
+  private validateVolume(ext: KHRMaterialsVolumeExtension, basePointer: string, material: MaterialWithExtensions, addMessage: (message: ValidationMessage) => void): void {
     // Validate attenuationColor first (to match expected message order)
     if (ext.attenuationColor !== undefined) {
       if (!Array.isArray(ext.attenuationColor) || ext.attenuationColor.length !== 3) {
@@ -788,7 +812,7 @@ class KHRMaterialsValidator extends BaseExtensionValidator {
     }
   }
 
-  private validateVolumeTransmissionDependencyWithMaterial(material: any, materialIndex: number, addMessage: (message: ValidationMessage) => void): void {
+  private validateVolumeTransmissionDependencyWithMaterial(material: MaterialWithExtensions, materialIndex: number, addMessage: (message: ValidationMessage) => void): void {
     // Check if material has transmission-enabling extensions
     let hasTransmission = false;
     if (material['extensions']) {
@@ -948,7 +972,7 @@ class KHRMaterialsVariantsValidator extends BaseExtensionValidator {
 
     // Validate root extension for variants definition
     if (gltf.extensions && gltf.extensions[this.extensionName]) {
-      const rootExt = gltf.extensions[this.extensionName];
+      const rootExt = gltf.extensions[this.extensionName] as Record<string, unknown>;
       const basePointer = `/extensions/${this.extensionName}`;
 
       if (rootExt.variants === undefined) {
@@ -1170,7 +1194,7 @@ class KHRMaterialsVariantsValidator extends BaseExtensionValidator {
                       });
                     } else {
                       // Check if variant references are valid
-                      const rootExt = gltf.extensions && gltf.extensions[this.extensionName];
+                      const rootExt = gltf.extensions && gltf.extensions[this.extensionName] as any;
                       if (rootExt && rootExt.variants && Array.isArray(rootExt.variants)) {
                         for (let v = 0; v < mapping.variants.length; v++) {
                           const variantIndex = mapping.variants[v];
@@ -1340,19 +1364,19 @@ class KHRTextureTransformValidator extends BaseExtensionValidator {
       for (let i = 0; i < gltf.materials.length; i++) {
         const material = gltf.materials[i];
         if (material) {
-          this.validateTextureInfoExtensions(material.pbrMetallicRoughness?.baseColorTexture, i, 'pbrMetallicRoughness/baseColorTexture', addMessage);
-          this.validateTextureInfoExtensions(material.pbrMetallicRoughness?.metallicRoughnessTexture, i, 'pbrMetallicRoughness/metallicRoughnessTexture', addMessage);
-          this.validateTextureInfoExtensions(material.normalTexture, i, 'normalTexture', addMessage);
-          this.validateTextureInfoExtensions(material.occlusionTexture, i, 'occlusionTexture', addMessage);
-          this.validateTextureInfoExtensions(material.emissiveTexture, i, 'emissiveTexture', addMessage);
+          this.validateTextureInfoExtensions(material.pbrMetallicRoughness?.baseColorTexture as any, i, 'pbrMetallicRoughness/baseColorTexture', addMessage);
+          this.validateTextureInfoExtensions(material.pbrMetallicRoughness?.metallicRoughnessTexture as any, i, 'pbrMetallicRoughness/metallicRoughnessTexture', addMessage);
+          this.validateTextureInfoExtensions(material.normalTexture as any, i, 'normalTexture', addMessage);
+          this.validateTextureInfoExtensions(material.occlusionTexture as any, i, 'occlusionTexture', addMessage);
+          this.validateTextureInfoExtensions(material.emissiveTexture as any, i, 'emissiveTexture', addMessage);
         }
       }
     }
   }
 
-  private validateTextureInfoExtensions(textureInfo: any, materialIndex: number, path: string, addMessage: (message: ValidationMessage) => void): void {
+  private validateTextureInfoExtensions(textureInfo: TextureInfoWithExtensions, materialIndex: number, path: string, addMessage: (message: ValidationMessage) => void): void {
     if (textureInfo && textureInfo['extensions'] && textureInfo['extensions'][this.extensionName]) {
-      const ext = textureInfo['extensions'][this.extensionName];
+      const ext = textureInfo['extensions'][this.extensionName] as Record<string, unknown>;
       const basePointer = `/materials/${materialIndex}/${path}/extensions/${this.extensionName}`;
 
       // Validate offset

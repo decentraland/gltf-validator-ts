@@ -52,7 +52,7 @@ export class GLTFValidator {
       ignoredIssues: options.ignoredIssues ?? [],
       onlyIssues: options.onlyIssues ?? [],
       severityOverrides: options.severityOverrides ?? {},
-      externalResourceFunction: options.externalResourceFunction
+      externalResourceFunction: options.externalResourceFunction,
     };
     this.usageTracker = new UsageTracker();
   }

@@ -1,8 +1,8 @@
-# Enhanced GLTF Validator
+# GLTF Validator (TypeScript)
 
-A comprehensive GLTF/GLB validator implementation in TypeScript with extensive extension support and detailed validation reporting.
+A TypeScript implementation of GLTF/GLB validation compatible with the official Khronos validator.
 
-[![npm version](https://img.shields.io/npm/v/enhanced-gltf-validator.svg)](https://www.npmjs.com/package/enhanced-gltf-validator)
+[![npm version](https://img.shields.io/npm/v/gltf-validator-ts.svg)](https://www.npmjs.com/package/gltf-validator-ts)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 
@@ -38,7 +38,7 @@ A comprehensive GLTF/GLB validator implementation in TypeScript with extensive e
 ## Installation
 
 ```bash
-npm install enhanced-gltf-validator
+npm install gltf-validator-ts
 ```
 
 ## Quick Start
@@ -46,7 +46,7 @@ npm install enhanced-gltf-validator
 ### Basic Usage
 
 ```typescript
-import { GLTFValidator } from 'enhanced-gltf-validator';
+import { GLTFValidator } from 'gltf-validator-ts';
 
 // Create validator with default options
 const validator = new GLTFValidator({
@@ -78,7 +78,7 @@ result.issues.messages.forEach(message => {
 ### Validating GLB Files
 
 ```typescript
-import { parseGLB } from 'enhanced-gltf-validator';
+import { parseGLB } from 'gltf-validator-ts';
 
 // Parse GLB binary data
 const glbBuffer = new Uint8Array(/* your GLB file data */);
@@ -239,8 +239,8 @@ This validator supports validation for the following GLTF extensions:
 ### Setup
 
 ```bash
-git clone https://github.com/yourusername/enhanced-gltf-validator.git
-cd enhanced-gltf-validator
+git clone https://github.com/yourusername/gltf-validator-ts.git
+cd gltf-validator-ts
 npm install
 ```
 

@@ -1,6 +1,6 @@
 # Basic GLTF Validation Example
 
-This example demonstrates how to validate a GLB model file using the Enhanced GLTF Validator.
+This example demonstrates how to validate a GLB model file using GLTF Validator (TypeScript).
 
 ## Your Model
 

@@ -1,7 +1,7 @@
 {
-  "name": "enhanced-gltf-validator",
+  "name": "gltf-validator-ts",
   "version": "1.0.0",
-  "description": "A comprehensive GLTF/GLB validator implementation in TypeScript with extensive extension support and detailed validation reporting",
+  "description": "A TypeScript implementation of GLTF/GLB validation compatible with the official Khronos validator",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -52,13 +52,13 @@
     "url": "https://github.com/nicoecheza"
   },
   "license": "MIT",
-  "homepage": "https://github.com/nicoecheza/enhanced-gltf-validator",
+  "homepage": "https://github.com/nicoecheza/gltf-validator-ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nicoecheza/enhanced-gltf-validator.git"
+    "url": "https://github.com/nicoecheza/gltf-validator-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/nicoecheza/enhanced-gltf-validator/issues"
+    "url": "https://github.com/nicoecheza/gltf-validator-ts/issues"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

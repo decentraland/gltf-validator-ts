@@ -589,7 +589,6 @@ export interface GLTFSparseForValidation extends GLTFSparse {
   values: GLTFSparseValues;
 }
 
-// Branded types for enhanced type safety
 export type ValidatedGLTF = GLTF & { readonly __validated: true };
 export type JSONPointer = string & { readonly __jsonPointer: true };
 export type MimeType = string & { readonly __mimeType: true };
@@ -717,7 +716,6 @@ export const VALIDATION_CODES = {
 
 export type ValidationCode = typeof VALIDATION_CODES[keyof typeof VALIDATION_CODES];
 
-// Enhanced validation message with strict typing
 export interface StrictValidationMessage extends Omit<ValidationMessage, 'code' | 'severity'> {
   readonly code: ValidationCode;
   readonly severity: Severity;

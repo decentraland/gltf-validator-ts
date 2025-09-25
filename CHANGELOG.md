@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-01-25
 
 ### Added
-- Initial release of Enhanced GLTF Validator
+- Initial release of GLTF Validator (TypeScript)
 - Complete GLTF 2.0 validation support
 - GLB (binary GLTF) file validation
 - Support for 20+ GLTF extensions including:

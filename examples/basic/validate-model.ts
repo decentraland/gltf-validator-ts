@@ -16,7 +16,7 @@ import { validateBytes, GLTFValidator, GLBValidator } from '../../src/index';
 const modelPath = path.join(__dirname, 'model.glb');
 
 async function validateModel() {
-  console.log('🎯 Enhanced GLTF Validator Example');
+  console.log('🎯 GLTF Validator (TypeScript) Example');
   console.log('='.repeat(50));
 
   // Check if model file exists

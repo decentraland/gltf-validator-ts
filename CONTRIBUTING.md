@@ -1,6 +1,6 @@
-# Contributing to Enhanced GLTF Validator
+# Contributing to GLTF Validator (TypeScript)
 
-Thank you for your interest in contributing to the Enhanced GLTF Validator! This project welcomes contributions from the community.
+Thank you for your interest in contributing to GLTF Validator (TypeScript)! This project welcomes contributions from the community.
 
 ## Important Note
 
@@ -25,8 +25,8 @@ This project is a TypeScript implementation based on the official [Khronos glTF 
 
 1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/yourusername/enhanced-gltf-validator.git
-   cd enhanced-gltf-validator
+   git clone https://github.com/yourusername/gltf-validator-ts.git
+   cd gltf-validator-ts
    ```
 
 2. **Install dependencies**

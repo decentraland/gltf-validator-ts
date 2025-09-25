@@ -10,7 +10,7 @@ We release security updates for the following versions:
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in the Enhanced GLTF Validator, please report it privately to help us address it before public disclosure.
+If you discover a security vulnerability in GLTF Validator (TypeScript), please report it privately to help us address it before public disclosure.
 
 ### How to Report
 
@@ -63,4 +63,4 @@ We appreciate security researchers who responsibly disclose vulnerabilities and 
 
 For non-security issues, please use the regular GitHub issue tracker.
 
-Thank you for helping keep the Enhanced GLTF Validator secure!
+Thank you for helping keep GLTF Validator (TypeScript) secure!

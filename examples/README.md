@@ -1,6 +1,6 @@
-# Enhanced GLTF Validator Examples
+# GLTF Validator (TypeScript) Examples
 
-This directory contains practical examples showing how to use the Enhanced GLTF Validator in different scenarios.
+This directory contains practical examples showing how to use GLTF Validator (TypeScript) in different scenarios.
 
 ## Examples
 
@@ -30,7 +30,7 @@ node -r ts-node/register examples/basic/validate-model.ts
 
 **Expected output**:
 ```
-🎯 Enhanced GLTF Validator Example
+🎯 GLTF Validator (TypeScript) Example
 ==================================================
 📂 Loading model: model.glb
 📏 File size: 45.2 KB

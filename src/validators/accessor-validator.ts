@@ -1659,7 +1659,8 @@ export class AccessorValidator {
     messages: ValidationMessage[],
   ): void {
     const componentSize = this.getComponentSize(accessor.componentType);
-    const totalOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
+    const totalOffset =
+      (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
 
     // Check matrix alignment - matrices need 4-byte alignment ONLY when the accessor has an explicit byteOffset
     // AND only for FLOAT matrices (from glTF spec analysis)

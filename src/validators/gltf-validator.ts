@@ -33,10 +33,10 @@ import { UsageTracker } from "../usage-tracker";
 import { extensionValidators } from "./extensions";
 
 export interface ValidatorOptions {
-  maxIssues: number;
-  ignoredIssues: string[];
-  onlyIssues: string[];
-  severityOverrides: Record<string, Severity>;
+  maxIssues?: number;
+  ignoredIssues?: string[];
+  onlyIssues?: string[];
+  severityOverrides?: Record<string, Severity>;
   externalResourceFunction?: (uri: string) => Promise<Uint8Array>;
 }
 
@@ -46,8 +46,14 @@ export class GLTFValidator {
   private usageTracker: UsageTracker;
   private bufferData: Map<number, Uint8Array> = new Map();
 
-  constructor(options: ValidatorOptions) {
-    this.options = options;
+  constructor(options: ValidatorOptions = {}) {
+    this.options = {
+      maxIssues: options.maxIssues ?? 100,
+      ignoredIssues: options.ignoredIssues ?? [],
+      onlyIssues: options.onlyIssues ?? [],
+      severityOverrides: options.severityOverrides ?? {},
+      externalResourceFunction: options.externalResourceFunction
+    };
     this.usageTracker = new UsageTracker();
   }
 

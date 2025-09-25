@@ -1,25 +1,65 @@
 {
-  "name": "gltf-validator",
-  "version": "2.0.0-dev.3.0",
-  "description": "A comprehensive GLTF/GLB validator implementation in TypeScript",
+  "name": "enhanced-gltf-validator",
+  "version": "1.0.0",
+  "description": "A comprehensive GLTF/GLB validator implementation in TypeScript with extensive extension support and detailed validation reporting",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
+    "build:clean": "rm -rf dist && npm run build",
     "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint src/**/*.ts",
-    "format": "prettier --write src/**/*.ts"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build:clean && npm run test && npm run lint",
+    "prepack": "npm run build",
+    "example": "npm run build && node examples/basic/run-example.js",
+    "example:ts": "npx tsx examples/basic/validate-model.ts"
   },
   "keywords": [
     "gltf",
     "glb",
     "validator",
+    "validation",
     "3d",
     "webgl",
-    "typescript"
+    "khronos",
+    "typescript",
+    "graphics",
+    "mesh",
+    "texture",
+    "animation",
+    "extensions"
   ],
-  "author": "Your Name",
+  "author": {
+    "name": "Nicolás Echezarreta",
+    "url": "https://github.com/nicoecheza"
+  },
   "license": "MIT",
+  "homepage": "https://github.com/nicoecheza/enhanced-gltf-validator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicoecheza/enhanced-gltf-validator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nicoecheza/enhanced-gltf-validator/issues"
+  },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/node": "^22.0.0",
@@ -32,6 +72,9 @@
     "vitest": "^2.0.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

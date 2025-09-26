@@ -87,7 +87,7 @@ describe('GLTF Validator', () => {
         expect(result).toHaveProperty('info');
 
         expect(result.uri).toBe(relativePath);
-        expect(result.validatorVersion).toBe('2.0.0-dev.3.0');
+        expect(result.validatorVersion).toBe('1.0.0');
 
         // Validate issues structure
         expect(result.issues).toHaveProperty('numErrors');
@@ -121,15 +121,15 @@ describe('GLTF Validator', () => {
           expect(result.issues.numWarnings).toBe(expectedResult.issues.numWarnings);
           expect(result.issues.numInfos).toBe(expectedResult.issues.numInfos);
           expect(result.issues.numHints).toBe(expectedResult.issues.numHints);
-          
+
           // Exact matching of message count
           expect(result.issues.messages.length).toBe(expectedResult.issues.messages.length);
-          
+
           // Exact matching of each message
           for (let i = 0; i < expectedResult.issues.messages.length; i++) {
             const actualMessage = result.issues.messages[i];
             const expectedMessage = expectedResult.issues.messages[i];
-            
+
             expect(actualMessage.code).toBe(expectedMessage.code);
             expect(actualMessage.message).toBe(expectedMessage.message);
             expect(actualMessage.severity).toBe(expectedMessage.severity);
@@ -143,7 +143,7 @@ describe('GLTF Validator', () => {
           if (expectedResult.mimeType) {
             expect(result.mimeType).toBe(expectedResult.mimeType);
           }
-          
+
           // Basic structure validation
           for (const message of result.issues.messages) {
             expect(typeof message.code).toBe('string');

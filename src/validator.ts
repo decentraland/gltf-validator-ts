@@ -10,7 +10,7 @@ import { GLTFParser } from './parser';
 import { GLTFValidator } from './validators/gltf-validator';
 import { GLBValidator } from './validators/glb-validator';
 
-const VALIDATOR_VERSION = '2.0.0-dev.3.0';
+const VALIDATOR_VERSION = '1.0.0';
 
 export async function validateBytes(
   data: Uint8Array,

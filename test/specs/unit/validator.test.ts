@@ -18,7 +18,7 @@ describe('GLTF Validator', () => {
       const result = await validateBytes(data, { uri: 'test.gltf' });
 
       expect(result).toBeDefined();
-      expect(result.validatorVersion).toBe('2.0.0-dev.3.0');
+      expect(result.validatorVersion).toBe('1.0.0');
       expect(result.uri).toBe('test.gltf');
     });
 

@@ -19,6 +19,9 @@
   "scripts": {
     "build": "tsc",
     "build:clean": "rm -rf dist && npm run build",
+    "build:web": "npm run build && npm run build:web-bundle",
+    "build:web-bundle": "esbuild dist/index.js --bundle --format=iife --outfile=web/scripts/gltf-validator.js --platform=browser --target=es2020 --global-name=GLTFValidator",
+    "build:web-clean": "rm -rf dist web/scripts/gltf-validator.js && npm run build:web",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -66,6 +69,7 @@
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "@vitest/coverage-v8": "^2.1.9",
+    "esbuild": "^0.21.5",
     "eslint": "^9.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.0.0",

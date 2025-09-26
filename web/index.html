@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>glTF Validator TS</title>
+    <meta name="description" content="A TypeScript implementation of glTF/GLB validation compatible with the official Khronos validator">
+    <link rel="icon" type="image/x-icon" href="https://www.khronos.org/favicon.ico">
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+    <a href="https://github.com/nicoecheza/gltf-validator-ts">
+        <img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1000;"
+             src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png"
+             alt="Fork me on GitHub">
+    </a>
+
+    <div class="container">
+        <header>
+            <h1>glTF Validator TS</h1>
+            <p class="subtitle">TypeScript glTF/GLB Validator</p>
+        </header>
+
+        <main>
+            <div id="dropZone" class="drop-zone">
+                <div class="drop-content">
+                    <div class="drop-icon">📁</div>
+                    <p>Drag & drop your glTF/GLB files here</p>
+                    <p class="drop-subtitle">Drop the .gltf/.glb file along with all dependencies (textures, buffers, etc.)</p>
+                    <p class="or">or</p>
+                    <button id="selectButton" class="select-button">Select Files</button>
+                    <input type="file" id="fileInput" accept=".gltf,.glb,.bin,.png,.jpg,.jpeg,.ktx2" multiple style="display: none;">
+                </div>
+            </div>
+
+            <div id="filesZone" class="files-zone" style="display: none;">
+                <h3>Loaded Files</h3>
+                <div id="filesList" class="files-list"></div>
+                <div class="files-actions">
+                    <button id="validateButton" class="validate-button">Validate</button>
+                    <button id="clearFilesButton" class="clear-files-button">Clear All</button>
+                </div>
+            </div>
+
+            <div id="altZone" class="alt-zone">
+                <p>Supported formats: <strong>.gltf</strong>, <strong>.glb</strong>, <strong>.bin</strong>, <strong>.png</strong>, <strong>.jpg</strong>, <strong>.ktx2</strong></p>
+                <p>For complete validation, upload the main .gltf/.glb file along with all referenced resources.</p>
+                <p>This validator runs entirely in your browser - no files are uploaded to any server.</p>
+            </div>
+
+            <div id="outputZone" class="output-zone" style="display: none;">
+                <div class="output-header">
+                    <h2>Validation Results</h2>
+                    <button id="clearButton" class="clear-button">Clear</button>
+                </div>
+                <div class="file-info">
+                    <span id="fileName"></span>
+                    <span id="fileSize"></span>
+                </div>
+                <div class="validation-summary">
+                    <div id="validationStatus" class="status"></div>
+                    <div id="validationCounts" class="counts"></div>
+                </div>
+                <div class="output-content">
+                    <pre><code id="outputCode"></code></pre>
+                </div>
+                <div id="truncationWarning" class="warning" style="display: none;">
+                    <p><strong>Warning:</strong> The validation report has been truncated due to size limitations.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>
+                This is a TypeScript implementation compatible with the
+                <a href="https://github.com/KhronosGroup/glTF-Validator" target="_blank">official Khronos glTF Validator</a>.
+            </p>
+            <p>
+                <a href="https://github.com/nicoecheza/gltf-validator-ts" target="_blank">View on GitHub</a> |
+                <a href="https://www.npmjs.com/package/gltf-validator-ts" target="_blank">NPM Package</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="scripts/gltf-validator.js"></script>
+    <script src="scripts/validator.js"></script>
+</body>
+</html>

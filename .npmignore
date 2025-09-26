@@ -17,6 +17,10 @@ PUBLISHING.md
 # Development directories
 node_modules/
 coverage/
+web/
+
+# Scripts directory
+scripts/
 
 # IDE and editor files
 .vscode/
@@ -61,6 +65,19 @@ coverage/
 .github/
 .travis.yml
 .circleci/
+
+# Claude AI files
+.claude/
+
+# Documentation files (except README.md and LICENSE which are in package.json files)
+CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # Other
 .npmrc

@@ -94,7 +94,7 @@ jobs:
         with:
           file-path: ${{ steps.npm-pack.outputs.pack-filename }}
           tag-name: ${{ needs.version.outputs.version }}
-          release-name: gltf-validator-ts v${{ needs.version.outputs.version }}
+          release-name: ${{ needs.version.outputs.version }}
           prerelease: ${{ github.ref != 'refs/heads/main' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

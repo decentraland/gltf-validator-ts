@@ -35,3 +35,7 @@ jobs:
   package-publisher:
     uses: ./.github/workflows/publish.yml
     secrets: inherit
+    permissions:
+      contents: write
+      pages: write
+      id-token: write

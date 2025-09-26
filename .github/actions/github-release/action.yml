@@ -1,0 +1,83 @@
+name: 'GitHub Release Upload'
+description: 'Upload a file to GitHub Releases and return the download URL'
+
+inputs:
+  file-path:
+    description: 'Path to the file to upload'
+    required: true
+  tag-name:
+    description: 'Release tag name'
+    required: true
+  release-name:
+    description: 'Release name'
+    required: false
+    default: ''
+  prerelease:
+    description: 'Mark as prerelease'
+    required: false
+    default: 'false'
+  draft:
+    description: 'Create as draft'
+    required: false
+    default: 'false'
+  generate-release-notes:
+    description: 'Generate release notes automatically'
+    required: false
+    default: 'true'
+  github-token:
+    description: 'GitHub token'
+    required: true
+
+outputs:
+  release-url:
+    description: 'The URL of the created release'
+    value: ${{ steps.release.outputs.html_url }}
+  download-url:
+    description: 'The download URL of the uploaded file'
+    value: ${{ steps.extract-download-url.outputs.download-url }}
+  release-id:
+    description: 'The ID of the created release'
+    value: ${{ steps.release.outputs.id }}
+  upload-url:
+    description: 'The upload URL for additional assets'
+    value: ${{ steps.release.outputs.upload_url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Extract filename
+      shell: bash
+      run: |
+        FILENAME=$(basename "${{ inputs.file-path }}")
+        echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+        echo "Extracted filename: $FILENAME"
+      id: extract-filename
+
+    - name: Create GitHub Release
+      id: release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ inputs.tag-name }}
+        name: ${{ inputs.release-name || inputs.tag-name }}
+        files: ${{ inputs.file-path }}
+        draft: ${{ inputs.draft }}
+        prerelease: ${{ inputs.prerelease }}
+        generate_release_notes: ${{ inputs.generate-release-notes }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+
+    - name: Extract download URL
+      shell: bash
+      run: |
+        FILENAME="${{ steps.extract-filename.outputs.filename }}"
+        TAG_NAME="${{ inputs.tag-name }}"
+        REPO="${{ github.repository }}"
+
+        # GitHub release download URL format
+        DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG_NAME/$FILENAME"
+
+        echo "download-url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+        echo "✅ File uploaded to GitHub Releases!"
+        echo "Release URL: ${{ steps.release.outputs.html_url }}"
+        echo "Download URL: $DOWNLOAD_URL"
+      id: extract-download-url

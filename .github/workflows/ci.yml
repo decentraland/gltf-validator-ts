@@ -1,0 +1,37 @@
+name: CI
+# This workflow is the entry point for all CI processes.
+# It is from here that all other workflows are launched.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'renovate/**'
+    paths-ignore:
+      - '**.md'
+      - .editorconfig
+      - .gitignore
+      - '.idea/**'
+      - '.vscode/**'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - .editorconfig
+      - .gitignore
+      - '.idea/**'
+      - '.vscode/**'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+  typechecking:
+    uses: ./.github/workflows/typechecking.yml
+  tests:
+    uses: ./.github/workflows/tests.yml
+  package-publisher:
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit

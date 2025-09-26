@@ -33,6 +33,7 @@ jobs:
   tests:
     uses: ./.github/workflows/tests.yml
   package-publisher:
+    needs: [lint, typechecking, tests]
     uses: ./.github/workflows/publish.yml
     secrets: inherit
     permissions:

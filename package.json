@@ -31,7 +31,7 @@
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build:clean && npm run test && npm run lint",
+    "prepublishOnly": "npm run build:clean && npm run update-test-reports && npm run test && npm run lint",
     "prepack": "npm run build",
     "example": "npm run build && node examples/basic/run-example.js",
     "example:ts": "npx tsx examples/basic/validate-model.ts",

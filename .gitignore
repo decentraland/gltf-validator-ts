@@ -11,6 +11,7 @@ dist/
 # Exception: keep important config files
 !eslint.config.js
 !*.config.js
+!scripts/*.js
 
 # Development tools
 .claude/

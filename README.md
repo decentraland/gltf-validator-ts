@@ -38,7 +38,7 @@ A TypeScript implementation of GLTF/GLB validation compatible with the official 
 ## Installation
 
 ```bash
-npm install gltf-validator-ts
+npm install @dcl/gltf-validator-ts
 ```
 
 ## Quick Start
@@ -46,7 +46,7 @@ npm install gltf-validator-ts
 ### Basic Usage
 
 ```typescript
-import { GLTFValidator } from 'gltf-validator-ts';
+import { GLTFValidator } from '@dcl/gltf-validator-ts';
 
 // Create validator with default options
 const validator = new GLTFValidator({
@@ -78,7 +78,7 @@ result.issues.messages.forEach(message => {
 ### Validating GLB Files
 
 ```typescript
-import { parseGLB } from 'gltf-validator-ts';
+import { parseGLB } from '@dcl/gltf-validator-ts';
 
 // Parse GLB binary data
 const glbBuffer = new Uint8Array(/* your GLB file data */);

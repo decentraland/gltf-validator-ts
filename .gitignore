@@ -8,6 +8,10 @@ dist/
 *.d.ts
 *.d.ts.map
 
+# Exception: keep important config files
+!eslint.config.js
+!*.config.js
+
 # Development tools
 .claude/
 

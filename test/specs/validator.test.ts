@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, extname } from 'path';
 import { validateBytes } from '../../src/index';
+import packageJson from '../../package.json';
 
 // Helper function to recursively find all .gltf and .glb files
 function findGLTFFiles(dir: string): string[] {
@@ -87,7 +88,7 @@ describe('GLTF Validator', () => {
         expect(result).toHaveProperty('info');
 
         expect(result.uri).toBe(relativePath);
-        expect(result.validatorVersion).toBe('1.0.0');
+        expect(result.validatorVersion).toBe(packageJson.version);
 
         // Validate issues structure
         expect(result.issues).toHaveProperty('numErrors');

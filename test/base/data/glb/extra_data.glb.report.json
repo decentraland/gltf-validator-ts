@@ -1,7 +1,7 @@
 {
     "uri": "test/base/data/glb/extra_data.glb",
     "mimeType": "model/gltf-binary",
-    "validatorVersion": "2.0.0-dev.3.7",
+    "validatorVersion": "1.0.0",
     "issues": {
         "numErrors": 0,
         "numWarnings": 1,

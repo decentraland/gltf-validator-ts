@@ -1,7 +1,7 @@
 {
     "uri": "test/base/data/mesh/invalid_indexed_attribute.gltf",
     "mimeType": "model/gltf+json",
-    "validatorVersion": "2.0.0-dev.3.10",
+    "validatorVersion": "1.0.0",
     "issues": {
         "numErrors": 21,
         "numWarnings": 0,

@@ -33,7 +33,8 @@
     "prepublishOnly": "npm run build:clean && npm run test && npm run lint",
     "prepack": "npm run build",
     "example": "npm run build && node examples/basic/run-example.js",
-    "example:ts": "npx tsx examples/basic/validate-model.ts"
+    "example:ts": "npx tsx examples/basic/validate-model.ts",
+    "update-test-reports": "node scripts/update-test-reports.js"
   },
   "keywords": [
     "gltf",

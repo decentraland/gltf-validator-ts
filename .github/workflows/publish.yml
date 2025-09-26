@@ -108,11 +108,11 @@ jobs:
       - name: prepare deployment folder ("hack" for subpaths in github pages url)
         run: |
           safe_branch=${{ steps.sanitize-branch.outputs.safe_branch }}
-          mkdir -p ./deploy/gltf-validator/$safe_branch
+          mkdir -p ./deploy/$safe_branch
           # Copy web UI files
-          cp -r ./web/* ./deploy/gltf-validator/$safe_branch/
+          cp -r ./web/* ./deploy/$safe_branch/
           # Update the HTML title to include version
-          sed -i "s/glTF Validator TS - Web Interface/glTF Validator TS v${{ needs.version.outputs.version }} - Web Interface/g" ./deploy/gltf-validator/$safe_branch/index.html
+          sed -i "s/glTF Validator TS - Web Interface/glTF Validator TS v${{ needs.version.outputs.version }} - Web Interface/g" ./deploy/$safe_branch/index.html
 
       - name: upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -130,7 +130,7 @@ jobs:
         run: |
           safe_branch=${{ steps.sanitize-branch.outputs.safe_branch }}
           REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)
-          echo "preview_url=https://${{ github.repository_owner }}.github.io/$REPO_NAME/gltf-validator/$safe_branch" >> $GITHUB_OUTPUT
+          echo "preview_url=https://${{ github.repository_owner }}.github.io/$REPO_NAME/$safe_branch" >> $GITHUB_OUTPUT
 
       - name: publish to npm registry
         if: ${{ github.ref == 'refs/heads/main' }}

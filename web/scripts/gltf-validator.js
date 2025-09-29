@@ -9576,7 +9576,7 @@ ${image.uri}
 
   // package.json
   var package_default = {
-    name: "gltf-validator-ts",
+    name: "@dcl/gltf-validator-ts",
     version: "1.0.0",
     description: "A TypeScript implementation of GLTF/GLB validation compatible with the official Khronos validator",
     main: "dist/index.js",
@@ -9629,18 +9629,14 @@ ${image.uri}
       "animation",
       "extensions"
     ],
-    author: {
-      name: "Nicol\xE1s Echezarreta",
-      url: "https://github.com/nicoecheza"
-    },
     license: "MIT",
-    homepage: "https://github.com/nicoecheza/gltf-validator-ts",
+    homepage: "https://github.com/decentraland/gltf-validator-ts",
     repository: {
       type: "git",
-      url: "https://github.com/nicoecheza/gltf-validator-ts.git"
+      url: "https://github.com/decentraland/gltf-validator-ts.git"
     },
     bugs: {
-      url: "https://github.com/nicoecheza/gltf-validator-ts/issues"
+      url: "https://github.com/decentraland/gltf-validator-ts/issues"
     },
     devDependencies: {
       "@eslint/js": "^9.36.0",

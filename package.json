@@ -52,10 +52,6 @@
     "animation",
     "extensions"
   ],
-  "author": {
-    "name": "Nicolás Echezarreta",
-    "url": "https://github.com/nicoecheza"
-  },
   "license": "MIT",
   "homepage": "https://github.com/decentraland/gltf-validator-ts",
   "repository": {

@@ -14,3 +14,5 @@ export { validateBytes as validate } from './validator';
 // Utility functions
 import { GLBValidator } from './validators/glb-validator';
 export const parseGLB = GLBValidator.parseGLB;
+
+console.log('@dcl/gltf-validator-ts');

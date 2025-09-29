@@ -9576,7 +9576,7 @@ ${image.uri}
 
   // package.json
   var package_default = {
-    name: "gltf-validator-ts",
+    name: "@dcl/gltf-validator-ts",
     version: "1.0.0",
     description: "A TypeScript implementation of GLTF/GLB validation compatible with the official Khronos validator",
     main: "dist/index.js",

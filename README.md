@@ -2,7 +2,7 @@
 
 A TypeScript implementation of GLTF/GLB validation compatible with the official Khronos validator.
 
-[![npm version](https://img.shields.io/npm/v/gltf-validator-ts.svg)](https://www.npmjs.com/package/gltf-validator-ts)
+[![npm version](https://img.shields.io/npm/v/@dcl/gltf-validator-ts.svg)](https://www.npmjs.com/package/@dcl/gltf-validator-ts)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 
@@ -38,7 +38,7 @@ A TypeScript implementation of GLTF/GLB validation compatible with the official 
 ## Installation
 
 ```bash
-npm install gltf-validator-ts
+npm install @dcl/gltf-validator-ts
 ```
 
 ## Quick Start
@@ -46,7 +46,7 @@ npm install gltf-validator-ts
 ### Basic Usage
 
 ```typescript
-import { GLTFValidator } from 'gltf-validator-ts';
+import { GLTFValidator } from '@dcl/gltf-validator-ts';
 
 // Create validator with default options
 const validator = new GLTFValidator({
@@ -78,7 +78,7 @@ result.issues.messages.forEach(message => {
 ### Validating GLB Files
 
 ```typescript
-import { parseGLB } from 'gltf-validator-ts';
+import { parseGLB } from '@dcl/gltf-validator-ts';
 
 // Parse GLB binary data
 const glbBuffer = new Uint8Array(/* your GLB file data */);
@@ -239,7 +239,7 @@ This validator supports validation for the following GLTF extensions:
 ### Setup
 
 ```bash
-git clone https://github.com/yourusername/gltf-validator-ts.git
+git clone https://github.com/decentraland/gltf-validator-ts.git
 cd gltf-validator-ts
 npm install
 ```

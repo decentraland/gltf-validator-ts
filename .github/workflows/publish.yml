@@ -153,7 +153,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: Test gltf-validator-ts package
+          body-includes: Test @dcl/gltf-validator-ts package
 
       - name: create or update comment
         uses: peter-evans/create-or-update-comment@v1
@@ -161,7 +161,7 @@ jobs:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            # Test gltf-validator-ts package
+            # Test @dcl/gltf-validator-ts package
 
             - Preview: [link](${{ needs.publish.outputs.preview_url }})
             - Download package: [Download](${{ needs.publish.outputs.download_url }})
@@ -171,6 +171,6 @@ jobs:
               ```
             - Install from npm (main branch only):
               ```bash
-              npm install gltf-validator-ts@latest
+              npm install @dcl/gltf-validator-ts@latest
               ```
           edit-mode: replace

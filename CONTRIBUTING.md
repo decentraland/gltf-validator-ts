@@ -25,7 +25,7 @@ This project is a TypeScript implementation based on the official [Khronos glTF 
 
 1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/yourusername/gltf-validator-ts.git
+   git clone https://github.com/decentraland/gltf-validator-ts.git
    cd gltf-validator-ts
    ```
 

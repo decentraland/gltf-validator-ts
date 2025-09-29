@@ -12,6 +12,7 @@ dist/
 !eslint.config.js
 !*.config.js
 !scripts/*.js
+!web/scripts/*.js
 
 # Development tools
 .claude/

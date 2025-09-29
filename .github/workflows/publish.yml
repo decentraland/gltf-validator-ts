@@ -112,7 +112,7 @@ jobs:
           # Copy web UI files
           cp -r ./web/* ./deploy/$safe_branch/
           # Update the HTML title to include version
-          sed -i "s/glTF Validator TS - Web Interface/glTF Validator TS v${{ needs.version.outputs.version }} - Web Interface/g" ./deploy/$safe_branch/index.html
+          sed -i "s/glTF Validator TS/glTF Validator TS v${{ needs.version.outputs.version }}/g" ./deploy/$safe_branch/index.html
 
       - name: upload artifact
         uses: actions/upload-pages-artifact@v3

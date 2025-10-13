@@ -8,6 +8,9 @@ class GLTFValidatorWeb {
         this.isValidating = false;
         this.loadedFiles = new Map(); // filename -> File object
         this.mainFile = null; // The .gltf or .glb file
+        this.ignoredCodes = this.loadIgnoredCodes(); // Load from localStorage
+        this.showIgnored = false; // Toggle for showing/hiding ignored issues
+        this.lastValidationResult = null; // Store last result for re-filtering
         this.initializeUI();
     }
 
@@ -19,6 +22,24 @@ class GLTFValidatorWeb {
         const clearFilesButton = document.getElementById('clearFilesButton');
         const clearButton = document.getElementById('clearButton');
         const toggleRawOutput = document.getElementById('toggleRawOutput');
+
+        // Settings and filter elements
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeModal = document.getElementById('closeModal');
+        const addCodeButton = document.getElementById('addCodeButton');
+        const addCodeInput = document.getElementById('addCodeInput');
+        const clearAllCodesButton = document.getElementById('clearAllCodesButton');
+        const exportCodesButton = document.getElementById('exportCodesButton');
+        const importCodesButton = document.getElementById('importCodesButton');
+        const toggleIgnoredButton = document.getElementById('toggleIgnoredButton');
+        const manageFiltersButton = document.getElementById('manageFiltersButton');
+
+        // Import modal elements
+        const importModal = document.getElementById('importModal');
+        const closeImportModal = document.getElementById('closeImportModal');
+        const cancelImportButton = document.getElementById('cancelImportButton');
+        const confirmImportButton = document.getElementById('confirmImportButton');
 
         if (!dropZone || !selectButton || !fileInput || !validateButton || !clearFilesButton || !clearButton || !toggleRawOutput) {
             console.error('Required DOM elements not found');
@@ -39,6 +60,42 @@ class GLTFValidatorWeb {
         clearFilesButton.addEventListener('click', this.clearAllFiles.bind(this));
         clearButton.addEventListener('click', this.clearResults.bind(this));
         toggleRawOutput.addEventListener('click', this.toggleRawOutput.bind(this));
+
+        // Settings modal handlers
+        if (settingsButton) settingsButton.addEventListener('click', () => this.openSettingsModal());
+        if (closeModal) closeModal.addEventListener('click', () => this.closeSettingsModal());
+        if (settingsModal) {
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) this.closeSettingsModal();
+            });
+        }
+
+        // Add code handlers
+        if (addCodeButton) addCodeButton.addEventListener('click', () => this.addIgnoredCode());
+        if (addCodeInput) {
+            addCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.addIgnoredCode();
+            });
+        }
+
+        // Settings actions
+        if (clearAllCodesButton) clearAllCodesButton.addEventListener('click', () => this.clearAllIgnoredCodes());
+        if (exportCodesButton) exportCodesButton.addEventListener('click', () => this.exportIgnoredCodes());
+        if (importCodesButton) importCodesButton.addEventListener('click', () => this.openImportModal());
+
+        // Filter banner handlers
+        if (toggleIgnoredButton) toggleIgnoredButton.addEventListener('click', () => this.toggleShowIgnored());
+        if (manageFiltersButton) manageFiltersButton.addEventListener('click', () => this.openSettingsModal());
+
+        // Import modal handlers
+        if (closeImportModal) closeImportModal.addEventListener('click', () => this.closeImportModal());
+        if (cancelImportButton) cancelImportButton.addEventListener('click', () => this.closeImportModal());
+        if (confirmImportButton) confirmImportButton.addEventListener('click', () => this.importIgnoredCodes());
+        if (importModal) {
+            importModal.addEventListener('click', (e) => {
+                if (e.target === importModal) this.closeImportModal();
+            });
+        }
     }
 
     handleDragOver(event) {
@@ -273,9 +330,33 @@ class GLTFValidatorWeb {
     }
 
     displayResults(file, result) {
+        // Store result for re-filtering
+        this.lastValidationResult = result;
+
         const issues = result.issues;
-        const hasErrors = issues.numErrors > 0;
-        const hasWarnings = issues.numWarnings > 0;
+
+        // Count ignored issues
+        const ignoredIssues = issues.messages.filter(m => this.isIssueIgnored(m));
+        const hiddenCount = this.showIgnored ? 0 : ignoredIssues.length;
+
+        // Calculate effective counts (after filtering)
+        let effectiveErrors = issues.numErrors;
+        let effectiveWarnings = issues.numWarnings;
+        let effectiveInfos = issues.numInfos;
+        let effectiveHints = issues.numHints;
+
+        if (!this.showIgnored) {
+            ignoredIssues.forEach(msg => {
+                const severity = msg.severity || 0;
+                if (severity === 0) effectiveErrors--;
+                else if (severity === 1) effectiveWarnings--;
+                else if (severity === 2) effectiveInfos--;
+                else if (severity === 3) effectiveHints--;
+            });
+        }
+
+        const hasErrors = effectiveErrors > 0;
+        const hasWarnings = effectiveWarnings > 0;
 
         // Update file info
         document.getElementById('fileName').textContent = file.name;
@@ -292,14 +373,37 @@ class GLTFValidatorWeb {
         }
         document.getElementById('validationStatus').innerHTML = statusHtml;
 
-        // Update counts
+        // Update counts with ignored information
         const counts = [];
-        if (issues.numErrors > 0) counts.push(`${issues.numErrors} error${issues.numErrors !== 1 ? 's' : ''}`);
-        if (issues.numWarnings > 0) counts.push(`${issues.numWarnings} warning${issues.numWarnings !== 1 ? 's' : ''}`);
-        if (issues.numInfos > 0) counts.push(`${issues.numInfos} info${issues.numInfos !== 1 ? 's' : ''}`);
-        if (issues.numHints > 0) counts.push(`${issues.numHints} hint${issues.numHints !== 1 ? 's' : ''}`);
+        if (effectiveErrors > 0 || (issues.numErrors > effectiveErrors)) {
+            const ignoredErrors = issues.numErrors - effectiveErrors;
+            let errorText = `${effectiveErrors} error${effectiveErrors !== 1 ? 's' : ''}`;
+            if (ignoredErrors > 0) errorText += ` (${ignoredErrors} ignored)`;
+            counts.push(errorText);
+        }
+        if (effectiveWarnings > 0 || (issues.numWarnings > effectiveWarnings)) {
+            const ignoredWarnings = issues.numWarnings - effectiveWarnings;
+            let warningText = `${effectiveWarnings} warning${effectiveWarnings !== 1 ? 's' : ''}`;
+            if (ignoredWarnings > 0) warningText += ` (${ignoredWarnings} ignored)`;
+            counts.push(warningText);
+        }
+        if (effectiveInfos > 0 || (issues.numInfos > effectiveInfos)) {
+            const ignoredInfos = issues.numInfos - effectiveInfos;
+            let infoText = `${effectiveInfos} info${effectiveInfos !== 1 ? 's' : ''}`;
+            if (ignoredInfos > 0) infoText += ` (${ignoredInfos} ignored)`;
+            counts.push(infoText);
+        }
+        if (effectiveHints > 0 || (issues.numHints > effectiveHints)) {
+            const ignoredHints = issues.numHints - effectiveHints;
+            let hintText = `${effectiveHints} hint${effectiveHints !== 1 ? 's' : ''}`;
+            if (ignoredHints > 0) hintText += ` (${ignoredHints} ignored)`;
+            counts.push(hintText);
+        }
 
         document.getElementById('validationCounts').textContent = counts.length > 0 ? counts.join(', ') : 'No issues found';
+
+        // Update filter banner
+        this.updateFilterBanner(hiddenCount);
 
         // Display structured issues
         this.displayIssues(issues);
@@ -325,7 +429,7 @@ class GLTFValidatorWeb {
             return;
         }
 
-        // Group messages by severity
+        // Group messages by severity and filter based on ignored codes
         const groupedIssues = {
             errors: [],
             warnings: [],
@@ -334,17 +438,35 @@ class GLTFValidatorWeb {
         };
 
         issues.messages.forEach(message => {
+            const isIgnored = this.isIssueIgnored(message);
+
+            // Skip ignored issues if showIgnored is false
+            if (isIgnored && !this.showIgnored) {
+                return;
+            }
+
             const severity = message.severity || 0;
+            const messageWithIgnoredFlag = { ...message, _isIgnored: isIgnored };
+
             if (severity === 0) {
-                groupedIssues.errors.push(message);
+                groupedIssues.errors.push(messageWithIgnoredFlag);
             } else if (severity === 1) {
-                groupedIssues.warnings.push(message);
+                groupedIssues.warnings.push(messageWithIgnoredFlag);
             } else if (severity === 2) {
-                groupedIssues.infos.push(message);
+                groupedIssues.infos.push(messageWithIgnoredFlag);
             } else if (severity === 3) {
-                groupedIssues.hints.push(message);
+                groupedIssues.hints.push(messageWithIgnoredFlag);
             }
         });
+
+        // Check if there are any visible issues
+        const totalVisible = groupedIssues.errors.length + groupedIssues.warnings.length +
+                           groupedIssues.infos.length + groupedIssues.hints.length;
+
+        if (totalVisible === 0) {
+            issuesDisplay.innerHTML = '<p style="text-align: center; color: #28a745; padding: 20px;">✨ All issues are ignored!</p>';
+            return;
+        }
 
         // Create category displays
         if (groupedIssues.errors.length > 0) {
@@ -406,6 +528,11 @@ class GLTFValidatorWeb {
         const item = document.createElement('div');
         item.className = 'issue-item';
 
+        // Apply ignored class if this issue is ignored
+        if (message._isIgnored) {
+            item.classList.add('ignored');
+        }
+
         let content = '';
 
         // Add code badge if available
@@ -424,6 +551,21 @@ class GLTFValidatorWeb {
         }
 
         item.innerHTML = content;
+
+        // Add inline ignore button if code exists and not already ignored
+        if (message.code && !message._isIgnored) {
+            const ignoreBtn = document.createElement('button');
+            ignoreBtn.className = 'issue-ignore-button';
+            ignoreBtn.textContent = `🚫 Ignore ${message.code}`;
+            ignoreBtn.title = `Ignore all ${message.code} issues`;
+            ignoreBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm(`Ignore all "${message.code}" issues in future validations?`)) {
+                    this.addIgnoredCode(message.code);
+                }
+            });
+            item.appendChild(ignoreBtn);
+        }
 
         return item;
     }
@@ -458,6 +600,206 @@ class GLTFValidatorWeb {
         const sizes = ['B', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // ========== Ignored Codes Management ==========
+
+    loadIgnoredCodes() {
+        try {
+            const stored = localStorage.getItem('gltf_ignored_codes');
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.error('Failed to load ignored codes:', error);
+            return [];
+        }
+    }
+
+    saveIgnoredCodes() {
+        try {
+            localStorage.setItem('gltf_ignored_codes', JSON.stringify(this.ignoredCodes));
+        } catch (error) {
+            console.error('Failed to save ignored codes:', error);
+        }
+    }
+
+    addIgnoredCode(code = null) {
+        const input = document.getElementById('addCodeInput');
+        const codeToAdd = code || input.value.trim().toUpperCase();
+
+        if (!codeToAdd) return;
+
+        if (!this.ignoredCodes.includes(codeToAdd)) {
+            this.ignoredCodes.push(codeToAdd);
+            this.saveIgnoredCodes();
+            this.updateIgnoredCodesList();
+
+            // Re-filter current results if available
+            if (this.lastValidationResult) {
+                this.displayResults(this.mainFile, this.lastValidationResult);
+            }
+        }
+
+        if (input) input.value = '';
+    }
+
+    removeIgnoredCode(code) {
+        this.ignoredCodes = this.ignoredCodes.filter(c => c !== code);
+        this.saveIgnoredCodes();
+        this.updateIgnoredCodesList();
+
+        // Re-filter current results if available
+        if (this.lastValidationResult) {
+            this.displayResults(this.mainFile, this.lastValidationResult);
+        }
+    }
+
+    clearAllIgnoredCodes() {
+        if (confirm('Are you sure you want to clear all ignored codes?')) {
+            this.ignoredCodes = [];
+            this.saveIgnoredCodes();
+            this.updateIgnoredCodesList();
+
+            // Re-filter current results if available
+            if (this.lastValidationResult) {
+                this.displayResults(this.mainFile, this.lastValidationResult);
+            }
+        }
+    }
+
+    exportIgnoredCodes() {
+        const data = JSON.stringify(this.ignoredCodes, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'gltf-ignored-codes.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    importIgnoredCodes() {
+        const textarea = document.getElementById('importTextarea');
+        const value = textarea.value.trim();
+
+        if (!value) return;
+
+        try {
+            const codes = JSON.parse(value);
+
+            if (!Array.isArray(codes)) {
+                alert('Invalid format. Please provide a JSON array of codes.');
+                return;
+            }
+
+            // Validate all items are strings
+            if (!codes.every(c => typeof c === 'string')) {
+                alert('Invalid format. All codes must be strings.');
+                return;
+            }
+
+            // Merge with existing codes (avoid duplicates)
+            const newCodes = codes.filter(c => !this.ignoredCodes.includes(c));
+            this.ignoredCodes = [...this.ignoredCodes, ...newCodes];
+            this.saveIgnoredCodes();
+            this.updateIgnoredCodesList();
+            this.closeImportModal();
+
+            // Re-filter current results if available
+            if (this.lastValidationResult) {
+                this.displayResults(this.mainFile, this.lastValidationResult);
+            }
+
+            alert(`Successfully imported ${newCodes.length} new code(s).`);
+        } catch (error) {
+            alert('Failed to parse JSON. Please check the format and try again.');
+        }
+    }
+
+    updateIgnoredCodesList() {
+        const list = document.getElementById('ignoredCodesList');
+        const count = document.getElementById('ignoredCount');
+
+        if (count) count.textContent = this.ignoredCodes.length;
+
+        if (!list) return;
+
+        if (this.ignoredCodes.length === 0) {
+            list.innerHTML = '<p class="empty-state">No codes ignored yet</p>';
+            return;
+        }
+
+        list.innerHTML = '';
+        this.ignoredCodes.sort().forEach(code => {
+            const item = document.createElement('div');
+            item.className = 'ignored-code-item';
+
+            const codeSpan = document.createElement('span');
+            codeSpan.textContent = code;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-code-button';
+            removeBtn.textContent = '×';
+            removeBtn.title = 'Remove';
+            removeBtn.addEventListener('click', () => this.removeIgnoredCode(code));
+
+            item.appendChild(codeSpan);
+            item.appendChild(removeBtn);
+            list.appendChild(item);
+        });
+    }
+
+    // ========== Modal Management ==========
+
+    openSettingsModal() {
+        this.updateIgnoredCodesList();
+        document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    closeSettingsModal() {
+        document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    openImportModal() {
+        document.getElementById('importTextarea').value = '';
+        document.getElementById('importModal').style.display = 'flex';
+    }
+
+    closeImportModal() {
+        document.getElementById('importModal').style.display = 'none';
+    }
+
+    // ========== Filter Management ==========
+
+    toggleShowIgnored() {
+        this.showIgnored = !this.showIgnored;
+        const button = document.getElementById('toggleIgnoredButton');
+        if (button) {
+            button.textContent = this.showIgnored ? 'Hide Ignored' : 'Show Ignored';
+        }
+
+        // Re-display issues with new filter state
+        if (this.lastValidationResult) {
+            this.displayResults(this.mainFile, this.lastValidationResult);
+        }
+    }
+
+    updateFilterBanner(hiddenCount) {
+        const filterBanner = document.getElementById('filterBanner');
+        const filterText = document.getElementById('filterText');
+
+        if (!filterBanner || !filterText) return;
+
+        if (hiddenCount > 0) {
+            const codeCount = this.ignoredCodes.length;
+            filterText.textContent = `Filtering ${codeCount} error code${codeCount !== 1 ? 's' : ''} (${hiddenCount} issue${hiddenCount !== 1 ? 's' : ''} hidden)`;
+            filterBanner.style.display = 'flex';
+        } else {
+            filterBanner.style.display = 'none';
+        }
+    }
+
+    isIssueIgnored(message) {
+        return message.code && this.ignoredCodes.includes(message.code);
     }
 }
 

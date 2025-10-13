@@ -51,7 +51,10 @@
             <div id="outputZone" class="output-zone" style="display: none;">
                 <div class="output-header">
                     <h2>Validation Results</h2>
-                    <button id="clearButton" class="clear-button">Clear</button>
+                    <div class="output-header-actions">
+                        <button id="settingsButton" class="settings-button" title="Manage ignored codes">⚙️</button>
+                        <button id="clearButton" class="clear-button">Clear</button>
+                    </div>
                 </div>
                 <div class="file-info">
                     <span id="fileName"></span>
@@ -60,6 +63,16 @@
                 <div class="validation-summary">
                     <div id="validationStatus" class="status"></div>
                     <div id="validationCounts" class="counts"></div>
+                </div>
+
+                <div id="filterBanner" class="filter-banner" style="display: none;">
+                    <div class="filter-info">
+                        <span id="filterText"></span>
+                    </div>
+                    <div class="filter-actions">
+                        <button id="toggleIgnoredButton" class="toggle-ignored-button">Show Ignored</button>
+                        <button id="manageFiltersButton" class="manage-filters-button">Manage</button>
+                    </div>
                 </div>
 
                 <div id="issuesDisplay" class="issues-display"></div>
@@ -72,6 +85,56 @@
                 </div>
                 <div id="truncationWarning" class="warning" style="display: none;">
                     <p><strong>Warning:</strong> The validation report has been truncated due to size limitations.</p>
+                </div>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settingsModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Manage Ignored Error Codes</h3>
+                        <button id="closeModal" class="close-modal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="settings-section">
+                            <label for="addCodeInput">Add code to ignore:</label>
+                            <div class="add-code-input-group">
+                                <input type="text" id="addCodeInput" placeholder="e.g., ACCESSOR_WEIGHTS_NON_NORMALIZED">
+                                <button id="addCodeButton" class="add-code-button">Add</button>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <h4>Ignored Codes (<span id="ignoredCount">0</span>)</h4>
+                                <div class="section-actions">
+                                    <button id="exportCodesButton" class="secondary-button" title="Export as JSON">📤 Export</button>
+                                    <button id="importCodesButton" class="secondary-button" title="Import from JSON">📥 Import</button>
+                                    <button id="clearAllCodesButton" class="secondary-button danger" title="Clear all">🗑️ Clear All</button>
+                                </div>
+                            </div>
+                            <div id="ignoredCodesList" class="ignored-codes-list">
+                                <p class="empty-state">No codes ignored yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Modal -->
+            <div id="importModal" class="modal" style="display: none;">
+                <div class="modal-content small">
+                    <div class="modal-header">
+                        <h3>Import Ignored Codes</h3>
+                        <button id="closeImportModal" class="close-modal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Paste your JSON array of error codes:</p>
+                        <textarea id="importTextarea" placeholder='["CODE_1", "CODE_2", "CODE_3"]'></textarea>
+                        <div class="modal-actions">
+                            <button id="cancelImportButton" class="secondary-button">Cancel</button>
+                            <button id="confirmImportButton" class="primary-button">Import</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>

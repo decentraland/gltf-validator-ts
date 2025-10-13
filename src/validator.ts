@@ -76,6 +76,58 @@ export async function validateBytes(
           parsingErrors.push(...convertGLBExceptionToValidationMessages(new Error(warning), data));
         }
       }
+
+      // Track all image resources for GLB files
+      if (gltf.images) {
+        for (let i = 0; i < gltf.images.length; i++) {
+          const image = gltf.images[i];
+          if (image) {
+            let mimeType: string | undefined = undefined;
+            let storage: 'external' | 'data-uri' | 'glb' | 'buffer-view' = 'external';
+            let uri: string | undefined = undefined;
+
+            if (image.uri) {
+              if (image.uri.startsWith('data:')) {
+                storage = 'data-uri';
+                // Extract MIME type from data URI
+                const match = image.uri.match(/^data:([^;]+)/);
+                if (match) {
+                  mimeType = match[1];
+                }
+              } else {
+                uri = image.uri;
+                // Try to determine MIME type from file extension
+                const extension = image.uri.split('.').pop()?.toLowerCase();
+                if (extension === 'png') {
+                  mimeType = 'image/png';
+                } else if (extension === 'jpg' || extension === 'jpeg') {
+                  mimeType = 'image/jpeg';
+                } else if (extension === 'ktx2') {
+                  mimeType = 'image/ktx2';
+                }
+              }
+            } else if (image.bufferView !== undefined) {
+              // Image data is in a buffer view
+              storage = 'buffer-view';
+              if (image.mimeType) {
+                mimeType = image.mimeType;
+              }
+            }
+
+            const resource: ResourceReference = {
+              pointer: `/images/${i}`,
+              storage
+            };
+            if (mimeType) {
+              resource.mimeType = mimeType;
+            }
+            if (uri) {
+              resource.uri = uri;
+            }
+            resources.push(resource);
+          }
+        }
+      }
     } catch (error) {
       // Convert GLB parsing exceptions to validation errors
       parsingErrors = convertGLBExceptionToValidationMessages(error as Error, data);
@@ -145,7 +197,7 @@ export async function validateBytes(
         const image = gltf.images[i];
         if (image) {
           let mimeType: string | undefined = undefined;
-          let storage: 'external' | 'data-uri' | 'glb' = 'external';
+          let storage: 'external' | 'data-uri' | 'glb' | 'buffer-view' = 'external';
           let uri: string | undefined = undefined;
 
           if (image.uri) {
@@ -170,6 +222,7 @@ export async function validateBytes(
             }
           } else if (image.bufferView !== undefined) {
             // Image data is in a buffer view
+            storage = 'buffer-view';
             if (image.mimeType) {
               mimeType = image.mimeType;
             }

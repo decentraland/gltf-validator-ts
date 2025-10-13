@@ -29,7 +29,7 @@ export interface Issues {
 export interface Resource {
   pointer: string;
   mimeType: string;
-  storage?: 'external' | 'data-uri' | 'glb';
+  storage?: 'external' | 'data-uri' | 'glb' | 'buffer-view';
   uri?: string;
   byteLength?: number;
 }
@@ -409,7 +409,7 @@ export interface ValidationContext {
 export interface ResourceReference {
   pointer: string;
   mimeType?: string;
-  storage?: 'external' | 'data-uri' | 'glb';
+  storage?: 'external' | 'data-uri' | 'glb' | 'buffer-view';
   uri?: string;
   byteLength?: number;
 }

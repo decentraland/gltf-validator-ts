@@ -480,6 +480,183 @@ footer a:hover {
     margin-right: 8px;
 }
 
+/* Issues Display */
+.issues-display {
+    margin-bottom: 20px;
+}
+
+.issue-category {
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+}
+
+.issue-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.issue-category-header:hover {
+    opacity: 0.9;
+}
+
+.issue-category-header.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-bottom: 1px solid #f5c6cb;
+}
+
+.issue-category-header.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-bottom: 1px solid #ffeaa7;
+}
+
+.issue-category-header.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-bottom: 1px solid #bee5eb;
+}
+
+.issue-category-header.hint {
+    background-color: #e2e3e5;
+    color: #383d41;
+    border-bottom: 1px solid #d6d8db;
+}
+
+.issue-category-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.issue-category-icon {
+    font-size: 1.2rem;
+}
+
+.issue-category-count {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.issue-category-toggle {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.issue-category-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+.issue-list {
+    background-color: #fff;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.issue-list.collapsed {
+    display: none;
+}
+
+.issue-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.9rem;
+}
+
+.issue-item:last-child {
+    border-bottom: none;
+}
+
+.issue-item:hover {
+    background-color: #f8f9fa;
+}
+
+.issue-code-badge {
+    margin-bottom: 8px;
+}
+
+.issue-message {
+    font-family: 'Courier New', monospace;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.issue-pointer {
+    font-family: 'Courier New', monospace;
+    color: #667eea;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+}
+
+.issue-severity {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.issue-severity.error {
+    background-color: #dc3545;
+    color: white;
+}
+
+.issue-severity.warning {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.issue-severity.info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.issue-severity.hint {
+    background-color: #6c757d;
+    color: white;
+}
+
+.issue-offset {
+    font-family: 'Courier New', monospace;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+/* Raw Output Toggle */
+.raw-output-toggle {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.toggle-button {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-button:hover {
+    background: #5a6268;
+}
+
+.toggle-button:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
 /* Accessibility */
 .select-button:focus,
 .clear-button:focus {

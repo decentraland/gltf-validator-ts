@@ -9703,6 +9703,51 @@ ${image.uri}
             parsingErrors.push(...convertGLBExceptionToValidationMessages(new Error(warning), data));
           }
         }
+        if (gltf.images) {
+          for (let i = 0; i < gltf.images.length; i++) {
+            const image = gltf.images[i];
+            if (image) {
+              let mimeType = void 0;
+              let storage = "external";
+              let uri2 = void 0;
+              if (image.uri) {
+                if (image.uri.startsWith("data:")) {
+                  storage = "data-uri";
+                  const match = image.uri.match(/^data:([^;]+)/);
+                  if (match) {
+                    mimeType = match[1];
+                  }
+                } else {
+                  uri2 = image.uri;
+                  const extension = image.uri.split(".").pop()?.toLowerCase();
+                  if (extension === "png") {
+                    mimeType = "image/png";
+                  } else if (extension === "jpg" || extension === "jpeg") {
+                    mimeType = "image/jpeg";
+                  } else if (extension === "ktx2") {
+                    mimeType = "image/ktx2";
+                  }
+                }
+              } else if (image.bufferView !== void 0) {
+                storage = "buffer-view";
+                if (image.mimeType) {
+                  mimeType = image.mimeType;
+                }
+              }
+              const resource = {
+                pointer: `/images/${i}`,
+                storage
+              };
+              if (mimeType) {
+                resource.mimeType = mimeType;
+              }
+              if (uri2) {
+                resource.uri = uri2;
+              }
+              resources.push(resource);
+            }
+          }
+        }
       } catch (error) {
         parsingErrors = convertGLBExceptionToValidationMessages(error, data);
         gltf = { asset: { version: "2.0" } };
@@ -9779,6 +9824,7 @@ ${image.uri}
                 }
               }
             } else if (image.bufferView !== void 0) {
+              storage = "buffer-view";
               if (image.mimeType) {
                 mimeType = image.mimeType;
               }

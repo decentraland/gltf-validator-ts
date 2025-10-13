@@ -18,8 +18,9 @@ class GLTFValidatorWeb {
         const validateButton = document.getElementById('validateButton');
         const clearFilesButton = document.getElementById('clearFilesButton');
         const clearButton = document.getElementById('clearButton');
+        const toggleRawOutput = document.getElementById('toggleRawOutput');
 
-        if (!dropZone || !selectButton || !fileInput || !validateButton || !clearFilesButton || !clearButton) {
+        if (!dropZone || !selectButton || !fileInput || !validateButton || !clearFilesButton || !clearButton || !toggleRawOutput) {
             console.error('Required DOM elements not found');
             return;
         }
@@ -37,6 +38,7 @@ class GLTFValidatorWeb {
         validateButton.addEventListener('click', this.validateFiles.bind(this));
         clearFilesButton.addEventListener('click', this.clearAllFiles.bind(this));
         clearButton.addEventListener('click', this.clearResults.bind(this));
+        toggleRawOutput.addEventListener('click', this.toggleRawOutput.bind(this));
     }
 
     handleDragOver(event) {
@@ -299,6 +301,9 @@ class GLTFValidatorWeb {
 
         document.getElementById('validationCounts').textContent = counts.length > 0 ? counts.join(', ') : 'No issues found';
 
+        // Display structured issues
+        this.displayIssues(issues);
+
         // Display JSON result
         const jsonString = JSON.stringify(result, null, 2);
         document.getElementById('outputCode').textContent = jsonString;
@@ -308,6 +313,137 @@ class GLTFValidatorWeb {
             document.getElementById('truncationWarning').style.display = 'block';
         } else {
             document.getElementById('truncationWarning').style.display = 'none';
+        }
+    }
+
+    displayIssues(issues) {
+        const issuesDisplay = document.getElementById('issuesDisplay');
+        issuesDisplay.innerHTML = '';
+
+        if (!issues.messages || issues.messages.length === 0) {
+            issuesDisplay.innerHTML = '<p style="text-align: center; color: #28a745; padding: 20px;">✨ No issues found - validation successful!</p>';
+            return;
+        }
+
+        // Group messages by severity
+        const groupedIssues = {
+            errors: [],
+            warnings: [],
+            infos: [],
+            hints: []
+        };
+
+        issues.messages.forEach(message => {
+            const severity = message.severity || 0;
+            if (severity === 0) {
+                groupedIssues.errors.push(message);
+            } else if (severity === 1) {
+                groupedIssues.warnings.push(message);
+            } else if (severity === 2) {
+                groupedIssues.infos.push(message);
+            } else if (severity === 3) {
+                groupedIssues.hints.push(message);
+            }
+        });
+
+        // Create category displays
+        if (groupedIssues.errors.length > 0) {
+            issuesDisplay.appendChild(this.createIssueCategory('Errors', 'error', groupedIssues.errors, '❌', true));
+        }
+        if (groupedIssues.warnings.length > 0) {
+            issuesDisplay.appendChild(this.createIssueCategory('Warnings', 'warning', groupedIssues.warnings, '⚠️', true));
+        }
+        if (groupedIssues.infos.length > 0) {
+            issuesDisplay.appendChild(this.createIssueCategory('Info', 'info', groupedIssues.infos, 'ℹ️', false));
+        }
+        if (groupedIssues.hints.length > 0) {
+            issuesDisplay.appendChild(this.createIssueCategory('Hints', 'hint', groupedIssues.hints, '💡', false));
+        }
+    }
+
+    createIssueCategory(title, severity, messages, icon, expanded) {
+        const category = document.createElement('div');
+        category.className = 'issue-category';
+
+        const header = document.createElement('div');
+        header.className = `issue-category-header ${severity}`;
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'issue-category-title';
+        titleDiv.innerHTML = `
+            <span class="issue-category-icon">${icon}</span>
+            <span>${title}</span>
+            <span class="issue-category-count">(${messages.length})</span>
+        `;
+
+        const toggle = document.createElement('span');
+        toggle.className = `issue-category-toggle${expanded ? '' : ' collapsed'}`;
+        toggle.textContent = '▼';
+
+        header.appendChild(titleDiv);
+        header.appendChild(toggle);
+
+        const list = document.createElement('div');
+        list.className = `issue-list${expanded ? '' : ' collapsed'}`;
+
+        messages.forEach(message => {
+            list.appendChild(this.createIssueItem(message, severity));
+        });
+
+        // Add click handler to toggle
+        header.addEventListener('click', () => {
+            const isCollapsed = list.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed', isCollapsed);
+        });
+
+        category.appendChild(header);
+        category.appendChild(list);
+
+        return category;
+    }
+
+    createIssueItem(message, severity) {
+        const item = document.createElement('div');
+        item.className = 'issue-item';
+
+        let content = '';
+
+        // Add code badge if available
+        if (message.code) {
+            content += `<div class="issue-code-badge"><span class="issue-severity ${severity}">${this.escapeHtml(message.code)}</span></div>`;
+        }
+
+        content += `<div class="issue-message">${this.escapeHtml(message.message || 'No message')}</div>`;
+
+        if (message.pointer) {
+            content += `<div class="issue-pointer">📍 ${this.escapeHtml(message.pointer)}</div>`;
+        }
+
+        if (message.offset !== undefined) {
+            content += `<div class="issue-offset">Offset: ${message.offset}</div>`;
+        }
+
+        item.innerHTML = content;
+
+        return item;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    toggleRawOutput() {
+        const rawOutputContent = document.getElementById('rawOutputContent');
+        const toggleButton = document.getElementById('toggleRawOutput');
+
+        if (rawOutputContent.style.display === 'none') {
+            rawOutputContent.style.display = 'block';
+            toggleButton.textContent = 'Hide Raw JSON';
+        } else {
+            rawOutputContent.style.display = 'none';
+            toggleButton.textContent = 'Show Raw JSON';
         }
     }
 

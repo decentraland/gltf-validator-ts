@@ -61,7 +61,13 @@
                     <div id="validationStatus" class="status"></div>
                     <div id="validationCounts" class="counts"></div>
                 </div>
-                <div class="output-content">
+
+                <div id="issuesDisplay" class="issues-display"></div>
+
+                <div class="raw-output-toggle">
+                    <button id="toggleRawOutput" class="toggle-button">Show Raw JSON</button>
+                </div>
+                <div class="output-content" id="rawOutputContent" style="display: none;">
                     <pre><code id="outputCode"></code></pre>
                 </div>
                 <div id="truncationWarning" class="warning" style="display: none;">

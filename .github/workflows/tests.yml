@@ -22,5 +22,8 @@ jobs:
       - name: install
         run: npm ci
 
+      - name: generate-version
+        run: npm run generate-version
+
       - name: test
         run: npm run test

@@ -8,6 +8,9 @@ dist/
 *.d.ts
 *.d.ts.map
 
+# Auto-generated files
+src/version.ts
+
 # Exception: keep important config files
 !eslint.config.js
 !*.config.js

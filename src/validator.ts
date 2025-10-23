@@ -9,9 +9,7 @@ import {
 import { GLTFParser } from './parser';
 import { GLTFValidator } from './validators/gltf-validator';
 import { GLBValidator } from './validators/glb-validator';
-import packageJson from '../package.json';
-
-const VALIDATOR_VERSION = packageJson.version;
+import { VALIDATOR_VERSION } from './version';
 
 export async function validateBytes(
   data: Uint8Array,

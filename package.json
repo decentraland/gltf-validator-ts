@@ -18,10 +18,11 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "npm run build:esm && npm run build:cjs && npm run build:package-json",
+    "build": "npm run generate-version && npm run build:esm && npm run build:cjs && npm run build:package-json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:package-json": "echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "generate-version": "node scripts/generate-version.js",
     "build:clean": "rm -rf dist && npm run build",
     "build:web": "npm run build && npm run build:web-bundle",
     "build:web-bundle": "esbuild src/index.ts --bundle --format=iife --outfile=web/scripts/gltf-validator.js --platform=browser --target=es2020 --global-name=GLTFValidator --loader:.json=json",

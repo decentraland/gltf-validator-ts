@@ -84,8 +84,8 @@ jobs:
       - name: npm pack
         id: npm-pack
         run: |
-          PACK_OUTPUT=$(npm pack --json)
-          PACK_FILENAME=$(echo "$PACK_OUTPUT" | jq -r '.[0].filename')
+          PACK_OUTPUT=$(npm pack --json 2>&1)
+          PACK_FILENAME=$(echo "$PACK_OUTPUT" | sed -n '/^\[/,/^\]/p' | jq -r '.[0].filename')
           echo "pack-filename=$PACK_FILENAME" >> $GITHUB_OUTPUT
 
       - name: Upload package to GitHub Release

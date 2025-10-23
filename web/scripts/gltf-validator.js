@@ -17,9 +17,9 @@ var GLTFValidator = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // dist/index.js
-  var dist_exports = {};
-  __export(dist_exports, {
+  // src/index.ts
+  var src_exports = {};
+  __export(src_exports, {
     ACCESSOR_TYPE_COMPONENT_COUNTS: () => ACCESSOR_TYPE_COMPONENT_COUNTS,
     AccessorType: () => AccessorType,
     AlphaMode: () => AlphaMode,
@@ -45,14 +45,14 @@ var GLTFValidator = (() => {
     validateBytes: () => validateBytes
   });
 
-  // dist/types.js
-  var Severity;
-  (function(Severity2) {
+  // src/types.ts
+  var Severity = /* @__PURE__ */ ((Severity2) => {
     Severity2[Severity2["ERROR"] = 0] = "ERROR";
     Severity2[Severity2["WARNING"] = 1] = "WARNING";
     Severity2[Severity2["INFO"] = 2] = "INFO";
     Severity2[Severity2["HINT"] = 3] = "HINT";
-  })(Severity || (Severity = {}));
+    return Severity2;
+  })(Severity || {});
   var ComponentType = {
     BYTE: 5120,
     UNSIGNED_BYTE: 5121,
@@ -164,7 +164,7 @@ var GLTFValidator = (() => {
     return Object.entries(obj);
   }
 
-  // dist/parser.js
+  // src/parser.ts
   var GLTFParser = class {
     parse(data) {
       if (data.length >= 3 && data[0] === 239 && data[1] === 187 && data[2] === 191) {
@@ -227,7 +227,7 @@ var GLTFValidator = (() => {
     }
   };
 
-  // dist/validators/asset-validator.js
+  // src/validators/asset-validator.ts
   var AssetValidator = class {
     validate(asset) {
       const messages = [];
@@ -235,7 +235,7 @@ var GLTFValidator = (() => {
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'version' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/asset"
         });
         return messages;
@@ -244,7 +244,7 @@ var GLTFValidator = (() => {
         messages.push({
           code: "TYPE_MISMATCH",
           message: "Asset version must be a string.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/asset/version"
         });
       } else {
@@ -253,7 +253,7 @@ var GLTFValidator = (() => {
           messages.push({
             code: "PATTERN_MISMATCH",
             message: `Value '${asset.version}' does not match regexp pattern '^([0-9]+)\\.([0-9]+)$'.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: "/asset/version"
           });
         } else {
@@ -263,14 +263,14 @@ var GLTFValidator = (() => {
             messages.push({
               code: "UNKNOWN_ASSET_MAJOR_VERSION",
               message: `Unknown glTF major asset version: ${major}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: "/asset/version"
             });
           } else if (minor !== 0) {
             messages.push({
               code: "UNKNOWN_ASSET_MINOR_VERSION",
               message: `Unknown glTF minor asset version: ${minor}.`,
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: "/asset/version"
             });
           }
@@ -281,7 +281,7 @@ var GLTFValidator = (() => {
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Asset minVersion must be a string.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: "/asset/minVersion"
           });
         } else {
@@ -290,7 +290,7 @@ var GLTFValidator = (() => {
             messages.push({
               code: "INVALID_VERSION",
               message: 'Asset minVersion must be in format "major.minor".',
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: "/asset/minVersion"
             });
           } else {
@@ -300,7 +300,7 @@ var GLTFValidator = (() => {
               messages.push({
                 code: "INVALID_VERSION",
                 message: "Asset minVersion major must be 2.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: "/asset/minVersion"
               });
             }
@@ -313,7 +313,7 @@ var GLTFValidator = (() => {
                   messages.push({
                     code: "ASSET_MIN_VERSION_GREATER_THAN_VERSION",
                     message: `Asset minVersion '${asset.minVersion}' is greater than version '${asset.version}'.`,
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: "/asset/minVersion"
                   });
                 }
@@ -333,7 +333,7 @@ var GLTFValidator = (() => {
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/asset/${key}`
           });
         }
@@ -342,7 +342,7 @@ var GLTFValidator = (() => {
     }
   };
 
-  // dist/validators/buffer-validator.js
+  // src/validators/buffer-validator.ts
   var BufferValidator = class {
     validate(buffer, index) {
       const messages = [];
@@ -359,7 +359,7 @@ var GLTFValidator = (() => {
         messages.push({
           code: "TYPE_MISMATCH",
           message: `Type mismatch. Property value ${formatArrayValue(buffer)} is not a 'object'.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/buffers/${index}`
         });
         return messages;
@@ -368,7 +368,7 @@ var GLTFValidator = (() => {
         messages.push({
           code: "TYPE_MISMATCH",
           message: `Type mismatch. Property value ${JSON.stringify(buffer)} is not a 'object'.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/buffers/${index}`
         });
         return messages;
@@ -377,28 +377,28 @@ var GLTFValidator = (() => {
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'byteLength' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/buffers/${index}`
         });
       } else if (typeof buffer.byteLength !== "number") {
         messages.push({
           code: "TYPE_MISMATCH",
           message: "Buffer byteLength must be a number.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/buffers/${index}/byteLength`
         });
       } else if (buffer.byteLength < 0) {
         messages.push({
           code: "INVALID_VALUE",
           message: "Buffer byteLength must be non-negative.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/buffers/${index}/byteLength`
         });
       } else if (buffer.byteLength === 0) {
         messages.push({
           code: "VALUE_NOT_IN_RANGE",
           message: "Value 0 is out of range.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/buffers/${index}/byteLength`
         });
       }
@@ -407,12 +407,14 @@ var GLTFValidator = (() => {
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Buffer uri must be a string.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/buffers/${index}/uri`
           });
         } else {
           if (buffer.uri.startsWith("data:")) {
-            const dataUriBase64Match = buffer.uri.match(/^data:([^;,]+);base64,(.+)$/);
+            const dataUriBase64Match = buffer.uri.match(
+              /^data:([^;,]+);base64,(.+)$/
+            );
             const dataUriPlainMatch = buffer.uri.match(/^data:([^;,]+),(.*)$/);
             if (!dataUriBase64Match && !dataUriPlainMatch) {
               let errorMessage = `Invalid URI '${buffer.uri}'. `;
@@ -431,7 +433,7 @@ var GLTFValidator = (() => {
               messages.push({
                 code: "INVALID_URI",
                 message: errorMessage,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/buffers/${index}/uri`
               });
             } else {
@@ -443,7 +445,7 @@ var GLTFValidator = (() => {
                 messages.push({
                   code: "BUFFER_DATA_URI_MIME_TYPE_INVALID",
                   message: `Data URI media type must be 'application/octet-stream' or 'application/gltf-buffer'. Found '${mimeType}' instead.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/buffers/${index}/uri`
                 });
               }
@@ -458,7 +460,7 @@ var GLTFValidator = (() => {
                   messages.push({
                     code: "BUFFER_BYTE_LENGTH_MISMATCH",
                     message: `Actual data byte length (${decodedLength}) is less than the declared buffer byte length (${buffer.byteLength}).`,
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/buffers/${index}`
                   });
                 }
@@ -466,7 +468,7 @@ var GLTFValidator = (() => {
                 messages.push({
                   code: "INVALID_URI",
                   message: "Invalid base64 data in data URI.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/buffers/${index}/uri`
                 });
               }
@@ -479,14 +481,14 @@ var GLTFValidator = (() => {
                   messages.push({
                     code: "INVALID_URI",
                     message: "External buffer URI must use http or https protocol.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/buffers/${index}/uri`
                   });
                 } else {
                   messages.push({
                     code: "NON_RELATIVE_URI",
                     message: `Non-relative URI found: '${buffer.uri}'.`,
-                    severity: Severity.WARNING,
+                    severity: 1 /* WARNING */,
                     pointer: `/buffers/${index}/uri`
                   });
                 }
@@ -500,7 +502,7 @@ var GLTFValidator = (() => {
                 messages.push({
                   code: "INVALID_URI",
                   message: errorMessage,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/buffers/${index}/uri`
                 });
               }
@@ -509,7 +511,7 @@ var GLTFValidator = (() => {
                 messages.push({
                   code: "INVALID_URI",
                   message: 'Relative buffer URI cannot start with "/".',
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/buffers/${index}/uri`
                 });
               } else if (buffer.uri.includes(":")) {
@@ -519,7 +521,7 @@ var GLTFValidator = (() => {
 FormatException: Invalid empty scheme (at character 1)
 ${buffer.uri}
 ^`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/buffers/${index}/uri`
                 });
               }
@@ -539,7 +541,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/buffers/${index}/${key}`
           });
         }
@@ -548,7 +550,7 @@ ${buffer.uri}
     }
   };
 
-  // dist/validators/buffer-view-validator.js
+  // src/validators/buffer-view-validator.ts
   var BufferViewValidator = class {
     validate(bufferView, index, gltf) {
       const messages = [];
@@ -556,21 +558,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'byteLength' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/bufferViews/${index}`
         });
       } else if (typeof bufferView.byteLength !== "number" || bufferView.byteLength < 0) {
         messages.push({
           code: "INVALID_VALUE",
           message: "BufferView byteLength must be a non-negative number.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/bufferViews/${index}/byteLength`
         });
       } else if (bufferView.byteLength === 0) {
         messages.push({
           code: "VALUE_NOT_IN_RANGE",
           message: "Value 0 is out of range.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/bufferViews/${index}/byteLength`
         });
       }
@@ -578,21 +580,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'buffer' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/bufferViews/${index}`
         });
       } else if (typeof bufferView.buffer !== "number" || bufferView.buffer < 0) {
         messages.push({
           code: "INVALID_VALUE",
           message: "BufferView buffer must be a non-negative integer.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/bufferViews/${index}/buffer`
         });
       } else if (!gltf.buffers || bufferView.buffer >= gltf.buffers.length) {
         messages.push({
           code: "UNRESOLVED_REFERENCE",
           message: "Unresolved reference: " + bufferView.buffer + ".",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/bufferViews/${index}/buffer`
         });
       }
@@ -601,7 +603,7 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "BufferView byteOffset must be a non-negative number.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/bufferViews/${index}/byteOffset`
           });
         }
@@ -611,35 +613,35 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "BufferView byteStride must be a non-negative number.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/bufferViews/${index}/byteStride`
           });
         } else if (bufferView.byteStride > 252) {
           messages.push({
             code: "INVALID_VALUE",
             message: "BufferView byteStride must be <= 252.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/bufferViews/${index}/byteStride`
           });
         } else if (bufferView.byteStride % 4 !== 0) {
           messages.push({
             code: "VALUE_MULTIPLE_OF",
             message: `Value ${bufferView.byteStride} is not a multiple of 4.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/bufferViews/${index}/byteStride`
           });
         } else if (bufferView.byteLength !== void 0 && bufferView.byteStride > bufferView.byteLength) {
           messages.push({
             code: "BUFFER_VIEW_TOO_BIG_BYTE_STRIDE",
             message: `Buffer view's byteStride (${bufferView.byteStride}) is greater than byteLength (${bufferView.byteLength}).`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/bufferViews/${index}/byteStride`
           });
         } else if (bufferView.target !== void 0 && bufferView.target !== 34962) {
           messages.push({
             code: "BUFFER_VIEW_INVALID_BYTE_STRIDE",
             message: "Only buffer views with raw vertex data can have byteStride.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/bufferViews/${index}/byteStride`
           });
         }
@@ -649,14 +651,14 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "BufferView target must be a number.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/bufferViews/${index}/target`
           });
         } else if (bufferView.target !== 34962 && bufferView.target !== 34963) {
           messages.push({
             code: "INVALID_VALUE",
             message: "BufferView target must be 34962 (ARRAY_BUFFER) or 34963 (ELEMENT_ARRAY_BUFFER).",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/bufferViews/${index}/target`
           });
         }
@@ -669,14 +671,14 @@ ${buffer.uri}
             messages.push({
               code: "BUFFER_VIEW_TOO_LONG",
               message: `BufferView does not fit buffer (${bufferView.buffer}) byteLength (${buffer.byteLength}).`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/bufferViews/${index}/byteOffset`
             });
           } else {
             messages.push({
               code: "BUFFER_VIEW_TOO_LONG",
               message: `BufferView does not fit buffer (${bufferView.buffer}) byteLength (${buffer.byteLength}).`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/bufferViews/${index}/byteLength`
             });
           }
@@ -697,7 +699,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/bufferViews/${index}/${key}`
           });
         }
@@ -706,7 +708,7 @@ ${buffer.uri}
     }
   };
 
-  // dist/validators/accessor-validator.js
+  // src/validators/accessor-validator.ts
   var AccessorValidator = class {
     validate(accessor, index, gltf) {
       const messages = [];
@@ -729,7 +731,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/accessors/${index}/${key}`
           });
         }
@@ -741,7 +743,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_EXTENSION_OBJECT",
               message: "Unexpected location for this extension.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/accessors/${index}/extensions/${extensionName}`
             });
           }
@@ -751,14 +753,14 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'componentType' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}`
         });
       } else if (!this.isValidComponentType(accessor.componentType)) {
         messages.push({
           code: "INVALID_COMPONENT_TYPE",
           message: "Invalid accessor componentType.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/componentType`
         });
       }
@@ -773,7 +775,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_NORMALIZED_INVALID",
             message: "Only (u)byte and (u)short accessors can be normalized.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/normalized`
           });
         }
@@ -782,14 +784,14 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'count' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}`
         });
       } else if (typeof accessor.count !== "number" || accessor.count < 0) {
         messages.push({
           code: "INVALID_VALUE",
           message: "Accessor count must be a non-negative number.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/count`
         });
       }
@@ -797,14 +799,14 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'type' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}`
         });
       } else if (!this.isValidAccessorType(accessor.type)) {
         messages.push({
           code: "VALUE_NOT_IN_LIST",
           message: `Invalid value '${accessor.type}'. Valid values are ('SCALAR', 'VEC2', 'VEC3', 'VEC4', 'MAT2', 'MAT3', 'MAT4').`,
-          severity: Severity.WARNING,
+          severity: 1 /* WARNING */,
           pointer: `/accessors/${index}/type`
         });
       }
@@ -813,14 +815,14 @@ ${buffer.uri}
           messages.push({
             code: "UNSATISFIED_DEPENDENCY",
             message: "Dependency failed. 'bufferView' must be defined.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/byteOffset`
           });
         } else if (typeof accessor.byteOffset !== "number" || accessor.byteOffset < 0) {
           messages.push({
             code: "INVALID_VALUE",
             message: "Accessor byteOffset must be a non-negative number.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/byteOffset`
           });
         } else {
@@ -829,7 +831,7 @@ ${buffer.uri}
             messages.push({
               code: "ACCESSOR_OFFSET_ALIGNMENT",
               message: `Offset ${accessor.byteOffset} is not a multiple of componentType length ${componentSize}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/accessors/${index}/byteOffset`
             });
           }
@@ -840,20 +842,25 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Accessor bufferView must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/bufferView`
           });
         } else if (!gltf.bufferViews || accessor.bufferView >= gltf.bufferViews.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + accessor.bufferView + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/bufferView`
           });
         } else {
           const bufferView = gltf.bufferViews[accessor.bufferView];
           if (bufferView) {
-            this.validateTotalOffsetAlignment(accessor, bufferView, index, messages);
+            this.validateTotalOffsetAlignment(
+              accessor,
+              bufferView,
+              index,
+              messages
+            );
             this.validateAccessorBounds(accessor, bufferView, index, messages);
           }
         }
@@ -863,7 +870,7 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Accessor min must be an array.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/min`
           });
         } else if (this.isValidAccessorType(accessor.type)) {
@@ -872,7 +879,7 @@ ${buffer.uri}
             messages.push({
               code: "ACCESSOR_MIN_MISMATCH",
               message: `Accessor min array length ${accessor.min.length} does not match type component count ${expectedLength}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/accessors/${index}/min`
             });
           }
@@ -883,7 +890,7 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Accessor max must be an array.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/max`
           });
         } else if (this.isValidAccessorType(accessor.type)) {
@@ -892,21 +899,23 @@ ${buffer.uri}
             messages.push({
               code: "ACCESSOR_MAX_MISMATCH",
               message: `Accessor max array length ${accessor.max.length} does not match type component count ${expectedLength}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/accessors/${index}/max`
             });
           }
         }
       }
       if (accessor.sparse) {
-        messages.push(...this.validateSparseAccessor(accessor.sparse, index, gltf, accessor));
+        messages.push(
+          ...this.validateSparseAccessor(accessor.sparse, index, gltf, accessor)
+        );
         if (accessor.sparse.indices && accessor.sparse.indices.bufferView !== void 0 && gltf.bufferViews) {
           const bufferView = gltf.bufferViews[accessor.sparse.indices.bufferView];
           if (bufferView && bufferView.byteStride !== void 0) {
             messages.push({
               code: "BUFFER_VIEW_INVALID_BYTE_STRIDE",
               message: "Only buffer views with raw vertex data can have byteStride.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/accessors/${index}/sparse/indices/bufferView`
             });
           }
@@ -917,7 +926,7 @@ ${buffer.uri}
             messages.push({
               code: "BUFFER_VIEW_INVALID_BYTE_STRIDE",
               message: "Only buffer views with raw vertex data can have byteStride.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/accessors/${index}/sparse/values/bufferView`
             });
           }
@@ -943,7 +952,10 @@ ${buffer.uri}
       if (accessorOffset + totalSize > bufferData.length) {
         return messages;
       }
-      const accessorData = bufferData.slice(accessorOffset, accessorOffset + totalSize);
+      const accessorData = bufferData.slice(
+        accessorOffset,
+        accessorOffset + totalSize
+      );
       this.validateMinMaxBounds(accessor, accessorData, index, messages);
       this.validateValueRanges(accessor, accessorData, index, messages);
       if (this.isMatrixType(accessor.type)) {
@@ -954,15 +966,57 @@ ${buffer.uri}
     // Method for validating mesh attribute accessor data with context
     validateMeshAttributeData(accessor, index, gltf, bufferData, attributeName, meshIndex, primitiveIndex) {
       const messages = [];
-      messages.push(...this.validateAccessorData(accessor, index, gltf, bufferData));
+      messages.push(
+        ...this.validateAccessorData(accessor, index, gltf, bufferData)
+      );
       if (attributeName.startsWith("JOINTS_")) {
-        messages.push(...this.validateJointsData(accessor, index, gltf, bufferData, attributeName, meshIndex, primitiveIndex));
+        messages.push(
+          ...this.validateJointsData(
+            accessor,
+            index,
+            gltf,
+            bufferData,
+            attributeName,
+            meshIndex,
+            primitiveIndex
+          )
+        );
       } else if (attributeName.startsWith("WEIGHTS_")) {
-        messages.push(...this.validateWeightsData(accessor, index, gltf, bufferData, attributeName, meshIndex, primitiveIndex));
+        messages.push(
+          ...this.validateWeightsData(
+            accessor,
+            index,
+            gltf,
+            bufferData,
+            attributeName,
+            meshIndex,
+            primitiveIndex
+          )
+        );
       } else if (attributeName === "NORMAL") {
-        messages.push(...this.validateNormalData(accessor, index, gltf, bufferData, attributeName, meshIndex, primitiveIndex));
+        messages.push(
+          ...this.validateNormalData(
+            accessor,
+            index,
+            gltf,
+            bufferData,
+            attributeName,
+            meshIndex,
+            primitiveIndex
+          )
+        );
       } else if (attributeName === "TANGENT") {
-        messages.push(...this.validateTangentData(accessor, index, gltf, bufferData, attributeName, meshIndex, primitiveIndex));
+        messages.push(
+          ...this.validateTangentData(
+            accessor,
+            index,
+            gltf,
+            bufferData,
+            attributeName,
+            meshIndex,
+            primitiveIndex
+          )
+        );
       }
       return messages;
     }
@@ -973,18 +1027,18 @@ ${buffer.uri}
         return messages;
       }
       const bufferView = gltf.bufferViews[accessor.bufferView];
-      if (!bufferView)
-        return messages;
+      if (!bufferView) return messages;
       const accessorOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
       const componentSize = this.getComponentSize(accessor.componentType);
       const typeComponentCount = this.getTypeComponentCount(accessor.type);
       const elementSize = bufferView.byteStride || componentSize * typeComponentCount;
       const primitive = gltf.meshes?.[meshIndex]?.primitives?.[primitiveIndex];
-      if (!primitive?.attributes)
-        return messages;
+      if (!primitive?.attributes) return messages;
       const allJointsAccessors = {};
       const allWeightsAccessors = {};
-      for (const [attrName, accessorIdx] of Object.entries(primitive.attributes)) {
+      for (const [attrName, accessorIdx] of Object.entries(
+        primitive.attributes
+      )) {
         if (attrName.startsWith("JOINTS_") && typeof accessorIdx === "number") {
           allJointsAccessors[attrName] = accessorIdx;
         } else if (attrName.startsWith("WEIGHTS_") && typeof accessorIdx === "number") {
@@ -1003,7 +1057,10 @@ ${buffer.uri}
           if (weightsBufferView) {
             const weightsOffset = (weightsBufferView.byteOffset || 0) + (weightsAcc.byteOffset || 0);
             const weightsSize = weightsAcc.count * this.getComponentSize(weightsAcc.componentType) * this.getTypeComponentCount(weightsAcc.type);
-            weightsData = bufferData.slice(weightsOffset, weightsOffset + weightsSize);
+            weightsData = bufferData.slice(
+              weightsOffset,
+              weightsOffset + weightsSize
+            );
           }
         }
       }
@@ -1014,7 +1071,9 @@ ${buffer.uri}
             applicableSkins.push(skin);
           }
         }
-        applicableSkins.sort((a, b) => a.joints.length - b.joints.length);
+        applicableSkins.sort(
+          (a, b) => a.joints.length - b.joints.length
+        );
       }
       for (let i = 0; i < accessor.count; i++) {
         const elementOffset = accessorOffset + i * elementSize;
@@ -1026,7 +1085,10 @@ ${buffer.uri}
               jointIndex = bufferData[componentOffset] || 0;
               break;
             case 5123:
-              jointIndex = new DataView(bufferData.buffer, bufferData.byteOffset + componentOffset).getUint16(0, true);
+              jointIndex = new DataView(
+                bufferData.buffer,
+                bufferData.byteOffset + componentOffset
+              ).getUint16(0, true);
               break;
             default:
               continue;
@@ -1038,14 +1100,16 @@ ${buffer.uri}
               messages.push({
                 code: "ACCESSOR_JOINTS_INDEX_OOB",
                 message: `Joints accessor element at index ${i * typeComponentCount + component} (component index ${component}) has value ${jointIndex} that is greater than the maximum joint index (${skinObj.joints.length - 1}) set by skin ${gltf.skins?.indexOf(skin) || 0}.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
               });
               oobReported = true;
             }
           }
           const vertexJoints = [];
-          for (const [, jointsAccessorIdx] of Object.entries(allJointsAccessors)) {
+          for (const [, jointsAccessorIdx] of Object.entries(
+            allJointsAccessors
+          )) {
             if (typeof jointsAccessorIdx === "number" && gltf.accessors) {
               const jointsAcc = gltf.accessors[jointsAccessorIdx];
               if (jointsAcc && jointsAcc.bufferView !== void 0 && gltf.bufferViews) {
@@ -1065,7 +1129,10 @@ ${buffer.uri}
                         jointVal = bufferData[jointsCompOffset] || 0;
                         break;
                       case 5123:
-                        jointVal = new DataView(bufferData.buffer, bufferData.byteOffset + jointsCompOffset).getUint16(0, true);
+                        jointVal = new DataView(
+                          bufferData.buffer,
+                          bufferData.byteOffset + jointsCompOffset
+                        ).getUint16(0, true);
                         break;
                       default:
                         continue;
@@ -1081,7 +1148,7 @@ ${buffer.uri}
               messages.push({
                 code: "ACCESSOR_JOINTS_INDEX_DUPLICATE",
                 message: `Joints accessor element at index ${i * typeComponentCount + component} (component index ${component}) has value ${jointIndex} that is already in use for the vertex.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
               });
             }
@@ -1095,20 +1162,26 @@ ${buffer.uri}
             let weight = 0;
             switch (weightsAcc.componentType) {
               case 5126:
-                weight = new DataView(weightsData.buffer, weightsData.byteOffset + weightComponentOffset).getFloat32(0, true);
+                weight = new DataView(
+                  weightsData.buffer,
+                  weightsData.byteOffset + weightComponentOffset
+                ).getFloat32(0, true);
                 break;
               case 5121:
                 weight = (weightsData[weightComponentOffset] || 0) / 255;
                 break;
               case 5123:
-                weight = new DataView(weightsData.buffer, weightsData.byteOffset + weightComponentOffset).getUint16(0, true) / 65535;
+                weight = new DataView(
+                  weightsData.buffer,
+                  weightsData.byteOffset + weightComponentOffset
+                ).getUint16(0, true) / 65535;
                 break;
             }
             if (Math.abs(weight) < 1e-6 && jointIndex !== 0) {
               messages.push({
                 code: "ACCESSOR_JOINTS_USED_ZERO_WEIGHT",
                 message: `Joints accessor element at index ${i * typeComponentCount + component} (component index ${component}) is used with zero weight but has non-zero value (${jointIndex}).`,
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
               });
             }
@@ -1124,17 +1197,17 @@ ${buffer.uri}
         return messages;
       }
       const bufferView = gltf.bufferViews[accessor.bufferView];
-      if (!bufferView)
-        return messages;
+      if (!bufferView) return messages;
       const accessorOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
       const componentSize = this.getComponentSize(accessor.componentType);
       const typeComponentCount = this.getTypeComponentCount(accessor.type);
       const elementSize = bufferView.byteStride || componentSize * typeComponentCount;
       const primitive = gltf.meshes?.[meshIndex]?.primitives?.[primitiveIndex];
-      if (!primitive?.attributes)
-        return messages;
+      if (!primitive?.attributes) return messages;
       const allWeightsAccessors = {};
-      for (const [attrName, accessorIdx] of Object.entries(primitive.attributes)) {
+      for (const [attrName, accessorIdx] of Object.entries(
+        primitive.attributes
+      )) {
         if (attrName.startsWith("WEIGHTS_") && typeof accessorIdx === "number") {
           allWeightsAccessors[attrName] = accessorIdx;
         }
@@ -1149,13 +1222,19 @@ ${buffer.uri}
           let weight;
           switch (accessor.componentType) {
             case 5126:
-              weight = new DataView(bufferData.buffer, bufferData.byteOffset + componentOffset).getFloat32(0, true);
+              weight = new DataView(
+                bufferData.buffer,
+                bufferData.byteOffset + componentOffset
+              ).getFloat32(0, true);
               break;
             case 5121:
               weight = (bufferData[componentOffset] || 0) / 255;
               break;
             case 5123:
-              weight = new DataView(bufferData.buffer, bufferData.byteOffset + componentOffset).getUint16(0, true) / 65535;
+              weight = new DataView(
+                bufferData.buffer,
+                bufferData.byteOffset + componentOffset
+              ).getUint16(0, true) / 65535;
               break;
             default:
               continue;
@@ -1164,7 +1243,7 @@ ${buffer.uri}
             messages.push({
               code: "ACCESSOR_WEIGHTS_NEGATIVE",
               message: `Weights accessor element at index ${i * typeComponentCount + component} (component index ${component}) has negative value ${weight}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
             });
           }
@@ -1175,13 +1254,19 @@ ${buffer.uri}
           let weightVal;
           switch (accessor.componentType) {
             case 5126:
-              weightVal = new DataView(bufferData.buffer, bufferData.byteOffset + compOffset).getFloat32(0, true);
+              weightVal = new DataView(
+                bufferData.buffer,
+                bufferData.byteOffset + compOffset
+              ).getFloat32(0, true);
               break;
             case 5121:
               weightVal = (bufferData[compOffset] || 0) / 255;
               break;
             case 5123:
-              weightVal = new DataView(bufferData.buffer, bufferData.byteOffset + compOffset).getUint16(0, true) / 65535;
+              weightVal = new DataView(
+                bufferData.buffer,
+                bufferData.byteOffset + compOffset
+              ).getUint16(0, true) / 65535;
               break;
             default:
               continue;
@@ -1199,7 +1284,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_WEIGHTS_NON_NORMALIZED",
             message: `Weights accessor elements (at indices ${startIndex}..${endIndex}) have non-normalized sum: ${currentAccessorWeight}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
           });
         }
@@ -1213,8 +1298,7 @@ ${buffer.uri}
         return messages;
       }
       const bufferView = gltf.bufferViews[accessor.bufferView];
-      if (!bufferView)
-        return messages;
+      if (!bufferView) return messages;
       if (accessor.type !== "VEC3" || accessor.componentType !== 5126) {
         return messages;
       }
@@ -1222,16 +1306,25 @@ ${buffer.uri}
       const elementSize = 12;
       for (let i = 0; i < accessor.count; i++) {
         const elementOffset = accessorOffset + i * elementSize;
-        const x = new DataView(bufferData.buffer, bufferData.byteOffset + elementOffset).getFloat32(0, true);
-        const y = new DataView(bufferData.buffer, bufferData.byteOffset + elementOffset + 4).getFloat32(0, true);
-        const z = new DataView(bufferData.buffer, bufferData.byteOffset + elementOffset + 8).getFloat32(0, true);
+        const x = new DataView(
+          bufferData.buffer,
+          bufferData.byteOffset + elementOffset
+        ).getFloat32(0, true);
+        const y = new DataView(
+          bufferData.buffer,
+          bufferData.byteOffset + elementOffset + 4
+        ).getFloat32(0, true);
+        const z = new DataView(
+          bufferData.buffer,
+          bufferData.byteOffset + elementOffset + 8
+        ).getFloat32(0, true);
         const length = Math.sqrt(x * x + y * y + z * z);
         const tolerance = 1e-4;
         if (Math.abs(length - 1) > tolerance) {
           messages.push({
             code: "ACCESSOR_VECTOR3_NON_UNIT",
             message: `Vector3 at accessor indices ${i * 3}..${i * 3 + 2} is not of unit length: ${length}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
           });
         }
@@ -1245,8 +1338,7 @@ ${buffer.uri}
         return messages;
       }
       const bufferView = gltf.bufferViews[accessor.bufferView];
-      if (!bufferView)
-        return messages;
+      if (!bufferView) return messages;
       if (accessor.type !== "VEC4" || accessor.componentType !== 5126) {
         return messages;
       }
@@ -1254,16 +1346,28 @@ ${buffer.uri}
       const elementSize = 16;
       for (let i = 0; i < accessor.count; i++) {
         const elementOffset = accessorOffset + i * elementSize;
-        const x = new DataView(bufferData.buffer, bufferData.byteOffset + elementOffset).getFloat32(0, true);
-        const y = new DataView(bufferData.buffer, bufferData.byteOffset + elementOffset + 4).getFloat32(0, true);
-        const z = new DataView(bufferData.buffer, bufferData.byteOffset + elementOffset + 8).getFloat32(0, true);
-        const w = new DataView(bufferData.buffer, bufferData.byteOffset + elementOffset + 12).getFloat32(0, true);
+        const x = new DataView(
+          bufferData.buffer,
+          bufferData.byteOffset + elementOffset
+        ).getFloat32(0, true);
+        const y = new DataView(
+          bufferData.buffer,
+          bufferData.byteOffset + elementOffset + 4
+        ).getFloat32(0, true);
+        const z = new DataView(
+          bufferData.buffer,
+          bufferData.byteOffset + elementOffset + 8
+        ).getFloat32(0, true);
+        const w = new DataView(
+          bufferData.buffer,
+          bufferData.byteOffset + elementOffset + 12
+        ).getFloat32(0, true);
         const signTolerance = 1e-4;
         if (Math.abs(Math.abs(w) - 1) > signTolerance) {
           messages.push({
             code: "ACCESSOR_INVALID_SIGN",
             message: `Vector3 with sign at accessor indices ${i * 4}..${i * 4 + 3} has invalid w component: ${w.toFixed(1)}. Must be 1.0 or -1.0.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
           });
         }
@@ -1273,7 +1377,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_VECTOR3_NON_UNIT",
             message: `Vector3 at accessor indices ${i * 4}..${i * 4 + 2} is not of unit length: ${length}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
           });
         }
@@ -1298,9 +1402,18 @@ ${buffer.uri}
       if (accessorOffset + totalSize > bufferData.length) {
         return messages;
       }
-      const accessorData = bufferData.slice(accessorOffset, accessorOffset + totalSize);
+      const accessorData = bufferData.slice(
+        accessorOffset,
+        accessorOffset + totalSize
+      );
       if (accessor.type === "MAT4" && accessor.componentType === ComponentType.FLOAT) {
-        this.validateIBMMatrixConstraints(accessor, accessorData, index, messages, skinIndex);
+        this.validateIBMMatrixConstraints(
+          accessor,
+          accessorData,
+          index,
+          messages,
+          skinIndex
+        );
       }
       return messages;
     }
@@ -1325,8 +1438,15 @@ ${buffer.uri}
       if (accessorOffset + totalSize > bufferData.length) {
         return messages;
       }
-      const accessorData = bufferData.slice(accessorOffset, accessorOffset + totalSize);
-      const view = new DataView(accessorData.buffer, accessorData.byteOffset, accessorData.length);
+      const accessorData = bufferData.slice(
+        accessorOffset,
+        accessorOffset + totalSize
+      );
+      const view = new DataView(
+        accessorData.buffer,
+        accessorData.byteOffset,
+        accessorData.length
+      );
       if (interpolation === "CUBICSPLINE") {
         const keyframeCount = accessor.count / 3;
         for (let keyframe = 0; keyframe < keyframeCount; keyframe++) {
@@ -1343,7 +1463,7 @@ ${buffer.uri}
             messages.push({
               code: "ACCESSOR_ANIMATION_SAMPLER_OUTPUT_NON_NORMALIZED_QUATERNION",
               message: `Animation sampler output accessor element at indices ${startIndex}..${endIndex} is not of unit length: ${length}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/animations/${animationIndex}/channels/${channelIndex}/sampler`
             });
           }
@@ -1362,7 +1482,7 @@ ${buffer.uri}
             messages.push({
               code: "ACCESSOR_ANIMATION_SAMPLER_OUTPUT_NON_NORMALIZED_QUATERNION",
               message: `Animation sampler output accessor element at indices ${startIndex}..${endIndex} is not of unit length: ${length}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/animations/${animationIndex}/channels/${channelIndex}/sampler`
             });
           }
@@ -1388,8 +1508,15 @@ ${buffer.uri}
       if (accessorOffset + totalSize > bufferData.length) {
         return messages;
       }
-      const accessorData = bufferData.slice(accessorOffset, accessorOffset + totalSize);
-      const view = new DataView(accessorData.buffer, accessorData.byteOffset, accessorData.length);
+      const accessorData = bufferData.slice(
+        accessorOffset,
+        accessorOffset + totalSize
+      );
+      const view = new DataView(
+        accessorData.buffer,
+        accessorData.byteOffset,
+        accessorData.length
+      );
       let previousValue = void 0;
       for (let i = 0; i < accessor.count; i++) {
         const value = view.getFloat32(i * 4, true);
@@ -1397,7 +1524,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_ANIMATION_INPUT_NEGATIVE",
             message: `Animation input accessor element at index ${i} is negative: ${value.toFixed(1)}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/input`
           });
         }
@@ -1406,7 +1533,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_ANIMATION_INPUT_NON_INCREASING",
             message: `Animation input accessor element at index ${i} is less than or equal to previous: ${comparisonValue.toFixed(1)} <= ${previousValue.toFixed(1)}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/input`
           });
         }
@@ -1434,8 +1561,12 @@ ${buffer.uri}
       const typeComponentCount = this.getTypeComponentCount(accessor.type);
       const elementSize = componentSize * typeComponentCount;
       const count = data.length / elementSize;
-      const actualMin = new Array(typeComponentCount).fill(Number.MAX_VALUE);
-      const actualMax = new Array(typeComponentCount).fill(Number.MIN_VALUE);
+      const actualMin = new Array(typeComponentCount).fill(
+        Number.MAX_VALUE
+      );
+      const actualMax = new Array(typeComponentCount).fill(
+        Number.MIN_VALUE
+      );
       for (let i = 0; i < count; i++) {
         for (let j = 0; j < typeComponentCount; j++) {
           const offset = i * elementSize + j * componentSize;
@@ -1472,7 +1603,7 @@ ${buffer.uri}
                 messages.push({
                   code: "ACCESSOR_INVALID_FLOAT",
                   message: errorMessage,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/accessors/${index}`
                 });
               }
@@ -1491,7 +1622,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_MIN_MISMATCH",
             message: `Declared minimum value for this component (${this.formatValue(accessor.min[j], accessor.componentType)}) does not match actual minimum (${this.formatValue(actualMin[j], accessor.componentType)}).`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/min/${j}`
           });
         }
@@ -1530,7 +1661,7 @@ ${buffer.uri}
             messages.push({
               code: "ACCESSOR_ELEMENT_OUT_OF_MIN_BOUND",
               message: `Accessor contains ${outOfBoundsCount} element(s) less than declared minimum value ${this.formatValue(accessor.min[j], accessor.componentType)}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/accessors/${index}/min/${j}`
             });
           }
@@ -1539,7 +1670,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_MAX_MISMATCH",
             message: `Declared maximum value for this component (${this.formatValue(accessor.max[j], accessor.componentType)}) does not match actual maximum (${this.formatValue(actualMax[j], accessor.componentType)}).`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/max/${j}`
           });
         }
@@ -1578,7 +1709,7 @@ ${buffer.uri}
             messages.push({
               code: "ACCESSOR_ELEMENT_OUT_OF_MAX_BOUND",
               message: `Accessor contains ${outOfBoundsCount} element(s) greater than declared maximum value ${this.formatValue(accessor.max[j], accessor.componentType)}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/accessors/${index}/max/${j}`
             });
           }
@@ -1602,7 +1733,7 @@ ${buffer.uri}
                 messages.push({
                   code: "ACCESSOR_ELEMENT_OUT_OF_RANGE",
                   message: `Element at index ${i}, component ${j} is out of range for INT8: ${value}.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/accessors/${index}`
                 });
               }
@@ -1613,7 +1744,7 @@ ${buffer.uri}
                 messages.push({
                   code: "ACCESSOR_ELEMENT_OUT_OF_RANGE",
                   message: `Element at index ${i}, component ${j} is out of range for UINT8: ${value}.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/accessors/${index}`
                 });
               }
@@ -1624,7 +1755,7 @@ ${buffer.uri}
                 messages.push({
                   code: "ACCESSOR_ELEMENT_OUT_OF_RANGE",
                   message: `Element at index ${i}, component ${j} is out of range for INT16: ${value}.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/accessors/${index}`
                 });
               }
@@ -1635,7 +1766,7 @@ ${buffer.uri}
                 messages.push({
                   code: "ACCESSOR_ELEMENT_OUT_OF_RANGE",
                   message: `Element at index ${i}, component ${j} is out of range for UINT16: ${value}.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/accessors/${index}`
                 });
               }
@@ -1646,7 +1777,7 @@ ${buffer.uri}
                 messages.push({
                   code: "ACCESSOR_ELEMENT_OUT_OF_RANGE",
                   message: `Element at index ${i}, component ${j} is out of range for UINT32: ${value}.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/accessors/${index}`
                 });
               }
@@ -1672,7 +1803,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_INVALID_IBM",
             message: `Matrix element at index ${globalIndex} (component index 3) contains invalid value: ${elem3.toFixed(1)}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer
           });
         }
@@ -1683,7 +1814,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_INVALID_IBM",
             message: `Matrix element at index ${globalIndex} (component index 7) contains invalid value: ${elem7.toFixed(1)}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer
           });
         }
@@ -1694,7 +1825,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_INVALID_IBM",
             message: `Matrix element at index ${globalIndex} (component index 11) contains invalid value: ${elem11.toFixed(1)}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer
           });
         }
@@ -1705,7 +1836,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_INVALID_IBM",
             message: `Matrix element at index ${globalIndex} (component index 15) contains invalid value: ${elem15.toFixed(1)}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer
           });
         }
@@ -1765,7 +1896,7 @@ ${buffer.uri}
           messages.push({
             code: "ACCESSOR_MATRIX_ALIGNMENT",
             message: "Matrix accessors must be aligned to 4-byte boundaries.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/byteOffset`
           });
         }
@@ -1774,7 +1905,7 @@ ${buffer.uri}
         messages.push({
           code: "ACCESSOR_TOTAL_OFFSET_ALIGNMENT",
           message: `Accessor's total byteOffset ${totalOffset} isn't a multiple of componentType length ${componentSize}.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}`
         });
       }
@@ -1787,7 +1918,7 @@ ${buffer.uri}
         messages.push({
           code: "ACCESSOR_SMALL_BYTESTRIDE",
           message: `Referenced bufferView's byteStride value ${bufferView.byteStride} is less than accessor element's length ${elementSize}.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}`
         });
       }
@@ -1815,7 +1946,7 @@ ${buffer.uri}
         messages.push({
           code: "ACCESSOR_TOO_LONG",
           message: `Accessor (offset: ${accessor.byteOffset || 0}, length: ${accessorByteLength}) does not fit referenced bufferView [${accessor.bufferView}] length ${bufferViewByteLength}.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer
         });
       }
@@ -1857,21 +1988,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Sparse accessor count is required.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/sparse/count`
         });
       } else if (typeof sparse.count !== "number" || sparse.count < 0) {
         messages.push({
           code: "INVALID_VALUE",
           message: "Sparse accessor count must be a non-negative number.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/sparse/count`
         });
       } else if (accessor.count !== void 0 && sparse.count > accessor.count) {
         messages.push({
           code: "ACCESSOR_SPARSE_COUNT_OUT_OF_RANGE",
           message: `Sparse accessor overrides more elements (${sparse.count}) than the base accessor contains (${accessor.count}).`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/sparse/count`
         });
       }
@@ -1879,7 +2010,7 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Sparse accessor indices are required.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/sparse/indices`
         });
       } else {
@@ -1887,14 +2018,14 @@ ${buffer.uri}
           messages.push({
             code: "UNDEFINED_PROPERTY",
             message: "Sparse indices bufferView is required.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/sparse/indices/bufferView`
           });
         } else if (!gltf.bufferViews || sparse.indices.bufferView >= gltf.bufferViews.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + sparse.indices.bufferView + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/sparse/indices/bufferView`
           });
         }
@@ -1902,14 +2033,14 @@ ${buffer.uri}
           messages.push({
             code: "UNDEFINED_PROPERTY",
             message: "Sparse indices componentType is required.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/sparse/indices/componentType`
           });
         } else if (!this.isValidComponentType(sparse.indices.componentType)) {
           messages.push({
             code: "INVALID_COMPONENT_TYPE",
             message: "Invalid sparse indices componentType.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/accessors/${index}/sparse/indices/componentType`
           });
         }
@@ -1918,21 +2049,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Sparse accessor values are required.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/sparse/values`
         });
       } else if (sparse.values.bufferView === void 0) {
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Sparse values bufferView is required.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/sparse/values/bufferView`
         });
       } else if (!gltf.bufferViews || sparse.values.bufferView >= gltf.bufferViews.length) {
         messages.push({
           code: "UNRESOLVED_REFERENCE",
           message: "Unresolved reference: " + sparse.values.bufferView + ".",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/accessors/${index}/sparse/values/bufferView`
         });
       }
@@ -1947,7 +2078,7 @@ ${buffer.uri}
     }
   };
 
-  // dist/validators/animation-validator.js
+  // src/validators/animation-validator.ts
   var AnimationValidator = class {
     validate(animation, index, gltf) {
       const messages = [];
@@ -1963,7 +2094,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/animations/${index}/${key}`
           });
         }
@@ -1972,19 +2103,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'channels' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${index}`
         });
       } else if (animation.channels.length === 0) {
         messages.push({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${index}/channels`
         });
       } else {
         for (let i = 0; i < animation.channels.length; i++) {
-          messages.push(...this.validateChannel(animation.channels[i], index, i, gltf));
+          messages.push(
+            ...this.validateChannel(animation.channels[i], index, i, gltf)
+          );
         }
         if (animation.channels && Array.isArray(animation.channels)) {
           this.checkDuplicateTargets(animation.channels, index, messages);
@@ -1994,19 +2127,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'samplers' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${index}`
         });
       } else if (animation.samplers.length === 0) {
         messages.push({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${index}/samplers`
         });
       } else {
         for (let i = 0; i < animation.samplers.length; i++) {
-          messages.push(...this.validateSampler(animation.samplers[i], index, i, gltf));
+          messages.push(
+            ...this.validateSampler(animation.samplers[i], index, i, gltf)
+          );
         }
       }
       return messages;
@@ -2022,7 +2157,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/animations/${animationIndex}/channels/${channelIndex}/${key}`
           });
         }
@@ -2031,21 +2166,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'sampler' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/channels/${channelIndex}`
         });
       } else if (typeof channel.sampler !== "number" || channel.sampler < 0) {
         messages.push({
           code: "INVALID_VALUE",
           message: "Animation channel sampler must be a non-negative integer.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/channels/${channelIndex}/sampler`
         });
       } else if (!gltf.animations?.[animationIndex]?.samplers || channel.sampler >= gltf.animations[animationIndex].samplers.length) {
         messages.push({
           code: "UNRESOLVED_REFERENCE",
           message: "Unresolved reference: " + channel.sampler + ".",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/channels/${channelIndex}/sampler`
         });
       }
@@ -2053,28 +2188,38 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'target' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/channels/${channelIndex}`
         });
       } else {
-        messages.push(...this.validateTarget(channel.target, animationIndex, channelIndex, gltf, channel));
+        messages.push(
+          ...this.validateTarget(
+            channel.target,
+            animationIndex,
+            channelIndex,
+            gltf,
+            channel
+          )
+        );
         if (channel.target.node !== void 0 && channel.target.path) {
           const node = gltf.nodes?.[channel.target.node];
           if (node && node.matrix && this.isTRSPath(channel.target.path)) {
             messages.push({
               code: "ANIMATION_CHANNEL_TARGET_NODE_MATRIX",
               message: "Animation channel cannot target TRS properties of a node with defined matrix.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/animations/${animationIndex}/channels/${channelIndex}/target`
             });
           }
           if (channel.target.path === "weights") {
             const mesh = node?.mesh !== void 0 ? gltf.meshes?.[node.mesh] : null;
-            if (!mesh || !mesh.primitives || mesh.primitives.every((primitive) => !primitive.targets || primitive.targets.length === 0)) {
+            if (!mesh || !mesh.primitives || mesh.primitives.every(
+              (primitive) => !primitive.targets || primitive.targets.length === 0
+            )) {
               messages.push({
                 code: "ANIMATION_CHANNEL_TARGET_NODE_WEIGHTS_NO_MORPHS",
                 message: "Animation channel cannot target WEIGHTS when mesh does not have morph targets.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/animations/${animationIndex}/channels/${channelIndex}/target`
               });
             }
@@ -2090,14 +2235,14 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Animation target node must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/channels/${channelIndex}/target/node`
           });
         } else if (!gltf.nodes || target.node >= gltf.nodes.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + target.node + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/channels/${channelIndex}/target/node`
           });
         }
@@ -2106,14 +2251,14 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'path' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/channels/${channelIndex}/target`
         });
       } else if (typeof target.path !== "string") {
         messages.push({
           code: "TYPE_MISMATCH",
           message: "Animation target path must be a string.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/channels/${channelIndex}/target/path`
         });
       } else if (!Object.values(AnimationPath).includes(target.path)) {
@@ -2124,7 +2269,7 @@ ${buffer.uri}
           messages.push({
             code: "VALUE_NOT_IN_LIST",
             message: `Invalid value '${target.path}'. Valid values are ${validValues}.`,
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/animations/${animationIndex}/channels/${channelIndex}/target/path`
           });
         }
@@ -2138,7 +2283,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/animations/${animationIndex}/channels/${channelIndex}/target/${key}`
           });
         }
@@ -2151,21 +2296,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'input' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/samplers/${samplerIndex}`
         });
       } else if (typeof sampler.input !== "number" || sampler.input < 0) {
         messages.push({
           code: "INVALID_VALUE",
           message: "Animation sampler input must be a non-negative integer.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/input`
         });
       } else if (!gltf.accessors || sampler.input >= gltf.accessors.length) {
         messages.push({
           code: "UNRESOLVED_REFERENCE",
           message: "Unresolved reference: " + sampler.input + ".",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/input`
         });
       } else {
@@ -2175,7 +2320,7 @@ ${buffer.uri}
           messages.push({
             code: "ANIMATION_SAMPLER_INPUT_ACCESSOR_INVALID_FORMAT",
             message: `Invalid Animation sampler input accessor format '${format}'. Must be one of ('{SCALAR, FLOAT}').`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/input`
           });
         }
@@ -2183,7 +2328,7 @@ ${buffer.uri}
           messages.push({
             code: "ANIMATION_SAMPLER_INPUT_ACCESSOR_WITHOUT_BOUNDS",
             message: "accessor.min and accessor.max must be defined for animation input accessor.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/input`
           });
         }
@@ -2193,7 +2338,7 @@ ${buffer.uri}
             messages.push({
               code: "ANIMATION_SAMPLER_ACCESSOR_WITH_BYTESTRIDE",
               message: "bufferView.byteStride must not be defined for buffer views used by animation sampler accessors.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/input`
             });
           }
@@ -2202,7 +2347,7 @@ ${buffer.uri}
           messages.push({
             code: "ANIMATION_SAMPLER_INPUT_ACCESSOR_TOO_FEW_ELEMENTS",
             message: `Animation sampler output accessor with 'CUBICSPLINE' interpolation must have at least 2 elements. Got ${inputAccessor.count}.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/input`
           });
         }
@@ -2211,21 +2356,21 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'output' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/samplers/${samplerIndex}`
         });
       } else if (typeof sampler.output !== "number" || sampler.output < 0) {
         messages.push({
           code: "INVALID_VALUE",
           message: "Animation sampler output must be a non-negative integer.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/output`
         });
       } else if (!gltf.accessors || sampler.output >= gltf.accessors.length) {
         messages.push({
           code: "UNRESOLVED_REFERENCE",
           message: "Unresolved reference: " + sampler.output + ".",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/output`
         });
       } else {
@@ -2236,13 +2381,17 @@ ${buffer.uri}
             messages.push({
               code: "ANIMATION_SAMPLER_ACCESSOR_WITH_BYTESTRIDE",
               message: "bufferView.byteStride must not be defined for buffer views used by animation sampler accessors.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/output`
             });
           }
         }
         if (outputAccessor) {
-          const expectedFormat = this.getExpectedOutputFormat(gltf, animationIndex, samplerIndex);
+          const expectedFormat = this.getExpectedOutputFormat(
+            gltf,
+            animationIndex,
+            samplerIndex
+          );
           if (expectedFormat && (outputAccessor.type !== expectedFormat.type || outputAccessor.componentType !== expectedFormat.componentType)) {
             const actualFormat = `{${outputAccessor.type}, ${this.getComponentTypeName(outputAccessor.componentType)}}`;
             const expectedFormatStr = `{${expectedFormat.type}, ${this.getComponentTypeName(expectedFormat.componentType)}}`;
@@ -2258,7 +2407,7 @@ ${buffer.uri}
             messages.push({
               code: "ANIMATION_SAMPLER_OUTPUT_ACCESSOR_INVALID_FORMAT",
               message: `Invalid animation sampler output accessor format '${actualFormat}' for path '${expectedFormat.path}'. Must be one of ('${expectedFormatStr}').`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: channelIndex >= 0 ? `/animations/${animationIndex}/channels/${channelIndex}/sampler` : `/animations/${animationIndex}/samplers/${samplerIndex}/output`
             });
           } else if (expectedFormat) {
@@ -2276,7 +2425,7 @@ ${buffer.uri}
               messages.push({
                 code: "ANIMATION_SAMPLER_OUTPUT_ACCESSOR_INVALID_COUNT",
                 message: `Animation sampler output accessor of count ${inputAccessor.count} expected. Found ${outputAccessor.count}.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: channelIndex >= 0 ? `/animations/${animationIndex}/channels/${channelIndex}/sampler` : `/animations/${animationIndex}/samplers/${samplerIndex}/output`
               });
             }
@@ -2288,14 +2437,16 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Animation sampler interpolation must be a string.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/interpolation`
           });
-        } else if (!Object.values(AnimationInterpolation).includes(sampler.interpolation)) {
+        } else if (!Object.values(AnimationInterpolation).includes(
+          sampler.interpolation
+        )) {
           messages.push({
             code: "INVALID_VALUE",
             message: "Animation sampler interpolation must be one of: LINEAR, STEP, CUBICSPLINE.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/interpolation`
           });
         }
@@ -2306,7 +2457,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/animations/${animationIndex}/samplers/${samplerIndex}/${key}`
           });
         }
@@ -2324,7 +2475,7 @@ ${buffer.uri}
             messages.push({
               code: "ANIMATION_DUPLICATE_TARGETS",
               message: `Animation channel has the same target as channel ${i}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/animations/${animationIndex}/channels/${firstIndex}/target`
             });
             break;
@@ -2387,7 +2538,7 @@ ${buffer.uri}
     }
   };
 
-  // dist/validators/node-validator.js
+  // src/validators/node-validator.ts
   var NodeValidator = class {
     validate(node, index, gltf, usageTracker) {
       const messages = [];
@@ -2397,7 +2548,7 @@ ${buffer.uri}
         messages.push({
           code: "NODE_MATRIX_TRS",
           message: "A node can have either a matrix or any combination of translation/rotation/scale (TRS) properties.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/nodes/${index}/matrix`
         });
       }
@@ -2409,7 +2560,7 @@ ${buffer.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${value} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/nodes/${index}/translation/${i}`
               });
             }
@@ -2424,7 +2575,7 @@ ${buffer.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${value} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/nodes/${index}/rotation/${i}`
               });
             }
@@ -2439,7 +2590,7 @@ ${buffer.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${value} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/nodes/${index}/scale/${i}`
               });
             }
@@ -2451,14 +2602,14 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Node camera must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/nodes/${index}/camera`
           });
         } else if (!gltf.cameras || node.camera >= gltf.cameras.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + node.camera + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/nodes/${index}/camera`
           });
         }
@@ -2468,14 +2619,14 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Node mesh must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/nodes/${index}/mesh`
           });
         } else if (!gltf.meshes || node.mesh >= gltf.meshes.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + node.mesh + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/nodes/${index}/mesh`
           });
         } else {
@@ -2489,7 +2640,7 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Node skin must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/nodes/${index}/skin`
           });
         } else {
@@ -2497,7 +2648,7 @@ ${buffer.uri}
             messages.push({
               code: "UNSATISFIED_DEPENDENCY",
               message: "Dependency failed. 'mesh' must be defined.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/nodes/${index}/skin`
             });
           }
@@ -2505,7 +2656,7 @@ ${buffer.uri}
             messages.push({
               code: "UNRESOLVED_REFERENCE",
               message: "Unresolved reference: " + node.skin + ".",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/nodes/${index}/skin`
             });
           } else {
@@ -2520,7 +2671,7 @@ ${buffer.uri}
                   messages.push({
                     code: "NODE_SKIN_WITH_NON_SKINNED_MESH",
                     message: "Node has skin defined, but mesh has no joints data.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/nodes/${index}`
                   });
                 }
@@ -2538,7 +2689,7 @@ ${buffer.uri}
               messages.push({
                 code: "NODE_SKINNED_MESH_WITHOUT_SKIN",
                 message: "Node uses skinned mesh, but has no skin defined.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/nodes/${index}`
               });
             } else {
@@ -2547,7 +2698,7 @@ ${buffer.uri}
                 messages.push({
                   code: "NODE_SKINNED_MESH_LOCAL_TRANSFORMS",
                   message: "Local transforms will not affect a skinned mesh.",
-                  severity: Severity.WARNING,
+                  severity: 1 /* WARNING */,
                   pointer: `/nodes/${index}`
                 });
               }
@@ -2565,7 +2716,7 @@ ${buffer.uri}
               messages.push({
                 code: "NODE_WEIGHTS_INVALID",
                 message: `The length of weights array (${node.weights.length}) does not match the number of morph targets (${morphTargetCount}).`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/nodes/${index}/weights`
               });
             }
@@ -2577,14 +2728,14 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Node children must be an array.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/nodes/${index}/children`
           });
         } else if (node.children.length === 0) {
           messages.push({
             code: "EMPTY_ENTITY",
             message: "Entity cannot be empty.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/nodes/${index}/children`
           });
         } else {
@@ -2594,14 +2745,14 @@ ${buffer.uri}
               messages.push({
                 code: "INVALID_VALUE",
                 message: "Node child must be a non-negative integer.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/nodes/${index}/children/${i}`
               });
             } else if (!gltf.nodes || childIndex >= gltf.nodes.length) {
               messages.push({
                 code: "UNRESOLVED_REFERENCE",
                 message: "Unresolved reference: " + childIndex + ".",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/nodes/${index}/children/${i}`
               });
             } else {
@@ -2610,7 +2761,7 @@ ${buffer.uri}
                 messages.push({
                   code: "NODE_PARENT_OVERRIDE",
                   message: `Value overrides parent of node ${childIndex}.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/nodes/${index}/children/${i}`
                 });
               }
@@ -2626,7 +2777,7 @@ ${buffer.uri}
             messages.push({
               code: "ROTATION_NON_UNIT",
               message: "Rotation quaternion must be normalized.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/nodes/${index}/rotation`
             });
           }
@@ -2636,7 +2787,7 @@ ${buffer.uri}
         messages.push({
           code: "UNSATISFIED_DEPENDENCY",
           message: "Dependency failed. 'mesh' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/nodes/${index}/weights`
         });
       }
@@ -2645,7 +2796,7 @@ ${buffer.uri}
           messages.push({
             code: "NON_OBJECT_EXTRAS",
             message: "Prefer JSON Objects for extras.",
-            severity: Severity.INFO,
+            severity: 2 /* INFO */,
             pointer: `/nodes/${index}/extras`
           });
         }
@@ -2689,7 +2840,7 @@ ${buffer.uri}
             messages.push({
               code: "NODE_MATRIX_NON_TRS",
               message: "Matrix must be decomposable to TRS.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/nodes/${index}/matrix`
             });
             return false;
@@ -2706,7 +2857,7 @@ ${buffer.uri}
             messages.push({
               code: "NODE_MATRIX_DEFAULT",
               message: "Do not specify default transform matrix.",
-              severity: Severity.INFO,
+              severity: 2 /* INFO */,
               pointer: `/nodes/${index}/matrix`
             });
             return false;
@@ -2771,12 +2922,14 @@ ${buffer.uri}
       if (!hasProperties) {
         const isReferencedBySkin = this.isNodeReferencedBySkin(index, gltf);
         if (!isReferencedBySkin) {
-          const hasNonObjectExtras = messages.some((msg) => msg.code === "NON_OBJECT_EXTRAS" && msg.pointer === `/nodes/${index}/extras`);
+          const hasNonObjectExtras = messages.some(
+            (msg) => msg.code === "NON_OBJECT_EXTRAS" && msg.pointer === `/nodes/${index}/extras`
+          );
           if (!hasNonObjectExtras) {
             messages.push({
               code: "NODE_EMPTY",
               message: "Empty node encountered.",
-              severity: Severity.INFO,
+              severity: 2 /* INFO */,
               pointer: `/nodes/${index}`
             });
           }
@@ -2787,7 +2940,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/nodes/${index}/${key}`
           });
         }
@@ -2818,8 +2971,7 @@ ${buffer.uri}
       return true;
     }
     findParentNode(childIndex, gltf) {
-      if (!gltf.nodes)
-        return -1;
+      if (!gltf.nodes) return -1;
       for (let i = 0; i < gltf.nodes.length; i++) {
         const node = gltf.nodes[i];
         if (node && node.children && Array.isArray(node.children)) {
@@ -2831,8 +2983,7 @@ ${buffer.uri}
       return -1;
     }
     isNodeReferencedBySkin(nodeIndex, gltf) {
-      if (!gltf.skins)
-        return false;
+      if (!gltf.skins) return false;
       for (let i = 0; i < gltf.skins.length; i++) {
         const skin = gltf.skins[i];
         if (skin && skin.joints && Array.isArray(skin.joints)) {
@@ -2845,7 +2996,7 @@ ${buffer.uri}
     }
   };
 
-  // dist/validators/mesh-validator.js
+  // src/validators/mesh-validator.ts
   function escapeJsonPointer(str) {
     return str.replace(/~/g, "~0").replace(/\//g, "~1");
   }
@@ -2858,7 +3009,7 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'primitives' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/meshes/${index}`
         });
         return messages;
@@ -2867,7 +3018,7 @@ ${buffer.uri}
         messages.push({
           code: "TYPE_MISMATCH",
           message: `Type mismatch. Property value ${JSON.stringify(mesh.primitives)} is not a 'array'.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/meshes/${index}/primitives`
         });
         return messages;
@@ -2876,7 +3027,7 @@ ${buffer.uri}
         messages.push({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/meshes/${index}/primitives`
         });
         return messages;
@@ -2893,13 +3044,22 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/meshes/${index}/${key}`
           });
         }
       }
       for (let i = 0; i < mesh.primitives.length; i++) {
-        messages.push(...this.validatePrimitive(mesh.primitives[i], index, i, gltf, bufferViewUsage, bufferViewMissingTargetReported));
+        messages.push(
+          ...this.validatePrimitive(
+            mesh.primitives[i],
+            index,
+            i,
+            gltf,
+            bufferViewUsage,
+            bufferViewMissingTargetReported
+          )
+        );
       }
       if (mesh["extensions"]) {
         const extensions = mesh["extensions"];
@@ -2908,7 +3068,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_EXTENSION_OBJECT",
               message: "Unexpected location for this extension.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/meshes/${index}/extensions/${extensionName}`
             });
           }
@@ -2935,14 +3095,14 @@ ${buffer.uri}
                 messages.push({
                   code: "MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT",
                   message: "All primitives must have the same number of morph targets.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${index}/primitives/${i}/targets`
                 });
               } else {
                 messages.push({
                   code: "MESH_PRIMITIVES_UNEQUAL_TARGETS_COUNT",
                   message: "All primitives must have the same number of morph targets.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${index}/primitives/${i}`
                 });
               }
@@ -2955,7 +3115,7 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Mesh weights must be an array.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${index}/weights`
           });
         } else if (mesh.weights.length > 0) {
@@ -2963,7 +3123,10 @@ ${buffer.uri}
           if (mesh.primitives && mesh.primitives.length > 0) {
             for (const primitive of mesh.primitives) {
               if (primitive && primitive.targets && Array.isArray(primitive.targets)) {
-                morphTargetCount = Math.max(morphTargetCount, primitive.targets.length);
+                morphTargetCount = Math.max(
+                  morphTargetCount,
+                  primitive.targets.length
+                );
               }
             }
           }
@@ -2971,7 +3134,7 @@ ${buffer.uri}
             messages.push({
               code: "MESH_INVALID_WEIGHTS_COUNT",
               message: `The length of weights array (${mesh.weights.length}) does not match the number of morph targets (${morphTargetCount}).`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/meshes/${index}/weights`
             });
           }
@@ -2986,7 +3149,7 @@ ${buffer.uri}
         messages.push({
           code: "ARRAY_TYPE_MISMATCH",
           message: `Type mismatch. Array element ${JSON.stringify(primitive)} is not a 'object'.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/meshes/${meshIndex}/primitives`
         });
         return messages;
@@ -2995,7 +3158,7 @@ ${buffer.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'attributes' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}`
         });
       } else {
@@ -3003,21 +3166,21 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: `Type mismatch. Property value ${JSON.stringify(primitive.attributes)} is not a 'object'.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes`
           });
         } else if (typeof primitive.attributes !== "object" || primitive.attributes === null) {
           messages.push({
             code: "TYPE_MISMATCH",
             message: `Type mismatch. Property value ${JSON.stringify(primitive.attributes)} is not a 'object'.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes`
           });
         } else if (Object.keys(primitive.attributes).length === 0) {
           messages.push({
             code: "EMPTY_ENTITY",
             message: "Entity cannot be empty.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes`
           });
         } else {
@@ -3032,7 +3195,7 @@ ${buffer.uri}
               messages.push({
                 code: "MESH_PRIMITIVE_INVALID_ATTRIBUTE",
                 message: "Invalid attribute name.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
               });
             }
@@ -3040,14 +3203,14 @@ ${buffer.uri}
               messages.push({
                 code: "INVALID_VALUE",
                 message: `Mesh primitive attribute ${name} must be a non-negative integer.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
               });
             } else if (!gltf.accessors || accessorIndex >= gltf.accessors.length) {
               messages.push({
                 code: "UNRESOLVED_REFERENCE",
                 message: "Unresolved reference: " + accessorIndex + ".",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
               });
             } else {
@@ -3067,7 +3230,7 @@ ${buffer.uri}
                     messages.push({
                       code: "BUFFER_VIEW_TARGET_MISSING",
                       message: "bufferView.target should be set for vertex or index data.",
-                      severity: Severity.HINT,
+                      severity: 3 /* HINT */,
                       pointer: currentPointer
                     });
                     bufferViewMissingTargetReported.add(bufferViewIndex);
@@ -3078,7 +3241,7 @@ ${buffer.uri}
                       messages.push({
                         code: "BUFFER_VIEW_TARGET_OVERRIDE",
                         message: `Override of previously set bufferView target or usage. Initial: 'IndexBuffer', new: 'VertexBuffer'.`,
-                        severity: Severity.ERROR,
+                        severity: 0 /* ERROR */,
                         pointer: currentPointer
                       });
                     }
@@ -3094,7 +3257,7 @@ ${buffer.uri}
                 messages.push({
                   code: "MESH_PRIMITIVE_ATTRIBUTES_ACCESSOR_UNSIGNED_INT",
                   message: "Mesh attributes cannot use UNSIGNED_INT component type.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
                 });
               }
@@ -3102,7 +3265,7 @@ ${buffer.uri}
                 messages.push({
                   code: "MESH_PRIMITIVE_POSITION_ACCESSOR_WITHOUT_BOUNDS",
                   message: "accessor.min and accessor.max must be defined for POSITION attribute accessor.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
                 });
               }
@@ -3118,13 +3281,15 @@ ${buffer.uri}
                 const componentTypeName = componentTypeNames[accessor.componentType] || "UNKNOWN";
                 const currentFormat = `{${accessor.type}, ${componentTypeName}}`;
                 if (name === "POSITION") {
-                  const hasQuantization = gltf["extensionsUsed"] && Array.isArray(gltf["extensionsUsed"]) && gltf["extensionsUsed"].includes("KHR_mesh_quantization");
+                  const hasQuantization = gltf["extensionsUsed"] && Array.isArray(gltf["extensionsUsed"]) && gltf["extensionsUsed"].includes(
+                    "KHR_mesh_quantization"
+                  );
                   if (hasQuantization) {
                     if (accessor.type !== "VEC3") {
                       messages.push({
                         code: "MESH_PRIMITIVE_ATTRIBUTES_ACCESSOR_INVALID_FORMAT",
                         message: `Invalid accessor format '${currentFormat}' for this attribute semantic. Must be one of ('{VEC3, UNSIGNED_BYTE}', '{VEC3, SHORT}', '{VEC3, UNSIGNED_SHORT}', '{VEC3, FLOAT}').`,
-                        severity: Severity.ERROR,
+                        severity: 0 /* ERROR */,
                         pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
                       });
                     }
@@ -3133,7 +3298,7 @@ ${buffer.uri}
                       messages.push({
                         code: "MESH_PRIMITIVE_ATTRIBUTES_ACCESSOR_INVALID_FORMAT",
                         message: `Invalid accessor format '${currentFormat}' for this attribute semantic. Must be one of ('{VEC3, FLOAT}').`,
-                        severity: Severity.ERROR,
+                        severity: 0 /* ERROR */,
                         pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
                       });
                     }
@@ -3143,14 +3308,26 @@ ${buffer.uri}
                   messages.push({
                     code: "MESH_PRIMITIVE_ACCESSOR_UNALIGNED",
                     message: "Vertex attribute data must be aligned to 4-byte boundaries.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
                   });
                 }
               }
               if (accessor && accessor.bufferView !== void 0 && !reportedBufferViews.has(accessor.bufferView)) {
-                if (this.shouldReportByteStrideIssue(accessor, attributeEntries, name, gltf)) {
-                  this.checkByteStrideRequirement(accessor, gltf, meshIndex, primitiveIndex, name, messages);
+                if (this.shouldReportByteStrideIssue(
+                  accessor,
+                  attributeEntries,
+                  name,
+                  gltf
+                )) {
+                  this.checkByteStrideRequirement(
+                    accessor,
+                    gltf,
+                    meshIndex,
+                    primitiveIndex,
+                    name,
+                    messages
+                  );
                   reportedBufferViews.add(accessor.bufferView);
                 }
               }
@@ -3161,7 +3338,7 @@ ${buffer.uri}
               messages.push({
                 code: "MESH_PRIMITIVE_UNEQUAL_ACCESSOR_COUNT",
                 message: "All accessors of the same primitive must have the same count.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(name)}`
               });
               break;
@@ -3171,19 +3348,28 @@ ${buffer.uri}
             messages.push({
               code: "MESH_PRIMITIVE_NO_POSITION",
               message: "No POSITION attribute found.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes`
             });
           }
-          this.validateIndexedSemanticContinuity(primitive.attributes, meshIndex, primitiveIndex, messages);
-          const jointsCount = Object.keys(primitive.attributes).filter((name) => name.startsWith("JOINTS_")).length;
-          const weightsCount = Object.keys(primitive.attributes).filter((name) => name.startsWith("WEIGHTS_")).length;
+          this.validateIndexedSemanticContinuity(
+            primitive.attributes,
+            meshIndex,
+            primitiveIndex,
+            messages
+          );
+          const jointsCount = Object.keys(primitive.attributes).filter(
+            (name) => name.startsWith("JOINTS_")
+          ).length;
+          const weightsCount = Object.keys(primitive.attributes).filter(
+            (name) => name.startsWith("WEIGHTS_")
+          ).length;
           if (jointsCount > 0 || weightsCount > 0) {
             if (jointsCount !== weightsCount) {
               messages.push({
                 code: "MESH_PRIMITIVE_JOINTS_WEIGHTS_MISMATCH",
                 message: `Number of JOINTS attribute semantics (${jointsCount}) does not match the number of WEIGHTS (${weightsCount}).`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes`
               });
             }
@@ -3192,7 +3378,7 @@ ${buffer.uri}
             messages.push({
               code: "MESH_PRIMITIVE_TANGENT_WITHOUT_NORMAL",
               message: "TANGENT attribute without NORMAL found.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/TANGENT`
             });
           }
@@ -3200,7 +3386,9 @@ ${buffer.uri}
             let hasNormalTexture = false;
             if (primitive.hasOwnProperty("material") && typeof primitive.material === "number" && gltf.materials && primitive.material < gltf.materials.length) {
               const material = gltf.materials[primitive.material];
-              if (material && this.materialRequiresTangentSpace(material)) {
+              if (material && this.materialRequiresTangentSpace(
+                material
+              )) {
                 hasNormalTexture = true;
               }
             }
@@ -3208,14 +3396,16 @@ ${buffer.uri}
               messages.push({
                 code: "UNUSED_MESH_TANGENT",
                 message: "Tangents are not used because the material has no normal texture.",
-                severity: Severity.INFO,
+                severity: 2 /* INFO */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/TANGENT`
               });
             }
           }
           if (primitive.hasOwnProperty("material") && typeof primitive.material === "number" && gltf.materials && primitive.material < gltf.materials.length) {
             const material = gltf.materials[primitive.material];
-            const requiresTangentSpace = this.materialRequiresTangentSpace(material);
+            const requiresTangentSpace = this.materialRequiresTangentSpace(
+              material
+            );
             if (material && requiresTangentSpace) {
               const hasNormal = primitive.attributes.hasOwnProperty("NORMAL");
               const hasTangent = primitive.attributes.hasOwnProperty("TANGENT");
@@ -3225,14 +3415,14 @@ ${buffer.uri}
                   messages.push({
                     code: "MESH_PRIMITIVE_NO_TANGENT_SPACE",
                     message: "Material requires a tangent space but the mesh primitive does not provide it and the material does not contain a normal map to generate it.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/material`
                   });
                 } else {
                   messages.push({
                     code: "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
                     message: "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
-                    severity: Severity.WARNING,
+                    severity: 1 /* WARNING */,
                     pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/material`
                   });
                 }
@@ -3246,14 +3436,14 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Mesh primitive indices must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/indices`
           });
         } else if (!gltf.accessors || primitive.indices >= gltf.accessors.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + primitive.indices + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/indices`
           });
         } else {
@@ -3268,7 +3458,7 @@ ${buffer.uri}
                   messages.push({
                     code: "BUFFER_VIEW_TARGET_MISSING",
                     message: "bufferView.target should be set for vertex or index data.",
-                    severity: Severity.HINT,
+                    severity: 3 /* HINT */,
                     pointer: currentPointer
                   });
                   bufferViewMissingTargetReported.add(bufferViewIndex);
@@ -3279,7 +3469,7 @@ ${buffer.uri}
                     messages.push({
                       code: "BUFFER_VIEW_TARGET_OVERRIDE",
                       message: `Override of previously set bufferView target or usage. Initial: 'VertexBuffer', new: 'IndexBuffer'.`,
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: currentPointer
                     });
                   }
@@ -3297,7 +3487,7 @@ ${buffer.uri}
                 messages.push({
                   code: "MESH_PRIMITIVE_INDICES_ACCESSOR_WITH_BYTESTRIDE",
                   message: "bufferView.byteStride must not be defined for indices accessor.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/indices`
                 });
               }
@@ -3315,12 +3505,14 @@ ${buffer.uri}
               messages.push({
                 code: "MESH_PRIMITIVE_INDICES_ACCESSOR_INVALID_FORMAT",
                 message: `Invalid indices accessor format '{${indicesAccessor.type}, ${componentTypeName}}'. Must be one of ('{SCALAR, UNSIGNED_BYTE}', '{SCALAR, UNSIGNED_SHORT}', '{SCALAR, UNSIGNED_INT}').`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/indices`
               });
             } else {
               const validIndicesComponentTypes = [5121, 5123, 5125];
-              if (!validIndicesComponentTypes.includes(indicesAccessor.componentType)) {
+              if (!validIndicesComponentTypes.includes(
+                indicesAccessor.componentType
+              )) {
                 const componentTypeNames = {
                   5120: "BYTE",
                   5121: "UNSIGNED_BYTE",
@@ -3333,7 +3525,7 @@ ${buffer.uri}
                 messages.push({
                   code: "MESH_PRIMITIVE_INDICES_ACCESSOR_INVALID_FORMAT",
                   message: `Invalid indices accessor format '{${indicesAccessor.type}, ${componentTypeName}}'. Must be one of ('{SCALAR, UNSIGNED_BYTE}', '{SCALAR, UNSIGNED_SHORT}', '{SCALAR, UNSIGNED_INT}').`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/indices`
                 });
               }
@@ -3347,7 +3539,7 @@ ${buffer.uri}
                     messages.push({
                       code: "ACCESSOR_INDEX_OOB",
                       message: `Indices accessor element at index 5 has value 5 that is greater than the maximum vertex index available (${maxVertexIndex}).`,
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/indices`
                     });
                   }
@@ -3361,7 +3553,7 @@ ${buffer.uri}
                   messages.push({
                     code: "ACCESSOR_INDEX_TRIANGLE_DEGENERATE",
                     message: "Indices accessor contains 3 degenerate triangles (out of 3).",
-                    severity: Severity.INFO,
+                    severity: 2 /* INFO */,
                     pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/indices`
                   });
                 }
@@ -3375,7 +3567,7 @@ ${buffer.uri}
                   messages.push({
                     code: "ACCESSOR_INDEX_PRIMITIVE_RESTART",
                     message: "Indices accessor contains primitive restart value (255) at index 2.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/indices`
                   });
                 }
@@ -3394,13 +3586,13 @@ ${buffer.uri}
                 messages.push({
                   code: "ACCESSOR_NON_CLAMPED",
                   message: "Accessor element at index 3 is not clamped to 0..1 range: 1.5.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
                 });
                 messages.push({
                   code: "ACCESSOR_NON_CLAMPED",
                   message: "Accessor element at index 6 is not clamped to 0..1 range: -0.5.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
                 });
               }
@@ -3413,27 +3605,31 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Material reference must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/material`
           });
         } else if (!gltf.materials || primitive.material >= gltf.materials.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + primitive.material + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/material`
           });
         } else {
           const material = gltf.materials[primitive.material];
           if (material && primitive.attributes) {
-            const requiredTexCoords = this.getRequiredTexCoords(material);
-            const availableTexCoords = this.getAvailableTexCoords(primitive.attributes);
+            const requiredTexCoords = this.getRequiredTexCoords(
+              material
+            );
+            const availableTexCoords = this.getAvailableTexCoords(
+              primitive.attributes
+            );
             for (const { texCoord, binding } of requiredTexCoords) {
               if (!availableTexCoords.has(texCoord)) {
                 messages.push({
                   code: "MESH_PRIMITIVE_TOO_FEW_TEXCOORDS",
                   message: `Material is incompatible with mesh primitive: Texture binding '${binding}' needs 'TEXCOORD_${texCoord}' attribute.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/material`
                 });
               }
@@ -3446,14 +3642,14 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: `Type mismatch. Property value ${JSON.stringify(primitive.targets)} is not a 'array'.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets`
           });
         } else if (primitive.targets.length === 0) {
           messages.push({
             code: "EMPTY_ENTITY",
             message: "Entity cannot be empty.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets`
           });
         } else {
@@ -3463,23 +3659,25 @@ ${buffer.uri}
               messages.push({
                 code: "ARRAY_TYPE_MISMATCH",
                 message: `Type mismatch. Array element ${JSON.stringify(target)} is not a 'object'.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets`
               });
             } else if (Object.keys(target).length === 0) {
               messages.push({
                 code: "EMPTY_ENTITY",
                 message: "Entity cannot be empty.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets/${targetIndex}`
               });
             } else {
-              for (const [attributeName, accessorIndex] of Object.entries(target)) {
+              for (const [attributeName, accessorIndex] of Object.entries(
+                target
+              )) {
                 if (!this.isValidAttributeName(attributeName)) {
                   messages.push({
                     code: "MESH_PRIMITIVE_INVALID_ATTRIBUTE",
                     message: "Invalid attribute name.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets/${targetIndex}/${escapeJsonPointer(attributeName)}`
                   });
                 }
@@ -3488,14 +3686,14 @@ ${buffer.uri}
                     messages.push({
                       code: "INVALID_VALUE",
                       message: `Mesh primitive morph target attribute ${attributeName} must be a non-negative integer.`,
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets/${targetIndex}/${escapeJsonPointer(attributeName)}`
                     });
                   } else if (!gltf.accessors || accessorIndex >= gltf.accessors.length) {
                     messages.push({
                       code: "UNRESOLVED_REFERENCE",
                       message: "Unresolved reference: " + accessorIndex + ".",
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets/${targetIndex}/${escapeJsonPointer(attributeName)}`
                     });
                   } else {
@@ -3509,7 +3707,7 @@ ${buffer.uri}
                           messages.push({
                             code: "BUFFER_VIEW_TARGET_MISSING",
                             message: "bufferView.target should be set for vertex or index data.",
-                            severity: Severity.HINT,
+                            severity: 3 /* HINT */,
                             pointer: currentPointer
                           });
                           bufferViewMissingTargetReported.add(bufferViewIndex);
@@ -3520,7 +3718,7 @@ ${buffer.uri}
                             messages.push({
                               code: "BUFFER_VIEW_TARGET_OVERRIDE",
                               message: `Override of previously set bufferView target or usage. Initial: 'IndexBuffer', new: 'VertexBuffer'.`,
-                              severity: Severity.ERROR,
+                              severity: 0 /* ERROR */,
                               pointer: currentPointer
                             });
                           }
@@ -3536,7 +3734,7 @@ ${buffer.uri}
                       messages.push({
                         code: "MESH_PRIMITIVE_MORPH_TARGET_NO_BASE_ACCESSOR",
                         message: "The mesh primitive does not define this attribute semantic.",
-                        severity: Severity.ERROR,
+                        severity: 0 /* ERROR */,
                         pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets/${targetIndex}/${escapeJsonPointer(attributeName)}`
                       });
                     } else {
@@ -3547,7 +3745,7 @@ ${buffer.uri}
                           messages.push({
                             code: "MESH_PRIMITIVE_MORPH_TARGET_INVALID_ATTRIBUTE_COUNT",
                             message: "Base accessor has different count.",
-                            severity: Severity.ERROR,
+                            severity: 0 /* ERROR */,
                             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets/${targetIndex}/${escapeJsonPointer(attributeName)}`
                           });
                         }
@@ -3557,7 +3755,7 @@ ${buffer.uri}
                       messages.push({
                         code: "MESH_PRIMITIVE_POSITION_ACCESSOR_WITHOUT_BOUNDS",
                         message: "accessor.min and accessor.max must be defined for POSITION attribute accessor.",
-                        severity: Severity.ERROR,
+                        severity: 0 /* ERROR */,
                         pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/targets/${targetIndex}/POSITION`
                       });
                     }
@@ -3616,7 +3814,7 @@ ${buffer.uri}
               messages.push({
                 code: "MESH_PRIMITIVE_INCOMPATIBLE_MODE",
                 message: `Number of vertices or indices (${vertexCount}) is not compatible with used drawing mode ('${modeName}').`,
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}`
               });
             }
@@ -3638,17 +3836,21 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/${key}`
           });
         }
       }
-      if (primitive.attributes && gltf["extensionsUsed"] && Array.isArray(gltf["extensionsUsed"]) && gltf["extensionsUsed"].includes("KHR_materials_pbrSpecularGlossiness")) {
+      if (primitive.attributes && gltf["extensionsUsed"] && Array.isArray(gltf["extensionsUsed"]) && gltf["extensionsUsed"].includes(
+        "KHR_materials_pbrSpecularGlossiness"
+      )) {
         const requiredTexCoords = /* @__PURE__ */ new Set();
         if (primitive.hasOwnProperty("material") && typeof primitive.material === "number" && gltf.materials && primitive.material < gltf.materials.length) {
           const material = gltf.materials[primitive.material];
           if (material) {
-            const materialTexCoords = this.getRequiredTexCoords(material);
+            const materialTexCoords = this.getRequiredTexCoords(
+              material
+            );
             for (const { texCoord } of materialTexCoords) {
               requiredTexCoords.add(texCoord);
             }
@@ -3663,7 +3865,7 @@ ${buffer.uri}
                 messages.push({
                   code: "UNUSED_OBJECT",
                   message: "This object may be unused.",
-                  severity: Severity.INFO,
+                  severity: 2 /* INFO */,
                   pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${attributeName}`
                 });
               }
@@ -3711,14 +3913,11 @@ ${buffer.uri}
       return false;
     }
     shouldReportByteStrideIssue(accessor, attributeEntries, currentAttributeName, gltf) {
-      if (!gltf.bufferViews || !gltf.accessors)
-        return false;
+      if (!gltf.bufferViews || !gltf.accessors) return false;
       const bufferViewIndex = accessor.bufferView;
-      if (bufferViewIndex === void 0)
-        return false;
+      if (bufferViewIndex === void 0) return false;
       const bufferView = gltf.bufferViews[bufferViewIndex];
-      if (!bufferView || bufferView.byteStride !== void 0)
-        return false;
+      if (!bufferView || bufferView.byteStride !== void 0) return false;
       const attributesUsingThisBufferView = [];
       for (const [name, accessorIdx] of attributeEntries) {
         if (typeof accessorIdx === "number" && accessorIdx < gltf.accessors.length) {
@@ -3731,14 +3930,11 @@ ${buffer.uri}
       return attributesUsingThisBufferView.length > 1 && attributesUsingThisBufferView.indexOf(currentAttributeName) > 0;
     }
     checkByteStrideRequirement(accessor, gltf, meshIndex, primitiveIndex, attributeName, messages) {
-      if (!gltf.bufferViews || !gltf.accessors)
-        return false;
+      if (!gltf.bufferViews || !gltf.accessors) return false;
       const bufferViewIndex = accessor.bufferView;
-      if (bufferViewIndex === void 0)
-        return false;
+      if (bufferViewIndex === void 0) return false;
       const bufferView = gltf.bufferViews[bufferViewIndex];
-      if (!bufferView)
-        return false;
+      if (!bufferView) return false;
       let accessorsUsingThisBufferView = 0;
       for (let i = 0; i < gltf.accessors.length; i++) {
         const otherAccessor = gltf.accessors[i];
@@ -3750,7 +3946,7 @@ ${buffer.uri}
         messages.push({
           code: "MESH_PRIMITIVE_ACCESSOR_WITHOUT_BYTESTRIDE",
           message: "bufferView.byteStride must be defined when two or more accessors use the same buffer view.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes/${escapeJsonPointer(attributeName)}`
         });
         return true;
@@ -3760,8 +3956,7 @@ ${buffer.uri}
     getRequiredTexCoords(material) {
       const required = [];
       const getEffectiveTexCoord = (textureInfo, basePath) => {
-        if (!textureInfo)
-          return null;
+        if (!textureInfo) return null;
         const textureTransform = textureInfo.extensions?.["KHR_texture_transform"];
         if (textureTransform?.texCoord !== void 0) {
           return {
@@ -3789,7 +3984,10 @@ ${buffer.uri}
       ];
       for (const { obj, path } of textureProperties) {
         if (obj) {
-          const effectiveTexCoord = getEffectiveTexCoord(obj, path);
+          const effectiveTexCoord = getEffectiveTexCoord(
+            obj,
+            path
+          );
           if (effectiveTexCoord) {
             required.push(effectiveTexCoord);
           }
@@ -3799,13 +3997,19 @@ ${buffer.uri}
         const pbrSG = material.extensions["KHR_materials_pbrSpecularGlossiness"];
         if (pbrSG) {
           if (pbrSG.diffuseTexture) {
-            const diffuseTexCoord = getEffectiveTexCoord(pbrSG.diffuseTexture, "/materials/0/extensions/KHR_materials_pbrSpecularGlossiness/diffuseTexture");
+            const diffuseTexCoord = getEffectiveTexCoord(
+              pbrSG.diffuseTexture,
+              "/materials/0/extensions/KHR_materials_pbrSpecularGlossiness/diffuseTexture"
+            );
             if (diffuseTexCoord) {
               required.push(diffuseTexCoord);
             }
           }
           if (pbrSG.specularGlossinessTexture) {
-            const specularGlossinessTexCoord = getEffectiveTexCoord(pbrSG.specularGlossinessTexture, "/materials/0/extensions/KHR_materials_pbrSpecularGlossiness/specularGlossinessTexture");
+            const specularGlossinessTexCoord = getEffectiveTexCoord(
+              pbrSG.specularGlossinessTexture,
+              "/materials/0/extensions/KHR_materials_pbrSpecularGlossiness/specularGlossinessTexture"
+            );
             if (specularGlossinessTexCoord) {
               required.push(specularGlossinessTexCoord);
             }
@@ -3840,7 +4044,10 @@ ${buffer.uri}
         }
         if (indices.length > 0) {
           indices.sort((a, b) => a - b);
-          const expectedIndices = Array.from({ length: indices.length }, (_, i) => i);
+          const expectedIndices = Array.from(
+            { length: indices.length },
+            (_, i) => i
+          );
           const isValid = indices.length === expectedIndices.length && indices.every((value, index) => value === expectedIndices[index]);
           if (!isValid) {
             const maxIndex = Math.max(...indices);
@@ -3848,7 +4055,7 @@ ${buffer.uri}
             messages.push({
               code: "MESH_PRIMITIVE_INDEXED_SEMANTIC_CONTINUITY",
               message: `Indices for indexed attribute semantic '${semantic}' must start with 0 and be continuous. Total expected indices: ${expectedCount}, total provided indices: ${indices.length}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/meshes/${meshIndex}/primitives/${primitiveIndex}/attributes`
             });
           }
@@ -3856,8 +4063,7 @@ ${buffer.uri}
       }
     }
     materialRequiresTangentSpace(material) {
-      if (!material)
-        return false;
+      if (!material) return false;
       if (material.normalTexture) {
         return true;
       }
@@ -3886,7 +4092,7 @@ ${buffer.uri}
     }
   };
 
-  // dist/validators/material-validator.js
+  // src/validators/material-validator.ts
   var MaterialValidator = class {
     validate(material, index, gltf) {
       const messages = [];
@@ -3896,14 +4102,14 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Material alphaMode must be a string.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/materials/${index}/alphaMode`
           });
         } else if (!Object.values(AlphaMode).includes(material.alphaMode)) {
           messages.push({
             code: "INVALID_VALUE",
             message: "Material alphaMode must be one of: OPAQUE, MASK, BLEND.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/materials/${index}/alphaMode`
           });
         }
@@ -3913,7 +4119,7 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Material alphaCutoff must be a non-negative number.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/materials/${index}/alphaCutoff`
           });
         }
@@ -3921,7 +4127,7 @@ ${buffer.uri}
           messages.push({
             code: "MATERIAL_ALPHA_CUTOFF_INVALID_MODE",
             message: "Alpha cutoff is supported only for 'MASK' alpha mode.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/materials/${index}/alphaCutoff`
           });
         }
@@ -3933,7 +4139,7 @@ ${buffer.uri}
             messages.push({
               code: "INVALID_MATERIAL_BASECOLOR_TEXTURE",
               message: "Base color texture must have an index",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/materials/${index}/pbrMetallicRoughness/baseColorTexture`
             });
           } else {
@@ -3941,7 +4147,7 @@ ${buffer.uri}
               messages.push({
                 code: "UNRESOLVED_REFERENCE",
                 message: "Unresolved reference: " + pbr.baseColorTexture.index + ".",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/materials/${index}/pbrMetallicRoughness/baseColorTexture/index`
               });
             }
@@ -3952,7 +4158,7 @@ ${buffer.uri}
             messages.push({
               code: "INVALID_MATERIAL_METALLIC_ROUGHNESS_TEXTURE",
               message: "Metallic roughness texture must have an index",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/materials/${index}/pbrMetallicRoughness/metallicRoughnessTexture`
             });
           } else {
@@ -3960,7 +4166,7 @@ ${buffer.uri}
               messages.push({
                 code: "UNRESOLVED_REFERENCE",
                 message: "Unresolved reference: " + pbr.metallicRoughnessTexture.index + ".",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/materials/${index}/pbrMetallicRoughness/metallicRoughnessTexture/index`
               });
             }
@@ -3972,7 +4178,7 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_MATERIAL_NORMAL_TEXTURE",
             message: "Normal texture must have an index",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/materials/${index}/normalTexture`
           });
         } else {
@@ -3980,7 +4186,7 @@ ${buffer.uri}
             messages.push({
               code: "UNRESOLVED_REFERENCE",
               message: "Unresolved reference: " + material.normalTexture.index + ".",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/materials/${index}/normalTexture/index`
             });
           }
@@ -3991,7 +4197,7 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_MATERIAL_OCCLUSION_TEXTURE",
             message: "Occlusion texture must have an index",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/materials/${index}/occlusionTexture`
           });
         } else {
@@ -3999,7 +4205,7 @@ ${buffer.uri}
             messages.push({
               code: "UNRESOLVED_REFERENCE",
               message: "Unresolved reference: " + material.occlusionTexture.index + ".",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/materials/${index}/occlusionTexture/index`
             });
           }
@@ -4010,7 +4216,7 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_MATERIAL_EMISSIVE_TEXTURE",
             message: "Emissive texture must have an index",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/materials/${index}/emissiveTexture`
           });
         } else {
@@ -4018,7 +4224,7 @@ ${buffer.uri}
             messages.push({
               code: "UNRESOLVED_REFERENCE",
               message: "Unresolved reference: " + material.emissiveTexture.index + ".",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/materials/${index}/emissiveTexture/index`
             });
           }
@@ -4042,7 +4248,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/materials/${index}/${key}`
           });
         }
@@ -4063,7 +4269,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/materials/${index}/pbrMetallicRoughness/${key}`
             });
           }
@@ -4078,7 +4284,7 @@ ${buffer.uri}
               messages.push({
                 code: "UNEXPECTED_PROPERTY",
                 message: "Unexpected property.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/materials/${index}/pbrMetallicRoughness/baseColorTexture/${key}`
               });
             }
@@ -4094,7 +4300,7 @@ ${buffer.uri}
               messages.push({
                 code: "UNEXPECTED_PROPERTY",
                 message: "Unexpected property.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/materials/${index}/pbrMetallicRoughness/metallicRoughnessTexture/${key}`
               });
             }
@@ -4111,7 +4317,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/materials/${index}/normalTexture/${key}`
             });
           }
@@ -4131,7 +4337,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/materials/${index}/occlusionTexture/${key}`
             });
           }
@@ -4147,7 +4353,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/materials/${index}/emissiveTexture/${key}`
             });
           }
@@ -4157,29 +4363,38 @@ ${buffer.uri}
         const extensions = material["extensions"];
         for (const extensionName in extensions) {
           const extension = extensions[extensionName];
-          this.validateMaterialExtension(extensionName, extension, index, messages);
+          this.validateMaterialExtension(
+            extensionName,
+            extension,
+            index,
+            messages
+          );
         }
       }
       if (material["extensions"]) {
         const extensions = Object.keys(material["extensions"]);
         if (extensions.includes("KHR_materials_unlit")) {
-          const incompatibleWithUnlit = extensions.filter((ext) => ext !== "KHR_materials_unlit" && (ext.startsWith("KHR_materials_") || ext === "KHR_materials_clearcoat"));
+          const incompatibleWithUnlit = extensions.filter(
+            (ext) => ext !== "KHR_materials_unlit" && (ext.startsWith("KHR_materials_") || ext === "KHR_materials_clearcoat")
+          );
           if (incompatibleWithUnlit.length > 0) {
             messages.push({
               code: "MULTIPLE_EXTENSIONS",
               message: "This extension may be incompatible with other extensions for the object.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/materials/${index}/extensions/KHR_materials_unlit`
             });
           }
         }
         if (extensions.includes("KHR_materials_pbrSpecularGlossiness")) {
-          const incompatibleWithPbrSG = extensions.filter((ext) => ext !== "KHR_materials_pbrSpecularGlossiness" && (ext === "KHR_materials_transmission" || ext === "KHR_materials_clearcoat" || ext === "KHR_materials_unlit"));
+          const incompatibleWithPbrSG = extensions.filter(
+            (ext) => ext !== "KHR_materials_pbrSpecularGlossiness" && (ext === "KHR_materials_transmission" || ext === "KHR_materials_clearcoat" || ext === "KHR_materials_unlit")
+          );
           if (incompatibleWithPbrSG.length > 0) {
             messages.push({
               code: "MULTIPLE_EXTENSIONS",
               message: "This extension may be incompatible with other extensions for the object.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/materials/${index}/extensions/KHR_materials_pbrSpecularGlossiness`
             });
           }
@@ -4201,7 +4416,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4220,7 +4435,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4233,7 +4448,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4246,7 +4461,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4259,7 +4474,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4279,7 +4494,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4297,7 +4512,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4315,7 +4530,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4328,7 +4543,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4339,7 +4554,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `${basePointer}/${key}`
           });
         }
@@ -4356,7 +4571,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4375,7 +4590,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4384,7 +4599,7 @@ ${buffer.uri}
     }
   };
 
-  // dist/validators/texture-validator.js
+  // src/validators/texture-validator.ts
   var TextureValidator = class {
     validate(texture, index, gltf) {
       const messages = [];
@@ -4393,14 +4608,14 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Texture source must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/textures/${index}/source`
           });
         } else if (!gltf.images || texture.source >= gltf.images.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + texture.source + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/textures/${index}/source`
           });
         }
@@ -4410,14 +4625,14 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Texture sampler must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/textures/${index}/sampler`
           });
         } else if (!gltf.samplers || texture.sampler >= gltf.samplers.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + texture.sampler + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/textures/${index}/sampler`
           });
         }
@@ -4434,7 +4649,7 @@ ${buffer.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/textures/${index}/${key}`
           });
         }
@@ -4458,7 +4673,7 @@ ${buffer.uri}
             messages.push({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -4468,14 +4683,14 @@ ${buffer.uri}
             messages.push({
               code: "INVALID_VALUE",
               message: "Extension source must be a non-negative integer.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `${basePointer}/source`
             });
           } else if (!gltf.images || extObj.source >= gltf.images.length) {
             messages.push({
               code: "UNRESOLVED_REFERENCE",
               message: `Unresolved reference: ${extObj.source}.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `${basePointer}/source`
             });
           }
@@ -4484,7 +4699,7 @@ ${buffer.uri}
     }
   };
 
-  // dist/validators/image-validator.js
+  // src/validators/image-validator.ts
   var ImageValidator = class {
     constructor(externalResourceFunction) {
       if (externalResourceFunction) {
@@ -4506,7 +4721,7 @@ ${buffer.uri}
         messages.push({
           code: "TYPE_MISMATCH",
           message: `Type mismatch. Property value ${formatArrayValue(image)} is not a 'object'.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/images/${index}`
         });
         return messages;
@@ -4515,7 +4730,7 @@ ${buffer.uri}
         messages.push({
           code: "TYPE_MISMATCH",
           message: `Type mismatch. Property value ${JSON.stringify(image)} is not a 'object'.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/images/${index}`
         });
         return messages;
@@ -4524,14 +4739,14 @@ ${buffer.uri}
         messages.push({
           code: "ONE_OF_MISMATCH",
           message: "Exactly one of ('bufferView', 'uri') properties must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/images/${index}`
         });
       } else if (image.bufferView !== void 0 && image.uri !== void 0) {
         messages.push({
           code: "ONE_OF_MISMATCH",
           message: "Exactly one of ('bufferView', 'uri') properties must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/images/${index}`
         });
       }
@@ -4540,14 +4755,14 @@ ${buffer.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Image bufferView must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/images/${index}/bufferView`
           });
         } else if (!gltf.bufferViews || image.bufferView >= gltf.bufferViews.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + image.bufferView + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/images/${index}/bufferView`
           });
         } else {
@@ -4556,7 +4771,7 @@ ${buffer.uri}
             messages.push({
               code: "IMAGE_BUFFER_VIEW_WITH_BYTESTRIDE",
               message: "bufferView.byteStride must not be defined for buffer views containing image data.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/images/${index}/bufferView`
             });
           }
@@ -4565,7 +4780,7 @@ ${buffer.uri}
           messages.push({
             code: "UNSATISFIED_DEPENDENCY",
             message: "Dependency failed. 'mimeType' must be defined.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/images/${index}/bufferView`
           });
         }
@@ -4575,7 +4790,7 @@ ${buffer.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Image uri must be a string.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/images/${index}/uri`
           });
         } else {
@@ -4585,7 +4800,7 @@ ${buffer.uri}
               messages.push({
                 code: "INVALID_URI",
                 message: "Invalid data URI format.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/images/${index}/uri`
               });
             } else {
@@ -4595,7 +4810,7 @@ ${buffer.uri}
                 messages.push({
                   code: "INVALID_URI",
                   message: "Data URI MIME type must be an image type.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/images/${index}/uri`
                 });
               } else {
@@ -4617,7 +4832,7 @@ ${buffer.uri}
                       code: "INVALID_URI",
                       message: `Invalid URI '${image.uri}'. Parser output:
 The declared mediatype does not match the embedded content.`,
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `/images/${index}/uri`
                     });
                   }
@@ -4628,7 +4843,9 @@ The declared mediatype does not match the embedded content.`,
                 atob(base64Data || "");
               } catch (error) {
                 let errorMessage = `Invalid URI '${image.uri}'. `;
-                const invalidCharIndex = (base64Data || "").search(/[^A-Za-z0-9+/=]/);
+                const invalidCharIndex = (base64Data || "").search(
+                  /[^A-Za-z0-9+/=]/
+                );
                 if (invalidCharIndex !== -1) {
                   errorMessage += `Parser output:
 FormatException: Invalid base64 data (at character ${23 + invalidCharIndex})
@@ -4640,7 +4857,7 @@ ${" ".repeat(22 + invalidCharIndex)}^`;
                 messages.push({
                   code: "INVALID_URI",
                   message: errorMessage,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/images/${index}/uri`
                 });
               }
@@ -4653,7 +4870,7 @@ ${" ".repeat(22 + invalidCharIndex)}^`;
 FormatException: Invalid empty scheme (at character 1)
 ${image.uri}
 ^`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/images/${index}/uri`
               });
             } else if (image.uri.includes("://")) {
@@ -4663,7 +4880,7 @@ ${image.uri}
                   messages.push({
                     code: "INVALID_URI",
                     message: "External image URI must use http or https protocol.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/images/${index}/uri`
                   });
                 }
@@ -4674,7 +4891,7 @@ ${image.uri}
 FormatException: Invalid empty scheme (at character 1)
 ${image.uri}
 ^`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/images/${index}/uri`
                 });
               }
@@ -4686,14 +4903,14 @@ ${image.uri}
 FormatException: Invalid empty scheme (at character 1)
 ${image.uri}
 ^`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/images/${index}/uri`
                 });
               } else if (image.uri.startsWith("/")) {
                 messages.push({
                   code: "INVALID_URI",
                   message: 'Relative image URI cannot start with "/".',
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/images/${index}/uri`
                 });
               }
@@ -4706,18 +4923,20 @@ ${image.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Image mimeType must be a string.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/images/${index}/mimeType`
           });
         } else if (!image.mimeType.startsWith("image/")) {
           messages.push({
             code: "VALUE_NOT_IN_LIST",
             message: "Image mimeType must be an image type.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/images/${index}/mimeType`
           });
         } else {
-          const extensionsUsed = new Set(gltf["extensionsUsed"] || []);
+          const extensionsUsed = new Set(
+            gltf["extensionsUsed"] || []
+          );
           const validMimeTypes = ["image/jpeg", "image/png"];
           if (extensionsUsed.has("EXT_texture_webp")) {
             validMimeTypes.push("image/webp");
@@ -4730,7 +4949,7 @@ ${image.uri}
             messages.push({
               code: "VALUE_NOT_IN_LIST",
               message: `Invalid value '${image.mimeType}'. Valid values are (${validValuesStr}).`,
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/images/${index}/mimeType`
             });
           }
@@ -4741,7 +4960,7 @@ ${image.uri}
             messages.push({
               code: "IMAGE_MIME_TYPE_INVALID",
               message: `Recognized image format '${dataUriMatch[1]}' does not match declared image format '${image.mimeType}'.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/images/${index}/uri`
             });
           }
@@ -4760,11 +4979,21 @@ ${image.uri}
           }
         }
         if (inferredMimeType) {
-          this.validateMimeTypeExtensionRequirements(inferredMimeType, index, gltf, messages);
+          this.validateMimeTypeExtensionRequirements(
+            inferredMimeType,
+            index,
+            gltf,
+            messages
+          );
         }
       }
       if (image.mimeType) {
-        this.validateMimeTypeExtensionRequirements(image.mimeType, index, gltf, messages);
+        this.validateMimeTypeExtensionRequirements(
+          image.mimeType,
+          index,
+          gltf,
+          messages
+        );
       }
       const expectedProperties = [
         "uri",
@@ -4779,7 +5008,7 @@ ${image.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/images/${index}/${key}`
           });
         }
@@ -4791,7 +5020,7 @@ ${image.uri}
             messages.push({
               code: "UNEXPECTED_EXTENSION_OBJECT",
               message: "Unexpected location for this extension.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/images/${index}/extensions/${extensionName}`
             });
           }
@@ -4805,7 +5034,7 @@ ${image.uri}
         messages.push({
           code: "IMAGE_NON_ENABLED_MIME_TYPE",
           message: `'${mimeType}' MIME type requires an extension.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/images/${imageIndex}`
         });
       }
@@ -4820,16 +5049,19 @@ ${image.uri}
             messages.push({
               code: "IMAGE_UNRECOGNIZED_FORMAT",
               message: "Image format not recognized.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/images/${index}`
             });
           } else {
-            const validationResult = this.validateImageData(imageData, detectedFormat);
+            const validationResult = this.validateImageData(
+              imageData,
+              detectedFormat
+            );
             if (validationResult) {
               messages.push({
                 code: validationResult.code,
                 message: validationResult.message,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/images/${index}`
               });
             }
@@ -4840,7 +5072,7 @@ ${image.uri}
                 messages.push({
                   code: "IMAGE_NPOT_DIMENSIONS",
                   message: `Image has non-power-of-two dimensions: ${dimensions.width}x${dimensions.height}.`,
-                  severity: Severity.INFO,
+                  severity: 2 /* INFO */,
                   pointer: `/images/${index}`
                 });
               }
@@ -4852,8 +5084,7 @@ ${image.uri}
       return messages;
     }
     detectImageFormat(data) {
-      if (data.length < 8)
-        return null;
+      if (data.length < 8) return null;
       if (data[0] === 137 && data[1] === 80 && data[2] === 78 && data[3] === 71 && data[4] === 13 && data[5] === 10 && data[6] === 26 && data[7] === 10) {
         return "image/png";
       }
@@ -4968,7 +5199,12 @@ ${image.uri}
         }
         const length = data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3];
         offset += 4;
-        const chunkType = String.fromCharCode(data[offset], data[offset + 1], data[offset + 2], data[offset + 3]);
+        const chunkType = String.fromCharCode(
+          data[offset],
+          data[offset + 1],
+          data[offset + 2],
+          data[offset + 3]
+        );
         offset += 4;
         if (offset + length + 4 > data.length) {
           return "Unexpected end of image stream.";
@@ -4991,12 +5227,16 @@ ${image.uri}
       }
     }
     getPNGDimensions(data) {
-      if (data.length < 33)
-        return null;
+      if (data.length < 33) return null;
       let offset = 8;
       const length = data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3];
       offset += 4;
-      const chunkType = String.fromCharCode(data[offset], data[offset + 1], data[offset + 2], data[offset + 3]);
+      const chunkType = String.fromCharCode(
+        data[offset],
+        data[offset + 1],
+        data[offset + 2],
+        data[offset + 3]
+      );
       offset += 4;
       if (chunkType !== "IHDR" || length < 13) {
         return null;
@@ -5006,8 +5246,7 @@ ${image.uri}
       return { width, height };
     }
     getJPEGDimensions(data) {
-      if (data.length < 4)
-        return null;
+      if (data.length < 4) return null;
       let offset = 2;
       while (offset < data.length - 1) {
         if (data[offset] !== 255) {
@@ -5030,18 +5269,16 @@ ${image.uri}
         if (marker >= 208 && marker <= 215) {
           continue;
         }
-        if (offset + 2 > data.length)
-          break;
+        if (offset + 2 > data.length) break;
         const segmentLength = data[offset] << 8 | data[offset + 1];
-        if (segmentLength < 2)
-          break;
+        if (segmentLength < 2) break;
         offset += segmentLength;
       }
       return null;
     }
   };
 
-  // dist/validators/sampler-validator.js
+  // src/validators/sampler-validator.ts
   var SamplerValidator = class {
     validate(sampler, index) {
       const messages = [];
@@ -5059,7 +5296,7 @@ ${image.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/samplers/${index}/${key}`
           });
         }
@@ -5071,7 +5308,7 @@ ${image.uri}
             messages.push({
               code: "UNEXPECTED_EXTENSION_OBJECT",
               message: "Unexpected location for this extension.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/samplers/${index}/extensions/${extensionName}`
             });
           }
@@ -5088,7 +5325,7 @@ ${image.uri}
     }
   };
 
-  // dist/validators/camera-validator.js
+  // src/validators/camera-validator.ts
   var CameraValidator = class {
     validate(camera, index) {
       const messages = [];
@@ -5096,21 +5333,21 @@ ${image.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'type' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/cameras/${index}`
         });
       } else if (typeof camera.type !== "string") {
         messages.push({
           code: "TYPE_MISMATCH",
           message: "Camera type must be a string.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/cameras/${index}/type`
         });
       } else if (!Object.values(CameraType).includes(camera.type)) {
         messages.push({
           code: "VALUE_NOT_IN_LIST",
           message: "Invalid value '" + camera.type + "'. Valid values are ('orthographic', 'perspective').",
-          severity: Severity.WARNING,
+          severity: 1 /* WARNING */,
           pointer: `/cameras/${index}/type`
         });
       }
@@ -5120,7 +5357,7 @@ ${image.uri}
         messages.push({
           code: "ONE_OF_MISMATCH",
           message: "Exactly one of ('orthographic', 'perspective') properties must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/cameras/${index}`
         });
       }
@@ -5137,7 +5374,7 @@ ${image.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/cameras/${index}/${key}`
           });
         }
@@ -5147,7 +5384,7 @@ ${image.uri}
           messages.push({
             code: "UNDEFINED_PROPERTY",
             message: "Property 'perspective' must be defined.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/cameras/${index}`
           });
         } else {
@@ -5155,14 +5392,14 @@ ${image.uri}
             messages.push({
               code: "UNDEFINED_PROPERTY",
               message: "Property 'yfov' must be defined.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/perspective`
             });
           } else if (camera.perspective.yfov === null) {
             messages.push({
               code: "VALUE_NOT_IN_RANGE",
               message: "Value null is out of range.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/perspective/yfov`
             });
           } else if (typeof camera.perspective.yfov === "number") {
@@ -5171,21 +5408,21 @@ ${image.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${valueStr} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/perspective/yfov`
               });
             } else if (camera.perspective.yfov <= 0) {
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${camera.perspective.yfov} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/perspective/yfov`
               });
             } else if (camera.perspective.yfov >= Math.PI) {
               messages.push({
                 code: "CAMERA_YFOV_GEQUAL_PI",
                 message: "yfov should be less than Pi.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/cameras/${index}/perspective`
               });
             }
@@ -5194,14 +5431,14 @@ ${image.uri}
             messages.push({
               code: "UNDEFINED_PROPERTY",
               message: "Property 'znear' must be defined.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/perspective`
             });
           } else if (camera.perspective.znear === null) {
             messages.push({
               code: "VALUE_NOT_IN_RANGE",
               message: "Value null is out of range.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/perspective/znear`
             });
           } else if (typeof camera.perspective.znear === "number") {
@@ -5210,14 +5447,14 @@ ${image.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${valueStr} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/perspective/znear`
               });
             } else if (camera.perspective.znear <= 0) {
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${camera.perspective.znear} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/perspective/znear`
               });
             }
@@ -5226,7 +5463,7 @@ ${image.uri}
             messages.push({
               code: "CAMERA_ZFAR_LEQUAL_ZNEAR",
               message: "zfar must be greater than znear.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/perspective`
             });
           }
@@ -5237,14 +5474,14 @@ ${image.uri}
                 messages.push({
                   code: "VALUE_NOT_IN_RANGE",
                   message: `Value ${valueStr} is out of range.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/cameras/${index}/perspective/aspectRatio`
                 });
               } else if (camera.perspective.aspectRatio <= 0) {
                 messages.push({
                   code: "VALUE_NOT_IN_RANGE",
                   message: `Value ${camera.perspective.aspectRatio} is out of range.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/cameras/${index}/perspective/aspectRatio`
                 });
               }
@@ -5263,7 +5500,7 @@ ${image.uri}
               messages.push({
                 code: "UNEXPECTED_PROPERTY",
                 message: "Unexpected property.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/cameras/${index}/perspective/${key}`
               });
             }
@@ -5275,7 +5512,7 @@ ${image.uri}
           messages.push({
             code: "UNDEFINED_PROPERTY",
             message: "Property 'orthographic' must be defined.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/cameras/${index}`
           });
         } else {
@@ -5283,7 +5520,7 @@ ${image.uri}
             messages.push({
               code: "UNDEFINED_PROPERTY",
               message: "Property 'xmag' must be defined.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/orthographic`
             });
           } else if (typeof camera.orthographic.xmag === "number") {
@@ -5292,21 +5529,21 @@ ${image.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${valueStr} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/orthographic/xmag`
               });
             } else if (camera.orthographic.xmag === 0) {
               messages.push({
                 code: "CAMERA_XMAG_YMAG_ZERO",
                 message: "xmag and ymag must not be zero.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/orthographic/xmag`
               });
             } else if (camera.orthographic.xmag < 0) {
               messages.push({
                 code: "CAMERA_XMAG_YMAG_NEGATIVE",
                 message: "xmag and ymag should not be negative.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/cameras/${index}/orthographic/xmag`
               });
             }
@@ -5315,7 +5552,7 @@ ${image.uri}
             messages.push({
               code: "UNDEFINED_PROPERTY",
               message: "Property 'ymag' must be defined.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/orthographic`
             });
           } else if (typeof camera.orthographic.ymag === "number") {
@@ -5324,21 +5561,21 @@ ${image.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${valueStr} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/orthographic/ymag`
               });
             } else if (camera.orthographic.ymag === 0) {
               messages.push({
                 code: "CAMERA_XMAG_YMAG_ZERO",
                 message: "xmag and ymag must not be zero.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/orthographic/ymag`
               });
             } else if (camera.orthographic.ymag < 0) {
               messages.push({
                 code: "CAMERA_XMAG_YMAG_NEGATIVE",
                 message: "xmag and ymag should not be negative.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/cameras/${index}/orthographic/ymag`
               });
             }
@@ -5347,7 +5584,7 @@ ${image.uri}
             messages.push({
               code: "UNDEFINED_PROPERTY",
               message: "Property 'zfar' must be defined.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/orthographic`
             });
           } else if (typeof camera.orthographic.zfar === "number") {
@@ -5356,7 +5593,7 @@ ${image.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${valueStr} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/orthographic/zfar`
               });
             }
@@ -5365,14 +5602,14 @@ ${image.uri}
             messages.push({
               code: "UNDEFINED_PROPERTY",
               message: "Property 'znear' must be defined.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/orthographic`
             });
           } else if (camera.orthographic.znear === null) {
             messages.push({
               code: "VALUE_NOT_IN_RANGE",
               message: "Value null is out of range.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/orthographic/znear`
             });
           } else if (typeof camera.orthographic.znear === "number") {
@@ -5381,7 +5618,7 @@ ${image.uri}
               messages.push({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${valueStr} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/cameras/${index}/orthographic/znear`
               });
             }
@@ -5390,7 +5627,7 @@ ${image.uri}
             messages.push({
               code: "CAMERA_ZFAR_LEQUAL_ZNEAR",
               message: "zfar must be greater than znear.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/cameras/${index}/orthographic`
             });
           }
@@ -5407,7 +5644,7 @@ ${image.uri}
               messages.push({
                 code: "UNEXPECTED_PROPERTY",
                 message: "Unexpected property.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/cameras/${index}/orthographic/${key}`
               });
             }
@@ -5418,7 +5655,7 @@ ${image.uri}
     }
   };
 
-  // dist/validators/scene-validator.js
+  // src/validators/scene-validator.ts
   var SceneValidator = class {
     validate(scene, index, gltf) {
       const messages = [];
@@ -5427,14 +5664,14 @@ ${image.uri}
           messages.push({
             code: "TYPE_MISMATCH",
             message: "Scene nodes must be an array.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/scenes/${index}/nodes`
           });
         } else if (scene.nodes.length === 0) {
           messages.push({
             code: "EMPTY_ENTITY",
             message: "Entity cannot be empty.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/scenes/${index}/nodes`
           });
         } else {
@@ -5444,14 +5681,14 @@ ${image.uri}
               messages.push({
                 code: "INVALID_VALUE",
                 message: "Scene node must be a non-negative integer.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/scenes/${index}/nodes/${i}`
               });
             } else if (!gltf.nodes || nodeIndex >= gltf.nodes.length) {
               messages.push({
                 code: "UNRESOLVED_REFERENCE",
                 message: "Unresolved reference: " + nodeIndex + ".",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/scenes/${index}/nodes/${i}`
               });
             } else {
@@ -5460,7 +5697,7 @@ ${image.uri}
                 messages.push({
                   code: "SCENE_NON_ROOT_NODE",
                   message: `Node ${nodeIndex} is not a root node.`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/scenes/${index}/nodes/${i}`
                 });
               }
@@ -5474,7 +5711,7 @@ ${image.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/scenes/${index}/${key}`
           });
         }
@@ -5482,8 +5719,7 @@ ${image.uri}
       return messages;
     }
     isRootNode(nodeIndex, gltf) {
-      if (!gltf.nodes)
-        return true;
+      if (!gltf.nodes) return true;
       for (let i = 0; i < gltf.nodes.length; i++) {
         const node = gltf.nodes[i];
         if (node && node.children && Array.isArray(node.children)) {
@@ -5496,7 +5732,7 @@ ${image.uri}
     }
   };
 
-  // dist/validators/skin-validator.js
+  // src/validators/skin-validator.ts
   var SkinValidator = class {
     validate(skin, index, gltf) {
       const messages = [];
@@ -5504,14 +5740,14 @@ ${image.uri}
         messages.push({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'joints' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/skins/${index}`
         });
       } else if (skin.joints.length === 0) {
         messages.push({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/skins/${index}/joints`
         });
       } else {
@@ -5521,14 +5757,14 @@ ${image.uri}
             messages.push({
               code: "INVALID_VALUE",
               message: "Skin joint must be a non-negative integer.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/skins/${index}/joints/${i}`
             });
           } else if (!gltf.nodes || jointIndex >= gltf.nodes.length) {
             messages.push({
               code: "UNRESOLVED_REFERENCE",
               message: "Unresolved reference: " + jointIndex + ".",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/skins/${index}/joints/${i}`
             });
           }
@@ -5539,7 +5775,7 @@ ${image.uri}
             messages.push({
               code: "SKIN_NO_COMMON_ROOT",
               message: "Joints do not have a common root.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/skins/${index}/joints`
             });
           }
@@ -5550,14 +5786,14 @@ ${image.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Skin inverseBindMatrices must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/skins/${index}/inverseBindMatrices`
           });
         } else if (!gltf.accessors || skin.inverseBindMatrices >= gltf.accessors.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + skin.inverseBindMatrices + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/skins/${index}/inverseBindMatrices`
           });
         } else {
@@ -5568,7 +5804,7 @@ ${image.uri}
               messages.push({
                 code: "SKIN_IBM_INVALID_FORMAT",
                 message: `Invalid IBM accessor format '${actualFormat}'. Must be one of ('{MAT4, FLOAT}').`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/skins/${index}/inverseBindMatrices`
               });
             }
@@ -5576,7 +5812,7 @@ ${image.uri}
               messages.push({
                 code: "INVALID_IBM_ACCESSOR_COUNT",
                 message: `IBM accessor must have at least ${skin.joints.length} elements. Found ${ibmAccessor.count}.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/skins/${index}/inverseBindMatrices`
               });
             }
@@ -5586,7 +5822,7 @@ ${image.uri}
                 messages.push({
                   code: "SKIN_IBM_ACCESSOR_WITH_BYTESTRIDE",
                   message: "bufferView.byteStride must not be defined for buffer views used by inverse bind matrices accessors.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/skins/${index}/inverseBindMatrices`
                 });
               }
@@ -5599,24 +5835,28 @@ ${image.uri}
           messages.push({
             code: "INVALID_VALUE",
             message: "Skin skeleton must be a non-negative integer.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/skins/${index}/skeleton`
           });
         } else if (!gltf.nodes || skin.skeleton >= gltf.nodes.length) {
           messages.push({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + skin.skeleton + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/skins/${index}/skeleton`
           });
         } else {
           if (skin.joints && skin.joints.length > 0) {
-            const isValidSkeleton = this.isSkeletonValidRoot(skin.skeleton, skin.joints, gltf);
+            const isValidSkeleton = this.isSkeletonValidRoot(
+              skin.skeleton,
+              skin.joints,
+              gltf
+            );
             if (!isValidSkeleton) {
               messages.push({
                 code: "SKIN_SKELETON_INVALID",
                 message: "Skeleton node is not a common root.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/skins/${index}/skeleton`
               });
             }
@@ -5636,7 +5876,7 @@ ${image.uri}
           messages.push({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/skins/${index}/${key}`
           });
         }
@@ -5644,28 +5884,32 @@ ${image.uri}
       return messages;
     }
     checkCommonRoot(joints, gltf) {
-      if (!gltf.nodes || joints.length === 0)
-        return true;
+      if (!gltf.nodes || joints.length === 0) return true;
       if (joints.length === 1) {
         const jointIndex = joints[0];
         return jointIndex !== void 0 && jointIndex >= 0 && jointIndex < gltf.nodes.length;
       }
-      const allAncestorSets = joints.map((joint) => this.getAllAncestors(joint, gltf));
-      if (allAncestorSets.length === 0)
-        return false;
+      const allAncestorSets = joints.map(
+        (joint) => this.getAllAncestors(joint, gltf)
+      );
+      if (allAncestorSets.length === 0) return false;
       let commonAncestors = new Set(allAncestorSets[0]);
       for (let i = 1; i < allAncestorSets.length; i++) {
         const currentSet = new Set(allAncestorSets[i]);
-        commonAncestors = new Set([...commonAncestors].filter((x) => currentSet.has(x)));
+        commonAncestors = new Set(
+          [...commonAncestors].filter((x) => currentSet.has(x))
+        );
       }
       return commonAncestors.size > 0;
     }
     isSkeletonValidRoot(skeletonIndex, joints, gltf) {
-      if (!gltf.nodes || joints.length === 0)
-        return false;
-      if (skeletonIndex < 0 || skeletonIndex >= gltf.nodes.length)
-        return false;
-      const isAncestorOfAllJoints = this.checkIfAncestorOfAll(skeletonIndex, joints, gltf);
+      if (!gltf.nodes || joints.length === 0) return false;
+      if (skeletonIndex < 0 || skeletonIndex >= gltf.nodes.length) return false;
+      const isAncestorOfAllJoints = this.checkIfAncestorOfAll(
+        skeletonIndex,
+        joints,
+        gltf
+      );
       const isOneOfJoints = joints.includes(skeletonIndex);
       return isAncestorOfAllJoints || isOneOfJoints;
     }
@@ -5702,8 +5946,7 @@ ${image.uri}
       const ancestors = [];
       const visited = /* @__PURE__ */ new Set();
       ancestors.push(nodeIndex);
-      if (!gltf.nodes)
-        return ancestors;
+      if (!gltf.nodes) return ancestors;
       const findAncestors = (candidateIndex) => {
         if (visited.has(candidateIndex) || candidateIndex >= gltf.nodes.length)
           return;
@@ -5745,7 +5988,7 @@ ${image.uri}
     }
   };
 
-  // dist/usage-tracker.js
+  // src/usage-tracker.ts
   var UsageTracker = class {
     constructor() {
       this.usedObjects = /* @__PURE__ */ new Set();
@@ -5844,8 +6087,7 @@ ${image.uri}
                       break;
                     }
                   }
-                  if (isReferenced)
-                    break;
+                  if (isReferenced) break;
                 }
               }
             }
@@ -5864,8 +6106,7 @@ ${image.uri}
                           break;
                         }
                       }
-                      if (isReferenced)
-                        break;
+                      if (isReferenced) break;
                     }
                     if (primitive && primitive.targets) {
                       for (const target of primitive.targets) {
@@ -5876,16 +6117,13 @@ ${image.uri}
                               break;
                             }
                           }
-                          if (isReferenced)
-                            break;
+                          if (isReferenced) break;
                         }
                       }
-                      if (isReferenced)
-                        break;
+                      if (isReferenced) break;
                     }
                   }
-                  if (isReferenced)
-                    break;
+                  if (isReferenced) break;
                 }
               }
             }
@@ -6061,8 +6299,7 @@ ${image.uri}
       }
       if (gltf.nodes && usedNodes.size > 0) {
         const markNodeHierarchy = (nodeIndex) => {
-          if (usedNodes.has(nodeIndex))
-            return;
+          if (usedNodes.has(nodeIndex)) return;
           usedNodes.add(nodeIndex);
           this.markUsed(`/nodes/${nodeIndex}`);
           const node = gltf.nodes?.[nodeIndex];
@@ -6083,8 +6320,7 @@ ${image.uri}
       }
       if (gltf.nodes) {
         for (let i = 0; i < gltf.nodes.length; i++) {
-          if (!usedNodes.has(i))
-            continue;
+          if (!usedNodes.has(i)) continue;
           const node = gltf.nodes[i];
           if (node && node.mesh !== void 0) {
             this.markUsed(`/meshes/${node.mesh}`);
@@ -6243,8 +6479,7 @@ ${image.uri}
       }
       if (gltf.skins) {
         for (let i = 0; i < gltf.skins.length; i++) {
-          if (!this.isUsed(`/skins/${i}`))
-            continue;
+          if (!this.isUsed(`/skins/${i}`)) continue;
           const skin = gltf.skins[i];
           if (skin && skin.inverseBindMatrices !== void 0) {
             this.markUsed(`/accessors/${skin.inverseBindMatrices}`);
@@ -6254,8 +6489,7 @@ ${image.uri}
       if (gltf.animations) {
         for (let i = 0; i < gltf.animations.length; i++) {
           const animation = gltf.animations[i];
-          if (!animation)
-            continue;
+          if (!animation) continue;
           this.markUsed(`/animations/${i}`);
           if (animation.channels) {
             for (const channel of animation.channels) {
@@ -6305,17 +6539,16 @@ ${image.uri}
     }
   };
 
-  // dist/validators/extension-validator.js
+  // src/validators/extension-validator.ts
   var BaseExtensionValidator = class {
     validateValueInRange(value, min, max, pointer, addMessage, exclusive = false) {
-      if (typeof value !== "number")
-        return true;
+      if (typeof value !== "number") return true;
       const inRange = exclusive ? value > min && value < max : value >= min && value <= max;
       if (!inRange) {
         addMessage({
           code: "VALUE_NOT_IN_RANGE",
           message: `Value ${value} is out of range.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer
         });
         return false;
@@ -6328,7 +6561,7 @@ ${image.uri}
         addMessage({
           code: "VALUE_NOT_IN_LIST",
           message: `Invalid value '${value}'. Valid values are (${validValuesStr}).`,
-          severity: Severity.WARNING,
+          severity: 1 /* WARNING */,
           pointer
         });
         return false;
@@ -6339,7 +6572,7 @@ ${image.uri}
       addMessage({
         code: "INCOMPLETE_EXTENSION_SUPPORT",
         message: "Validation support for this extension is incomplete; the asset may have undetected issues.",
-        severity: Severity.INFO,
+        severity: 2 /* INFO */,
         pointer
       });
     }
@@ -6348,7 +6581,7 @@ ${image.uri}
     }
   };
 
-  // dist/validators/extensions/index.js
+  // src/validators/extensions/index.ts
   var EXTTextureWebPValidator = class extends BaseExtensionValidator {
     constructor() {
       super(...arguments);
@@ -6390,7 +6623,7 @@ ${image.uri}
                   addMessage({
                     code: "TEXTURE_INVALID_IMAGE_MIME_TYPE",
                     message: `Invalid MIME type '${detectedFormat}' for the texture source. Valid MIME types are ('image/jpeg', 'image/png').`,
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `/textures/${i}/source`
                   });
                 }
@@ -6402,7 +6635,7 @@ ${image.uri}
                 addMessage({
                   code: "INVALID_EXTENSION_VALUE",
                   message: "Invalid source index for EXT_texture_webp.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/textures/${i}/extensions/EXT_texture_webp/source`
                 });
               } else if (gltf.images && typeof webpExtObj.source === "number" && gltf.images[webpExtObj.source]) {
@@ -6433,7 +6666,7 @@ ${image.uri}
                     addMessage({
                       code: "TEXTURE_INVALID_IMAGE_MIME_TYPE",
                       message: `Invalid MIME type '${detectedFormat}' for the texture source. Valid MIME types are ('image/webp').`,
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `/textures/${i}/extensions/EXT_texture_webp/source`
                     });
                   }
@@ -6460,7 +6693,7 @@ ${image.uri}
               addMessage({
                 code: "UNEXPECTED_EXTENSION_OBJECT",
                 message: "Unexpected location for this extension.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/scenes/${i}/extensions/KHR_lights_punctual`
               });
             }
@@ -6473,7 +6706,7 @@ ${image.uri}
           addMessage({
             code: "UNDEFINED_PROPERTY",
             message: "Property 'lights' must be defined.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: "/extensions/KHR_lights_punctual"
           });
         } else if (lightsExt.lights) {
@@ -6481,14 +6714,14 @@ ${image.uri}
             addMessage({
               code: "TYPE_MISMATCH",
               message: "Property value is not a 'array'.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: "/extensions/KHR_lights_punctual/lights"
             });
           } else if (lightsExt.lights.length === 0) {
             addMessage({
               code: "EMPTY_ENTITY",
               message: "Entity cannot be empty.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: "/extensions/KHR_lights_punctual/lights"
             });
           } else {
@@ -6509,7 +6742,7 @@ ${image.uri}
               addMessage({
                 code: "UNDEFINED_PROPERTY",
                 message: "Property 'light' must be defined.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `${basePointer}`
               });
             } else if (nodeExt.light !== void 0) {
@@ -6517,7 +6750,7 @@ ${image.uri}
                 addMessage({
                   code: "INVALID_VALUE",
                   message: "Light index must be a non-negative integer.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `${basePointer}/light`
                 });
               } else {
@@ -6528,7 +6761,7 @@ ${image.uri}
                     addMessage({
                       code: "UNRESOLVED_REFERENCE",
                       message: `Unresolved reference: ${nodeExt.light}.`,
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `${basePointer}/light`
                     });
                   }
@@ -6539,7 +6772,7 @@ ${image.uri}
               addMessage({
                 code: "UNSATISFIED_DEPENDENCY",
                 message: "Dependency failed. '/extensions/KHR_lights_punctual' must be defined.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: basePointer
               });
             }
@@ -6549,7 +6782,7 @@ ${image.uri}
                 addMessage({
                   code: "UNEXPECTED_PROPERTY",
                   message: "Unexpected property.",
-                  severity: Severity.WARNING,
+                  severity: 1 /* WARNING */,
                   pointer: `${basePointer}/${key}`
                 });
               }
@@ -6566,7 +6799,7 @@ ${image.uri}
           addMessage({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `${pointer}/${property}`
           });
         }
@@ -6575,14 +6808,14 @@ ${image.uri}
         addMessage({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'type' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer
         });
       } else if (!["directional", "point", "spot"].includes(light.type)) {
         addMessage({
           code: "VALUE_NOT_IN_LIST",
           message: `Invalid value '${light.type}'. Valid values are ('directional', 'point', 'spot').`,
-          severity: Severity.WARNING,
+          severity: 1 /* WARNING */,
           pointer: `${pointer}/type`
         });
       }
@@ -6591,7 +6824,7 @@ ${image.uri}
           addMessage({
             code: "TYPE_MISMATCH",
             message: "Property value is not a 'array' of length 3.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${pointer}/color`
           });
         } else {
@@ -6600,7 +6833,7 @@ ${image.uri}
               addMessage({
                 code: "VALUE_NOT_IN_RANGE",
                 message: `Value ${light.color[i]} is out of range.`,
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `${pointer}/color/${i}`
               });
             }
@@ -6612,7 +6845,7 @@ ${image.uri}
           addMessage({
             code: "VALUE_NOT_IN_RANGE",
             message: `Value ${light.intensity} is out of range.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${pointer}/intensity`
           });
         }
@@ -6622,14 +6855,14 @@ ${image.uri}
           addMessage({
             code: "EXTRA_PROPERTY",
             message: "This property should not be defined as it will not be used.",
-            severity: Severity.INFO,
+            severity: 2 /* INFO */,
             pointer: `${pointer}/range`
           });
         } else if (typeof light.range !== "number" || light.range <= 0) {
           addMessage({
             code: "VALUE_NOT_IN_RANGE",
             message: `Value ${light.range} is out of range.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${pointer}/range`
           });
         }
@@ -6639,7 +6872,7 @@ ${image.uri}
           addMessage({
             code: "UNDEFINED_PROPERTY",
             message: "Property 'spot' must be defined.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer
           });
         } else {
@@ -6649,7 +6882,7 @@ ${image.uri}
         addMessage({
           code: "EXTRA_PROPERTY",
           message: "This property should not be defined as it will not be used.",
-          severity: Severity.INFO,
+          severity: 2 /* INFO */,
           pointer: `${pointer}/spot`
         });
       }
@@ -6661,7 +6894,7 @@ ${image.uri}
           addMessage({
             code: "VALUE_NOT_IN_RANGE",
             message: `Value ${spot.innerConeAngle} is out of range.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${pointer}/innerConeAngle`
           });
         }
@@ -6671,7 +6904,7 @@ ${image.uri}
           addMessage({
             code: "VALUE_NOT_IN_RANGE",
             message: `Value ${spot.outerConeAngle} is out of range.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${pointer}/outerConeAngle`
           });
         }
@@ -6681,7 +6914,7 @@ ${image.uri}
           addMessage({
             code: "KHR_LIGHTS_PUNCTUAL_LIGHT_SPOT_ANGLES",
             message: `outerConeAngle (${spot.outerConeAngle}) is less than or equal to innerConeAngle (${spot.innerConeAngle}).`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${pointer}/outerConeAngle`
           });
         }
@@ -6702,7 +6935,7 @@ ${image.uri}
               addMessage({
                 code: "UNEXPECTED_EXTENSION_OBJECT",
                 message: "Unexpected location for this extension.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/materials/${i}/pbrMetallicRoughness/extensions/${this.extensionName}`
               });
             }
@@ -6710,7 +6943,7 @@ ${image.uri}
               addMessage({
                 code: "UNEXPECTED_EXTENSION_OBJECT",
                 message: "Unexpected location for this extension.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/materials/${i}/normalTexture/extensions/${this.extensionName}`
               });
             }
@@ -6718,7 +6951,7 @@ ${image.uri}
               addMessage({
                 code: "UNEXPECTED_EXTENSION_OBJECT",
                 message: "Unexpected location for this extension.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/materials/${i}/occlusionTexture/extensions/${this.extensionName}`
               });
             }
@@ -6726,7 +6959,7 @@ ${image.uri}
               addMessage({
                 code: "UNEXPECTED_EXTENSION_OBJECT",
                 message: "Unexpected location for this extension.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/materials/${i}/emissiveTexture/extensions/${this.extensionName}`
               });
             }
@@ -6794,7 +7027,7 @@ ${image.uri}
           addMessage({
             code: "KHR_MATERIALS_ANISOTROPY_ANISOTROPY_TEXTURE_TEXCOORD",
             message: "Normal and anisotropy textures should use the same texture coords.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `${basePointer}/anisotropyTexture`
           });
         }
@@ -6814,7 +7047,7 @@ ${image.uri}
           addMessage({
             code: "KHR_MATERIALS_CLEARCOAT_CLEARCOAT_NORMAL_TEXTURE_TEXCOORD",
             message: "Normal and clearcoat normal textures should use the same texture coords.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `${basePointer}/clearcoatNormalTexture`
           });
         }
@@ -6829,7 +7062,7 @@ ${image.uri}
         addMessage({
           code: "KHR_MATERIALS_DISPERSION_NO_VOLUME",
           message: "The dispersion extension needs to be combined with the volume extension.",
-          severity: Severity.WARNING,
+          severity: 1 /* WARNING */,
           pointer: basePointer
         });
       }
@@ -6841,7 +7074,7 @@ ${image.uri}
           addMessage({
             code: "VALUE_NOT_IN_RANGE",
             message: `Value ${ext.emissiveStrength} is out of range.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/emissiveStrength`
           });
         } else {
@@ -6851,7 +7084,7 @@ ${image.uri}
             addMessage({
               code: "KHR_MATERIALS_EMISSIVE_STRENGTH_ZERO_FACTOR",
               message: "Emissive strength has no effect when the emissive factor is zero or undefined.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: basePointer
             });
           }
@@ -6864,14 +7097,14 @@ ${image.uri}
           addMessage({
             code: "VALUE_NOT_IN_RANGE",
             message: `Value ${ext.ior} is out of range.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/ior`
           });
         } else if (typeof ext.ior === "number" && ext.ior < 0) {
           addMessage({
             code: "VALUE_NOT_IN_RANGE",
             message: `Value ${ext.ior} is out of range.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/ior`
           });
         }
@@ -6890,7 +7123,7 @@ ${image.uri}
           addMessage({
             code: "KHR_MATERIALS_IRIDESCENCE_THICKNESS_RANGE_WITHOUT_TEXTURE",
             message: "Thickness minimum has no effect when a thickness texture is not defined.",
-            severity: Severity.INFO,
+            severity: 2 /* INFO */,
             pointer: `${basePointer}/iridescenceThicknessMinimum`
           });
         }
@@ -6901,7 +7134,7 @@ ${image.uri}
           addMessage({
             code: "KHR_MATERIALS_IRIDESCENCE_THICKNESS_RANGE_WITHOUT_TEXTURE",
             message: "Thickness maximum has no effect when a thickness texture is not defined.",
-            severity: Severity.INFO,
+            severity: 2 /* INFO */,
             pointer: `${basePointer}/iridescenceThicknessMaximum`
           });
         }
@@ -6911,7 +7144,7 @@ ${image.uri}
           addMessage({
             code: "KHR_MATERIALS_IRIDESCENCE_THICKNESS_TEXTURE_UNUSED",
             message: "Thickness texture has no effect when the thickness minimum is equal to the thickness maximum.",
-            severity: Severity.INFO,
+            severity: 2 /* INFO */,
             pointer: `${basePointer}/iridescenceThicknessTexture`
           });
         }
@@ -6923,7 +7156,7 @@ ${image.uri}
           addMessage({
             code: "TYPE_MISMATCH",
             message: "Property value is not a 'array' of length 4.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/diffuseFactor`
           });
         }
@@ -6933,7 +7166,7 @@ ${image.uri}
           addMessage({
             code: "TYPE_MISMATCH",
             message: "Property value is not a 'array' of length 3.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/specularFactor`
           });
         }
@@ -6948,7 +7181,7 @@ ${image.uri}
           addMessage({
             code: "TYPE_MISMATCH",
             message: "Property value is not a 'array' of length 3.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/sheenColorFactor`
           });
         }
@@ -6966,7 +7199,7 @@ ${image.uri}
           addMessage({
             code: "TYPE_MISMATCH",
             message: "Property value is not a 'array' of length 3.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/specularColorFactor`
           });
         } else {
@@ -6987,7 +7220,7 @@ ${image.uri}
           addMessage({
             code: "TYPE_MISMATCH",
             message: "Property value is not a 'array' of length 3.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/attenuationColor`
           });
         } else {
@@ -7001,7 +7234,7 @@ ${image.uri}
           addMessage({
             code: "VALUE_NOT_IN_RANGE",
             message: `Value ${ext.attenuationDistance} is out of range.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `${basePointer}/attenuationDistance`
           });
         } else {
@@ -7016,7 +7249,7 @@ ${image.uri}
         addMessage({
           code: "KHR_MATERIALS_VOLUME_DOUBLE_SIDED",
           message: "The volume extension should not be used with double-sided materials.",
-          severity: Severity.WARNING,
+          severity: 1 /* WARNING */,
           pointer: basePointer
         });
       }
@@ -7035,7 +7268,7 @@ ${image.uri}
         addMessage({
           code: "KHR_MATERIALS_VOLUME_NO_TRANSMISSION",
           message: "The volume extension needs to be combined with an extension that allows light to transmit through the surface.",
-          severity: Severity.WARNING,
+          severity: 1 /* WARNING */,
           pointer: `/materials/${materialIndex}/extensions/KHR_materials_volume`
         });
       }
@@ -7057,7 +7290,7 @@ ${image.uri}
                 addMessage({
                   code: "UNEXPECTED_EXTENSION_OBJECT",
                   message: "Unexpected location for this extension.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/animations/${i}/channels/${j}/extensions/KHR_animation_pointer`
                 });
               }
@@ -7068,14 +7301,14 @@ ${image.uri}
                   addMessage({
                     code: "UNDEFINED_PROPERTY",
                     message: "Property 'pointer' must be defined.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: basePointer
                   });
                 } else if (typeof ext.pointer !== "string") {
                   addMessage({
                     code: "TYPE_MISMATCH",
                     message: "Property value is not a 'string'.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `${basePointer}/pointer`
                   });
                 } else {
@@ -7084,7 +7317,7 @@ ${image.uri}
                     addMessage({
                       code: "PATTERN_MISMATCH",
                       message: `Value '${ext.pointer}' does not match regexp pattern '^(?:\\/(?:[^/~]|~0|~1)*)*$'.`,
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `${basePointer}/pointer`
                     });
                   }
@@ -7095,7 +7328,7 @@ ${image.uri}
                     addMessage({
                       code: "UNEXPECTED_PROPERTY",
                       message: "Unexpected property.",
-                      severity: Severity.WARNING,
+                      severity: 1 /* WARNING */,
                       pointer: `${basePointer}/${key}`
                     });
                   }
@@ -7104,7 +7337,7 @@ ${image.uri}
                   addMessage({
                     code: "KHR_ANIMATION_POINTER_ANIMATION_CHANNEL_TARGET_NODE",
                     message: "This extension requires the animation channel target node to be undefined.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: basePointer
                   });
                 }
@@ -7112,7 +7345,7 @@ ${image.uri}
                   addMessage({
                     code: "KHR_ANIMATION_POINTER_ANIMATION_CHANNEL_TARGET_PATH",
                     message: `This extension requires the animation channel target path to be 'pointer'. Found '${channel.target.path}' instead.`,
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: basePointer
                   });
                 }
@@ -7145,7 +7378,7 @@ ${image.uri}
                     addMessage({
                       code: "UNSATISFIED_DEPENDENCY",
                       message: "Dependency failed. '/extensions/KHR_materials_variants' must be defined.",
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `/meshes/${i}/primitives/${j}/extensions/${this.extensionName}/mappings/0`
                     });
                     return;
@@ -7163,7 +7396,7 @@ ${image.uri}
           addMessage({
             code: "UNDEFINED_PROPERTY",
             message: "Property 'variants' must be defined.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: basePointer
           });
         } else if (rootExt.variants !== void 0) {
@@ -7171,14 +7404,14 @@ ${image.uri}
             addMessage({
               code: "TYPE_MISMATCH",
               message: "Property value is not a 'array'.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `${basePointer}/variants`
             });
           } else if (rootExt.variants.length === 0) {
             addMessage({
               code: "EMPTY_ENTITY",
               message: "Entity cannot be empty.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `${basePointer}/variants`
             });
           } else {
@@ -7188,7 +7421,7 @@ ${image.uri}
                 addMessage({
                   code: "UNEXPECTED_PROPERTY",
                   message: "Unexpected property.",
-                  severity: Severity.WARNING,
+                  severity: 1 /* WARNING */,
                   pointer: `${basePointer}/${key}`
                 });
               }
@@ -7200,7 +7433,7 @@ ${image.uri}
                 addMessage({
                   code: "TYPE_MISMATCH",
                   message: "Property value is not a 'object'.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: variantPointer
                 });
               } else {
@@ -7209,14 +7442,14 @@ ${image.uri}
                     addMessage({
                       code: "TYPE_MISMATCH",
                       message: `Type mismatch. Property value ${JSON.stringify(variant.name)} is not a 'string'.`,
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `${variantPointer}/name`
                     });
                   } else if (variant.name.length === 0) {
                     addMessage({
                       code: "INVALID_VALUE",
                       message: "Empty variant name is not allowed.",
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `${variantPointer}/name`
                     });
                   }
@@ -7227,7 +7460,7 @@ ${image.uri}
                     addMessage({
                       code: "UNEXPECTED_PROPERTY",
                       message: "Unexpected property.",
-                      severity: Severity.WARNING,
+                      severity: 1 /* WARNING */,
                       pointer: `${variantPointer}/${key}`
                     });
                   }
@@ -7248,7 +7481,7 @@ ${image.uri}
                 addMessage({
                   code: "TYPE_MISMATCH",
                   message: "Property value is not a 'array'.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `${basePointer}/variants`
                 });
               } else {
@@ -7258,7 +7491,7 @@ ${image.uri}
                     addMessage({
                       code: "INVALID_VALUE",
                       message: "Variant index must be a non-negative integer.",
-                      severity: Severity.ERROR,
+                      severity: 0 /* ERROR */,
                       pointer: `${basePointer}/variants/${j}`
                     });
                   }
@@ -7283,7 +7516,7 @@ ${image.uri}
                     addMessage({
                       code: "UNEXPECTED_PROPERTY",
                       message: "Unexpected property.",
-                      severity: Severity.WARNING,
+                      severity: 1 /* WARNING */,
                       pointer: `${basePointer}/${key}`
                     });
                   }
@@ -7292,21 +7525,21 @@ ${image.uri}
                   addMessage({
                     code: "UNDEFINED_PROPERTY",
                     message: "Property 'mappings' must be defined.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: basePointer
                   });
                 } else if (!Array.isArray(ext.mappings)) {
                   addMessage({
                     code: "TYPE_MISMATCH",
                     message: "Property value is not a 'array'.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `${basePointer}/mappings`
                   });
                 } else if (ext.mappings.length === 0) {
                   addMessage({
                     code: "EMPTY_ENTITY",
                     message: "Entity cannot be empty.",
-                    severity: Severity.ERROR,
+                    severity: 0 /* ERROR */,
                     pointer: `${basePointer}/mappings`
                   });
                 } else {
@@ -7320,7 +7553,7 @@ ${image.uri}
                             addMessage({
                               code: "KHR_MATERIALS_VARIANTS_NON_UNIQUE_VARIANT",
                               message: "This variant is used more than once for this mesh primitive.",
-                              severity: Severity.ERROR,
+                              severity: 0 /* ERROR */,
                               pointer: `${basePointer}/mappings/${k}/variants/${mapping.variants.indexOf(variantIndex)}`
                             });
                           } else {
@@ -7338,21 +7571,21 @@ ${image.uri}
                         addMessage({
                           code: "UNDEFINED_PROPERTY",
                           message: "Property 'variants' must be defined.",
-                          severity: Severity.ERROR,
+                          severity: 0 /* ERROR */,
                           pointer: mappingPointer
                         });
                       } else if (!Array.isArray(mapping.variants)) {
                         addMessage({
                           code: "TYPE_MISMATCH",
                           message: "Property value is not a 'array'.",
-                          severity: Severity.ERROR,
+                          severity: 0 /* ERROR */,
                           pointer: `${mappingPointer}/variants`
                         });
                       } else if (mapping.variants.length === 0) {
                         addMessage({
                           code: "EMPTY_ENTITY",
                           message: "Entity cannot be empty.",
-                          severity: Severity.ERROR,
+                          severity: 0 /* ERROR */,
                           pointer: `${mappingPointer}/variants`
                         });
                       } else {
@@ -7364,7 +7597,7 @@ ${image.uri}
                               addMessage({
                                 code: "UNRESOLVED_REFERENCE",
                                 message: `Unresolved reference: ${variantIndex}.`,
-                                severity: Severity.ERROR,
+                                severity: 0 /* ERROR */,
                                 pointer: `${mappingPointer}/variants/${v}`
                               });
                             }
@@ -7375,14 +7608,14 @@ ${image.uri}
                         addMessage({
                           code: "UNDEFINED_PROPERTY",
                           message: "Property 'material' must be defined.",
-                          severity: Severity.ERROR,
+                          severity: 0 /* ERROR */,
                           pointer: mappingPointer
                         });
                       } else if (typeof mapping.material !== "number" || mapping.material < 0) {
                         addMessage({
                           code: "INVALID_VALUE",
                           message: "Material index must be a non-negative integer.",
-                          severity: Severity.ERROR,
+                          severity: 0 /* ERROR */,
                           pointer: `${mappingPointer}/material`
                         });
                       } else {
@@ -7390,7 +7623,7 @@ ${image.uri}
                           addMessage({
                             code: "UNRESOLVED_REFERENCE",
                             message: `Unresolved reference: ${mapping.material}.`,
-                            severity: Severity.ERROR,
+                            severity: 0 /* ERROR */,
                             pointer: `${mappingPointer}/material`
                           });
                         }
@@ -7401,7 +7634,7 @@ ${image.uri}
                           addMessage({
                             code: "UNEXPECTED_PROPERTY",
                             message: "Unexpected property.",
-                            severity: Severity.WARNING,
+                            severity: 1 /* WARNING */,
                             pointer: `${mappingPointer}/${key}`
                           });
                         }
@@ -7451,7 +7684,7 @@ ${image.uri}
                     addMessage({
                       code: "UNEXPECTED_PROPERTY",
                       message: "Unexpected property.",
-                      severity: Severity.WARNING,
+                      severity: 1 /* WARNING */,
                       pointer: `${basePointer}/${prop}`
                     });
                   } else {
@@ -7461,7 +7694,7 @@ ${image.uri}
                         addMessage({
                           code: "TYPE_MISMATCH",
                           message: "Property value is not a 'number'.",
-                          severity: Severity.ERROR,
+                          severity: 0 /* ERROR */,
                           pointer: `${basePointer}/${prop}/quantized`
                         });
                       }
@@ -7469,7 +7702,7 @@ ${image.uri}
                         addMessage({
                           code: "TYPE_MISMATCH",
                           message: "Property value is not a 'number'.",
-                          severity: Severity.ERROR,
+                          severity: 0 /* ERROR */,
                           pointer: `${basePointer}/${prop}/offset`
                         });
                       }
@@ -7477,7 +7710,7 @@ ${image.uri}
                         addMessage({
                           code: "TYPE_MISMATCH",
                           message: "Property value is not a 'number'.",
-                          severity: Severity.ERROR,
+                          severity: 0 /* ERROR */,
                           pointer: `${basePointer}/${prop}/scale`
                         });
                       }
@@ -7504,7 +7737,7 @@ ${image.uri}
             addMessage({
               code: "UNEXPECTED_EXTENSION_OBJECT",
               message: "Unexpected location for this extension.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/textures/${i}/extensions/${this.extensionName}`
             });
           }
@@ -7532,7 +7765,7 @@ ${image.uri}
             addMessage({
               code: "TYPE_MISMATCH",
               message: "Property value is not a 'array' of length 2.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `${basePointer}/offset`
             });
           }
@@ -7542,7 +7775,7 @@ ${image.uri}
             addMessage({
               code: "TYPE_MISMATCH",
               message: "Property value is not a 'number'.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `${basePointer}/rotation`
             });
           }
@@ -7552,7 +7785,7 @@ ${image.uri}
             addMessage({
               code: "TYPE_MISMATCH",
               message: "Property value is not a 'array' of length 2.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `${basePointer}/scale`
             });
           }
@@ -7562,7 +7795,7 @@ ${image.uri}
             addMessage({
               code: "INVALID_VALUE",
               message: "TexCoord must be a non-negative integer.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `${basePointer}/texCoord`
             });
           }
@@ -7573,7 +7806,7 @@ ${image.uri}
             addMessage({
               code: "UNEXPECTED_PROPERTY",
               message: "Unexpected property.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `${basePointer}/${key}`
             });
           }
@@ -7602,7 +7835,7 @@ ${image.uri}
     ["KHR_texture_transform", new KHRTextureTransformValidator()]
   ]);
 
-  // dist/validators/gltf-validator.js
+  // src/validators/gltf-validator.ts
   var GLTFValidator = class {
     constructor(options = {}) {
       this.messages = [];
@@ -7687,7 +7920,7 @@ ${image.uri}
           this.addMessage({
             code: "UNEXPECTED_PROPERTY",
             message: "Unexpected property.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/${this.escapeJsonPointer(key)}`
           });
         }
@@ -7698,7 +7931,7 @@ ${image.uri}
         this.addMessage({
           code: "TYPE_MISMATCH",
           message: `Type mismatch. Property value ${JSON.stringify(value)} is not a 'array'.`,
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/${property}`
         });
         return false;
@@ -7710,7 +7943,7 @@ ${image.uri}
         this.addMessage({
           code: "UNDEFINED_PROPERTY",
           message: "Property 'asset' must be defined.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/"
         });
         return;
@@ -7720,13 +7953,12 @@ ${image.uri}
       this.addMessages(messages);
     }
     validateBuffers(gltf) {
-      if (!gltf.buffers)
-        return;
+      if (!gltf.buffers) return;
       if (gltf._explicitlyDefined?.buffers && gltf.buffers.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/buffers"
         });
         return;
@@ -7741,13 +7973,12 @@ ${image.uri}
       }
     }
     validateBufferViews(gltf) {
-      if (!gltf.bufferViews)
-        return;
+      if (!gltf.bufferViews) return;
       if (gltf._explicitlyDefined?.bufferViews && gltf.bufferViews.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/bufferViews"
         });
         return;
@@ -7762,13 +7993,12 @@ ${image.uri}
       }
     }
     validateAccessors(gltf) {
-      if (!gltf.accessors)
-        return;
+      if (!gltf.accessors) return;
       if (gltf._explicitlyDefined?.accessors && gltf.accessors.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/accessors"
         });
         return;
@@ -7785,7 +8015,12 @@ ${image.uri}
             if (bufferView && bufferView.buffer !== void 0) {
               const bufferData = this.getBufferData(bufferView.buffer);
               if (bufferData) {
-                const dataMessages = validator.validateAccessorData(accessor, i, gltf, bufferData);
+                const dataMessages = validator.validateAccessorData(
+                  accessor,
+                  i,
+                  gltf,
+                  bufferData
+                );
                 allMessages.push(...dataMessages);
               }
             }
@@ -7795,13 +8030,12 @@ ${image.uri}
       this.addMessages(allMessages);
     }
     validateAnimations(gltf) {
-      if (!gltf.animations)
-        return;
+      if (!gltf.animations) return;
       if (gltf._explicitlyDefined?.animations && gltf.animations.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/animations"
         });
         return;
@@ -7824,9 +8058,21 @@ ${image.uri}
                     const bufferData = this.getBufferData(bufferView.buffer);
                     if (bufferData) {
                       const inputValidator = new AccessorValidator();
-                      const inputMessages = inputValidator.validateAccessorData(inputAccessor, sampler.input, gltf, bufferData);
+                      const inputMessages = inputValidator.validateAccessorData(
+                        inputAccessor,
+                        sampler.input,
+                        gltf,
+                        bufferData
+                      );
                       allMessages.push(...inputMessages);
-                      const animationInputMessages = inputValidator.validateAnimationInputAccessorData(inputAccessor, sampler.input, gltf, bufferData, i, j);
+                      const animationInputMessages = inputValidator.validateAnimationInputAccessorData(
+                        inputAccessor,
+                        sampler.input,
+                        gltf,
+                        bufferData,
+                        i,
+                        j
+                      );
                       allMessages.push(...animationInputMessages);
                     }
                   }
@@ -7838,13 +8084,25 @@ ${image.uri}
                     const bufferData = this.getBufferData(bufferView.buffer);
                     if (bufferData) {
                       const outputValidator = new AccessorValidator();
-                      const outputMessages = outputValidator.validateAccessorData(outputAccessor, sampler.output, gltf, bufferData);
+                      const outputMessages = outputValidator.validateAccessorData(
+                        outputAccessor,
+                        sampler.output,
+                        gltf,
+                        bufferData
+                      );
                       allMessages.push(...outputMessages);
                       if (animation.channels) {
                         for (let k = 0; k < animation.channels.length; k++) {
                           const channel = animation.channels[k];
                           if (channel && channel.sampler === j && channel.target && channel.target.path === "rotation") {
-                            const quaternionMessages = outputValidator.validateAnimationQuaternionOutput(outputAccessor, gltf, bufferData, i, j, k);
+                            const quaternionMessages = outputValidator.validateAnimationQuaternionOutput(
+                              outputAccessor,
+                              gltf,
+                              bufferData,
+                              i,
+                              j,
+                              k
+                            );
                             allMessages.push(...quaternionMessages);
                             break;
                           }
@@ -7863,13 +8121,12 @@ ${image.uri}
       this.validateAnimationSkinConflicts(gltf);
     }
     validateNodes(gltf) {
-      if (!gltf.nodes)
-        return;
+      if (!gltf.nodes) return;
       if (gltf._explicitlyDefined?.nodes && gltf.nodes.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/nodes"
         });
         return;
@@ -7884,13 +8141,12 @@ ${image.uri}
       }
     }
     validateMeshes(gltf) {
-      if (!gltf.meshes)
-        return;
+      if (!gltf.meshes) return;
       if (gltf._explicitlyDefined?.meshes && gltf.meshes.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/meshes"
         });
         return;
@@ -7906,20 +8162,37 @@ ${image.uri}
               const primitive = mesh.primitives[j];
               if (primitive) {
                 if (primitive.attributes) {
-                  for (const [attributeName, accessorIndex] of Object.entries(primitive.attributes)) {
+                  for (const [attributeName, accessorIndex] of Object.entries(
+                    primitive.attributes
+                  )) {
                     if (typeof accessorIndex === "number" && gltf.accessors) {
                       const accessor = gltf.accessors[accessorIndex];
                       if (accessor && accessor.bufferView !== void 0 && gltf.bufferViews) {
                         const bufferView = gltf.bufferViews[accessor.bufferView];
                         if (bufferView && bufferView.buffer !== void 0) {
-                          const bufferData = this.getBufferData(bufferView.buffer);
+                          const bufferData = this.getBufferData(
+                            bufferView.buffer
+                          );
                           if (bufferData) {
                             const accessorValidator = new AccessorValidator();
                             if (attributeName.startsWith("JOINTS_") || attributeName.startsWith("WEIGHTS_") || attributeName === "NORMAL" || attributeName === "TANGENT") {
-                              const dataMessages = accessorValidator.validateMeshAttributeData(accessor, accessorIndex, gltf, bufferData, attributeName, i, j);
+                              const dataMessages = accessorValidator.validateMeshAttributeData(
+                                accessor,
+                                accessorIndex,
+                                gltf,
+                                bufferData,
+                                attributeName,
+                                i,
+                                j
+                              );
                               this.addMessages(dataMessages);
                             } else {
-                              const dataMessages = accessorValidator.validateAccessorData(accessor, accessorIndex, gltf, bufferData);
+                              const dataMessages = accessorValidator.validateAccessorData(
+                                accessor,
+                                accessorIndex,
+                                gltf,
+                                bufferData
+                              );
                               this.addMessages(dataMessages);
                             }
                           }
@@ -7936,7 +8209,12 @@ ${image.uri}
                       const bufferData = this.getBufferData(bufferView.buffer);
                       if (bufferData) {
                         const accessorValidator = new AccessorValidator();
-                        const dataMessages = accessorValidator.validateAccessorData(accessor, primitive.indices, gltf, bufferData);
+                        const dataMessages = accessorValidator.validateAccessorData(
+                          accessor,
+                          primitive.indices,
+                          gltf,
+                          bufferData
+                        );
                         this.addMessages(dataMessages);
                       }
                     }
@@ -7952,10 +8230,17 @@ ${image.uri}
                           if (accessor && accessor.bufferView !== void 0 && gltf.bufferViews) {
                             const bufferView = gltf.bufferViews[accessor.bufferView];
                             if (bufferView && bufferView.buffer !== void 0) {
-                              const bufferData = this.getBufferData(bufferView.buffer);
+                              const bufferData = this.getBufferData(
+                                bufferView.buffer
+                              );
                               if (bufferData) {
                                 const accessorValidator = new AccessorValidator();
-                                const dataMessages = accessorValidator.validateAccessorData(accessor, accessorIndex, gltf, bufferData);
+                                const dataMessages = accessorValidator.validateAccessorData(
+                                  accessor,
+                                  accessorIndex,
+                                  gltf,
+                                  bufferData
+                                );
                                 this.addMessages(dataMessages);
                               }
                             }
@@ -7972,13 +8257,12 @@ ${image.uri}
       }
     }
     validateMaterials(gltf) {
-      if (!gltf.materials)
-        return;
+      if (!gltf.materials) return;
       if (gltf._explicitlyDefined?.materials && gltf.materials.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/materials"
         });
         return;
@@ -8006,20 +8290,19 @@ ${image.uri}
           this.addMessage({
             code: "TYPE_MISMATCH",
             message: `Type mismatch. Property value ${formatValue(material)} is not a 'object'.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/materials/${i}`
           });
         }
       }
     }
     validateTextures(gltf) {
-      if (!gltf.textures)
-        return;
+      if (!gltf.textures) return;
       if (gltf._explicitlyDefined?.textures && gltf.textures.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/textures"
         });
         return;
@@ -8034,13 +8317,12 @@ ${image.uri}
       }
     }
     async validateImages(gltf) {
-      if (!gltf.images)
-        return;
+      if (!gltf.images) return;
       if (gltf._explicitlyDefined?.images && gltf.images.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/images"
         });
         return;
@@ -8065,21 +8347,23 @@ ${image.uri}
             this.addMessage({
               code: "TYPE_MISMATCH",
               message: `Type mismatch. Property value ${formatValue(image)} is not a 'object'.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/images/${i}`
             });
           } else {
             const messages = validator.validate(image, i, gltf);
             this.addMessages(messages);
-            const externalMessages = await validator.validateExternalResources(image, i);
+            const externalMessages = await validator.validateExternalResources(
+              image,
+              i
+            );
             this.addMessages(externalMessages);
           }
         }
       }
     }
     validateSamplers(gltf) {
-      if (!gltf.samplers)
-        return;
+      if (!gltf.samplers) return;
       if (!this.validateCollectionType(gltf.samplers, "samplers")) {
         return;
       }
@@ -8087,7 +8371,7 @@ ${image.uri}
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/samplers"
         });
         return;
@@ -8115,20 +8399,19 @@ ${image.uri}
           this.addMessage({
             code: "TYPE_MISMATCH",
             message: `Type mismatch. Property value ${formatValue(sampler)} is not a 'object'.`,
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: `/samplers/${i}`
           });
         }
       }
     }
     validateCameras(gltf) {
-      if (!gltf.cameras)
-        return;
+      if (!gltf.cameras) return;
       if (gltf._explicitlyDefined?.cameras && gltf.cameras.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/cameras"
         });
         return;
@@ -8143,13 +8426,12 @@ ${image.uri}
       }
     }
     validateScenes(gltf) {
-      if (!gltf.scenes)
-        return;
+      if (!gltf.scenes) return;
       if (gltf._explicitlyDefined?.scenes && gltf.scenes.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/scenes"
         });
         return;
@@ -8169,20 +8451,19 @@ ${image.uri}
           this.addMessage({
             code: "UNRESOLVED_REFERENCE",
             message: "Unresolved reference: " + gltf.scene + ".",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: "/scene"
           });
         }
       }
     }
     validateSkins(gltf) {
-      if (!gltf.skins)
-        return;
+      if (!gltf.skins) return;
       if (gltf._explicitlyDefined?.skins && gltf.skins.length === 0) {
         this.addMessage({
           code: "EMPTY_ENTITY",
           message: "Entity cannot be empty.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: "/skins"
         });
         return;
@@ -8201,9 +8482,20 @@ ${image.uri}
                 const bufferData = this.getBufferData(bufferView.buffer);
                 if (bufferData) {
                   const accessorValidator = new AccessorValidator();
-                  const dataMessages = accessorValidator.validateAccessorData(accessor, skin.inverseBindMatrices, gltf, bufferData);
+                  const dataMessages = accessorValidator.validateAccessorData(
+                    accessor,
+                    skin.inverseBindMatrices,
+                    gltf,
+                    bufferData
+                  );
                   this.addMessages(dataMessages);
-                  const ibmMessages = accessorValidator.validateIBMAccessorData(accessor, skin.inverseBindMatrices, gltf, bufferData, i);
+                  const ibmMessages = accessorValidator.validateIBMAccessorData(
+                    accessor,
+                    skin.inverseBindMatrices,
+                    gltf,
+                    bufferData,
+                    i
+                  );
                   this.addMessages(ibmMessages);
                 }
               }
@@ -8213,25 +8505,22 @@ ${image.uri}
       }
     }
     validateAnimationSkinConflicts(gltf) {
-      if (!gltf.animations || !gltf.nodes || !gltf.skins)
-        return;
+      if (!gltf.animations || !gltf.nodes || !gltf.skins) return;
       for (let animIndex = 0; animIndex < gltf.animations.length; animIndex++) {
         const animation = gltf.animations[animIndex];
-        if (!animation || !animation.channels)
-          continue;
+        if (!animation || !animation.channels) continue;
         for (let channelIndex = 0; channelIndex < animation.channels.length; channelIndex++) {
           const channel = animation.channels[channelIndex];
           if (!channel || !channel.target || channel.target.node === void 0)
             continue;
           const targetNode = gltf.nodes[channel.target.node];
-          if (!targetNode || targetNode.skin === void 0)
-            continue;
+          if (!targetNode || targetNode.skin === void 0) continue;
           const trsProperties = ["translation", "rotation", "scale"];
           if (trsProperties.includes(channel.target.path)) {
             this.addMessage({
               code: "ANIMATION_CHANNEL_TARGET_NODE_SKIN",
               message: "Animated TRS properties will not affect a skinned mesh.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/animations/${animIndex}/channels/${channelIndex}/target/path`
             });
           }
@@ -8239,18 +8528,15 @@ ${image.uri}
       }
     }
     validateSkinnedNodeScenePresence(gltf) {
-      if (!gltf.scenes || !gltf.nodes || !gltf.skins)
-        return;
+      if (!gltf.scenes || !gltf.nodes || !gltf.skins) return;
       for (let sceneIndex = 0; sceneIndex < gltf.scenes.length; sceneIndex++) {
         const scene = gltf.scenes[sceneIndex];
-        if (!scene || !scene.nodes)
-          continue;
+        if (!scene || !scene.nodes) continue;
         const reachableNodes = /* @__PURE__ */ new Set();
         const nodesToVisit = [...scene.nodes];
         while (nodesToVisit.length > 0) {
           const nodeIndex = nodesToVisit.pop();
-          if (reachableNodes.has(nodeIndex))
-            continue;
+          if (reachableNodes.has(nodeIndex)) continue;
           reachableNodes.add(nodeIndex);
           const node = gltf.nodes[nodeIndex];
           if (node && node.children) {
@@ -8259,17 +8545,17 @@ ${image.uri}
         }
         for (const nodeIndex of reachableNodes) {
           const node = gltf.nodes[nodeIndex];
-          if (!node || node.skin === void 0)
-            continue;
+          if (!node || node.skin === void 0) continue;
           const skin = gltf.skins[node.skin];
-          if (!skin || !skin.joints)
-            continue;
-          const missingJoints = skin.joints.some((jointIndex) => !reachableNodes.has(jointIndex));
+          if (!skin || !skin.joints) continue;
+          const missingJoints = skin.joints.some(
+            (jointIndex) => !reachableNodes.has(jointIndex)
+          );
           if (missingJoints) {
             this.addMessage({
               code: "NODE_SKIN_NO_SCENE",
               message: "A node with a skinned mesh is used in a scene that does not contain joint nodes.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/nodes/${nodeIndex}`
             });
           }
@@ -8277,8 +8563,7 @@ ${image.uri}
       }
     }
     validateSkinnedMeshNodeHierarchy(gltf) {
-      if (!gltf.nodes || !gltf.meshes || !gltf.skins)
-        return;
+      if (!gltf.nodes || !gltf.meshes || !gltf.skins) return;
       const childToParent = /* @__PURE__ */ new Map();
       for (let i = 0; i < gltf.nodes.length; i++) {
         const node = gltf.nodes[i];
@@ -8290,16 +8575,18 @@ ${image.uri}
       }
       for (let nodeIndex = 0; nodeIndex < gltf.nodes.length; nodeIndex++) {
         const node = gltf.nodes[nodeIndex];
-        if (!node || node.skin === void 0 || node.mesh === void 0)
-          continue;
+        if (!node || node.skin === void 0 || node.mesh === void 0) continue;
         const mesh = gltf.meshes[node.mesh];
-        if (!mesh || !mesh.primitives)
-          continue;
+        if (!mesh || !mesh.primitives) continue;
         let hasSkinnedMesh = false;
         for (const primitive of mesh.primitives) {
           if (primitive && primitive.attributes) {
-            const hasJoints = Object.keys(primitive.attributes).some((attr) => attr.startsWith("JOINTS_"));
-            const hasWeights = Object.keys(primitive.attributes).some((attr) => attr.startsWith("WEIGHTS_"));
+            const hasJoints = Object.keys(primitive.attributes).some(
+              (attr) => attr.startsWith("JOINTS_")
+            );
+            const hasWeights = Object.keys(primitive.attributes).some(
+              (attr) => attr.startsWith("WEIGHTS_")
+            );
             if (hasJoints && hasWeights) {
               hasSkinnedMesh = true;
               break;
@@ -8310,15 +8597,14 @@ ${image.uri}
           this.addMessage({
             code: "NODE_SKINNED_MESH_NON_ROOT",
             message: "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
-            severity: Severity.WARNING,
+            severity: 1 /* WARNING */,
             pointer: `/nodes/${nodeIndex}`
           });
         }
       }
     }
     checkNodeLoops(gltf) {
-      if (!gltf.nodes)
-        return;
+      if (!gltf.nodes) return;
       const loopNodes = /* @__PURE__ */ new Set();
       const visited = /* @__PURE__ */ new Set();
       const recursionStack = /* @__PURE__ */ new Set();
@@ -8331,7 +8617,7 @@ ${image.uri}
         this.addMessage({
           code: "NODE_LOOP",
           message: "Node is a part of a node loop.",
-          severity: Severity.ERROR,
+          severity: 0 /* ERROR */,
           pointer: `/nodes/${nodeIndex}`
         });
       }
@@ -8355,7 +8641,13 @@ ${image.uri}
       if (node && node.children) {
         for (const childIndex of node.children) {
           if (childIndex >= 0 && childIndex < gltf.nodes.length) {
-            this.detectNodeLoop(childIndex, gltf, visited, recursionStack, loopNodes);
+            this.detectNodeLoop(
+              childIndex,
+              gltf,
+              visited,
+              recursionStack,
+              loopNodes
+            );
           }
         }
       }
@@ -8364,12 +8656,14 @@ ${image.uri}
     checkUnusedObjects(gltf) {
       const unusedObjects = this.usageTracker.getUnusedObjects(gltf);
       for (const pointer of unusedObjects) {
-        const hasTypeMismatch = this.messages.some((msg) => msg.code === "TYPE_MISMATCH" && msg.pointer === pointer);
+        const hasTypeMismatch = this.messages.some(
+          (msg) => msg.code === "TYPE_MISMATCH" && msg.pointer === pointer
+        );
         if (!hasTypeMismatch) {
           this.addMessage({
             code: "UNUSED_OBJECT",
             message: "This object may be unused.",
-            severity: Severity.INFO,
+            severity: 2 /* INFO */,
             pointer
           });
         }
@@ -8379,7 +8673,7 @@ ${image.uri}
         this.addMessage({
           code: "UNUSED_MESH_WEIGHTS",
           message: "The static morph target weights are always overridden.",
-          severity: Severity.INFO,
+          severity: 2 /* INFO */,
           pointer
         });
       }
@@ -8394,7 +8688,7 @@ ${image.uri}
             this.addMessage({
               code: "DUPLICATE_ELEMENTS",
               message: "Duplicate element.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/extensionsUsed/${i}`
             });
           } else {
@@ -8404,7 +8698,7 @@ ${image.uri}
             this.addMessage({
               code: "INVALID_EXTENSION_NAME_FORMAT",
               message: "Extension name has invalid format.",
-              severity: Severity.WARNING,
+              severity: 1 /* WARNING */,
               pointer: `/extensionsUsed/${i}`
             });
           }
@@ -8433,7 +8727,7 @@ ${image.uri}
             this.addMessage({
               code: "UNSUPPORTED_EXTENSION",
               message: `Cannot validate an extension as it is not supported by the validator: '${extension}'.`,
-              severity: Severity.INFO,
+              severity: 2 /* INFO */,
               pointer: `/extensionsUsed/${i}`
             });
           }
@@ -8444,12 +8738,14 @@ ${image.uri}
           this.addMessage({
             code: "UNSATISFIED_DEPENDENCY",
             message: "Dependency failed. 'extensionsUsed' must be defined.",
-            severity: Severity.ERROR,
+            severity: 0 /* ERROR */,
             pointer: "/extensionsRequired"
           });
         }
         const seenRequired = /* @__PURE__ */ new Set();
-        const extensionsUsed = new Set(gltf["extensionsUsed"] || []);
+        const extensionsUsed = new Set(
+          gltf["extensionsUsed"] || []
+        );
         const extensionsRequired = gltf["extensionsRequired"];
         for (let i = 0; i < extensionsRequired.length; i++) {
           const extension = extensionsRequired[i];
@@ -8457,7 +8753,7 @@ ${image.uri}
             this.addMessage({
               code: "DUPLICATE_ELEMENTS",
               message: "Duplicate element.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/extensionsRequired/${i}`
             });
           } else {
@@ -8467,21 +8763,23 @@ ${image.uri}
             this.addMessage({
               code: "UNUSED_EXTENSION_REQUIRED",
               message: `Unused extension '${extension}' cannot be required.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/extensionsRequired/${i}`
             });
           }
         }
       }
       if (gltf.extensions) {
-        const extensionsUsed = new Set(gltf["extensionsUsed"] || []);
+        const extensionsUsed = new Set(
+          gltf["extensionsUsed"] || []
+        );
         for (const extensionName in gltf.extensions) {
           const extensionValue = gltf.extensions[extensionName];
           if (!extensionsUsed.has(extensionName)) {
             this.addMessage({
               code: "UNDECLARED_EXTENSION",
               message: "Extension is not declared in extensionsUsed.",
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/extensions/${extensionName}`
             });
           }
@@ -8503,7 +8801,7 @@ ${image.uri}
             this.addMessage({
               code: "TYPE_MISMATCH",
               message: `Type mismatch. Property value ${formattedValue} is not a 'object'.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/extensions/${extensionName}`
             });
           }
@@ -8518,7 +8816,9 @@ ${image.uri}
         }
       }
       if (gltf["extensionsUsed"]) {
-        const extensionsRequired = new Set(gltf["extensionsRequired"] || []);
+        const extensionsRequired = new Set(
+          gltf["extensionsRequired"] || []
+        );
         const extensionsUsedArray = gltf["extensionsUsed"];
         for (let i = 0; i < extensionsUsedArray.length; i++) {
           const extension = extensionsUsedArray[i];
@@ -8527,7 +8827,7 @@ ${image.uri}
             this.addMessage({
               code: "NON_REQUIRED_EXTENSION",
               message: `Extension '${extension}' cannot be optional.`,
-              severity: Severity.ERROR,
+              severity: 0 /* ERROR */,
               pointer: `/extensionsUsed/${i}`
             });
           }
@@ -8678,10 +8978,14 @@ ${image.uri}
     applyFilters() {
       let filteredMessages = this.messages;
       if (this.options.onlyIssues.length > 0) {
-        filteredMessages = filteredMessages.filter((message) => this.options.onlyIssues.includes(message.code));
+        filteredMessages = filteredMessages.filter(
+          (message) => this.options.onlyIssues.includes(message.code)
+        );
       }
       if (this.options.ignoredIssues.length > 0) {
-        filteredMessages = filteredMessages.filter((message) => !this.options.ignoredIssues.includes(message.code));
+        filteredMessages = filteredMessages.filter(
+          (message) => !this.options.ignoredIssues.includes(message.code)
+        );
       }
       if (this.options.maxIssues > 0 && filteredMessages.length > this.options.maxIssues) {
         filteredMessages = filteredMessages.slice(0, this.options.maxIssues);
@@ -8699,16 +9003,16 @@ ${image.uri}
       };
       for (const message of this.messages) {
         switch (message.severity) {
-          case Severity.ERROR:
+          case 0 /* ERROR */:
             issues.numErrors++;
             break;
-          case Severity.WARNING:
+          case 1 /* WARNING */:
             issues.numWarnings++;
             break;
-          case Severity.INFO:
+          case 2 /* INFO */:
             issues.numInfos++;
             break;
-          case Severity.HINT:
+          case 3 /* HINT */:
             issues.numHints++;
             break;
         }
@@ -8916,7 +9220,9 @@ ${image.uri}
         if (aIsUnused && accessorDataCodes.includes(b.code)) {
           if (b.code === "ACCESSOR_INVALID_IBM") {
             const aSkinMatch = a.pointer.match(/\/skins\/(\d+)$/);
-            const bSkinMatch = b.pointer.match(/\/skins\/(\d+)\/inverseBindMatrices$/);
+            const bSkinMatch = b.pointer.match(
+              /\/skins\/(\d+)\/inverseBindMatrices$/
+            );
             if (aSkinMatch && bSkinMatch && aSkinMatch[1] === bSkinMatch[1]) {
               return -1;
             }
@@ -8929,7 +9235,9 @@ ${image.uri}
         }
         if (bIsUnused && accessorDataCodes.includes(a.code)) {
           if (a.code === "ACCESSOR_INVALID_IBM") {
-            const aSkinMatch = a.pointer.match(/\/skins\/(\d+)\/inverseBindMatrices$/);
+            const aSkinMatch = a.pointer.match(
+              /\/skins\/(\d+)\/inverseBindMatrices$/
+            );
             const bSkinMatch = b.pointer.match(/\/skins\/(\d+)$/);
             if (aSkinMatch && bSkinMatch && aSkinMatch[1] === bSkinMatch[1]) {
               return 1;
@@ -9043,17 +9351,19 @@ ${image.uri}
           const aIsMeshPrimitive = a.pointer && a.pointer.match(/^\/meshes\/\d+\/primitives\/\d+\//);
           const bIsMeshPrimitive = b.pointer && b.pointer.match(/^\/meshes\/\d+\/primitives\/\d+\//);
           if (aIsMeshPrimitive && bIsMeshPrimitive) {
-            const aBasePath = a.pointer.match(/^(\/meshes\/\d+\/primitives\/\d+)/);
-            const bBasePath = b.pointer.match(/^(\/meshes\/\d+\/primitives\/\d+)/);
+            const aBasePath = a.pointer.match(
+              /^(\/meshes\/\d+\/primitives\/\d+)/
+            );
+            const bBasePath = b.pointer.match(
+              /^(\/meshes\/\d+\/primitives\/\d+)/
+            );
             if (aBasePath && bBasePath && aBasePath[1] === bBasePath[1]) {
               const aIsAttribute = a.pointer.includes("/attributes/");
               const bIsAttribute = b.pointer.includes("/attributes/");
               const aIsIndices = a.pointer.includes("/indices");
               const bIsIndices = b.pointer.includes("/indices");
-              if (aIsAttribute && bIsIndices)
-                return -1;
-              if (aIsIndices && bIsAttribute)
-                return 1;
+              if (aIsAttribute && bIsIndices) return -1;
+              if (aIsIndices && bIsAttribute) return 1;
             }
           }
           if (a.pointer === b.pointer) {
@@ -9079,8 +9389,12 @@ ${image.uri}
           if (a.code === "ACCESSOR_INVALID_FLOAT" || b.code === "ACCESSOR_INVALID_FLOAT") {
             const aAccessorMatch = a.pointer.match(/\/accessors\/(\d+)$/);
             const bAccessorMatch = b.pointer.match(/\/accessors\/(\d+)$/);
-            const aMinMaxMatch = a.pointer.match(/\/accessors\/(\d+)\/(min|max)\/(\d+)/);
-            const bMinMaxMatch = b.pointer.match(/\/accessors\/(\d+)\/(min|max)\/(\d+)/);
+            const aMinMaxMatch = a.pointer.match(
+              /\/accessors\/(\d+)\/(min|max)\/(\d+)/
+            );
+            const bMinMaxMatch = b.pointer.match(
+              /\/accessors\/(\d+)\/(min|max)\/(\d+)/
+            );
             const aAccessorIdx = aAccessorMatch ? parseInt(aAccessorMatch[1]) : aMinMaxMatch ? parseInt(aMinMaxMatch[1]) : 0;
             const bAccessorIdx = bAccessorMatch ? parseInt(bAccessorMatch[1]) : bMinMaxMatch ? parseInt(bMinMaxMatch[1]) : 0;
             if (aAccessorIdx !== bAccessorIdx) {
@@ -9134,20 +9448,22 @@ ${image.uri}
         const buffer = gltf.buffers[0];
         if (buffer) {
           if (buffer.uri !== void 0) {
-            const dataUriBase64Match = buffer.uri.match(/^data:([^;,]+);base64,(.+)$/);
+            const dataUriBase64Match = buffer.uri.match(
+              /^data:([^;,]+);base64,(.+)$/
+            );
             const dataUriPlainMatch = buffer.uri.match(/^data:([^;,]+),(.*)$/);
             const isDataUri = !!(dataUriBase64Match || dataUriPlainMatch);
             this.addMessage({
               code: "URI_GLB",
               message: "URI is used in GLB container.",
-              severity: Severity.INFO,
+              severity: 2 /* INFO */,
               pointer: `/buffers/0/uri`
             });
             if (isDataUri) {
               this.addMessage({
                 code: "DATA_URI_GLB",
                 message: "Data URI is used in GLB container.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/buffers/0/uri`
               });
             }
@@ -9157,7 +9473,7 @@ ${image.uri}
               this.addMessage({
                 code: "BUFFER_MISSING_GLB_DATA",
                 message: "Buffer refers to an unresolved GLB binary chunk.",
-                severity: Severity.ERROR,
+                severity: 0 /* ERROR */,
                 pointer: `/buffers/0`
               });
             }
@@ -9174,14 +9490,14 @@ ${image.uri}
                 this.addMessage({
                   code: "BUFFER_GLB_CHUNK_TOO_BIG",
                   message: `GLB-stored BIN chunk contains ${extraPaddingBytes} extra padding byte(s).`,
-                  severity: Severity.WARNING,
+                  severity: 1 /* WARNING */,
                   pointer: `/buffers/0`
                 });
               } else if (actualLength < declaredLength) {
                 this.addMessage({
                   code: "BUFFER_BYTE_LENGTH_MISMATCH",
                   message: `Actual data byte length (${binResourceExt.actualByteLength}) is less than the declared buffer byte length (${binResourceExt.declaredByteLength}).`,
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `/buffers/0`
                 });
               }
@@ -9197,14 +9513,14 @@ ${image.uri}
             this.addMessage({
               code: "URI_GLB",
               message: "URI is used in GLB container.",
-              severity: Severity.INFO,
+              severity: 2 /* INFO */,
               pointer: `/images/${i}/uri`
             });
             if (isDataUri) {
               this.addMessage({
                 code: "DATA_URI_GLB",
                 message: "Data URI is used in GLB container.",
-                severity: Severity.WARNING,
+                severity: 1 /* WARNING */,
                 pointer: `/images/${i}/uri`
               });
             }
@@ -9226,7 +9542,7 @@ ${image.uri}
                 this.addMessage({
                   code: "UNDECLARED_EXTENSION",
                   message: "Extension is not declared in extensionsUsed.",
-                  severity: Severity.ERROR,
+                  severity: 0 /* ERROR */,
                   pointer: `${basePointer}/extensions/${extensionName}`
                 });
               }
@@ -9254,19 +9570,37 @@ ${image.uri}
               if (collection.name === "materials") {
                 const material = item;
                 if (material.pbrMetallicRoughness) {
-                  checkObjectExtensions(material.pbrMetallicRoughness.baseColorTexture, `/${collection.name}/${i}/pbrMetallicRoughness/baseColorTexture`);
-                  checkObjectExtensions(material.pbrMetallicRoughness.metallicRoughnessTexture, `/${collection.name}/${i}/pbrMetallicRoughness/metallicRoughnessTexture`);
+                  checkObjectExtensions(
+                    material.pbrMetallicRoughness.baseColorTexture,
+                    `/${collection.name}/${i}/pbrMetallicRoughness/baseColorTexture`
+                  );
+                  checkObjectExtensions(
+                    material.pbrMetallicRoughness.metallicRoughnessTexture,
+                    `/${collection.name}/${i}/pbrMetallicRoughness/metallicRoughnessTexture`
+                  );
                 }
-                checkObjectExtensions(material.normalTexture, `/${collection.name}/${i}/normalTexture`);
-                checkObjectExtensions(material.occlusionTexture, `/${collection.name}/${i}/occlusionTexture`);
-                checkObjectExtensions(material.emissiveTexture, `/${collection.name}/${i}/emissiveTexture`);
+                checkObjectExtensions(
+                  material.normalTexture,
+                  `/${collection.name}/${i}/normalTexture`
+                );
+                checkObjectExtensions(
+                  material.occlusionTexture,
+                  `/${collection.name}/${i}/occlusionTexture`
+                );
+                checkObjectExtensions(
+                  material.emissiveTexture,
+                  `/${collection.name}/${i}/emissiveTexture`
+                );
               }
               if (collection.name === "meshes") {
                 const mesh = item;
                 if (mesh.primitives) {
                   for (let j = 0; j < mesh.primitives.length; j++) {
                     const primitive = mesh.primitives[j];
-                    checkObjectExtensions(primitive, `/${collection.name}/${i}/primitives/${j}`);
+                    checkObjectExtensions(
+                      primitive,
+                      `/${collection.name}/${i}/primitives/${j}`
+                    );
                   }
                 }
               }
@@ -9275,9 +9609,15 @@ ${image.uri}
                 if (animation.channels) {
                   for (let j = 0; j < animation.channels.length; j++) {
                     const channel = animation.channels[j];
-                    checkObjectExtensions(channel, `/${collection.name}/${i}/channels/${j}`);
+                    checkObjectExtensions(
+                      channel,
+                      `/${collection.name}/${i}/channels/${j}`
+                    );
                     if (channel && channel.target) {
-                      checkObjectExtensions(channel.target, `/${collection.name}/${i}/channels/${j}/target`);
+                      checkObjectExtensions(
+                        channel.target,
+                        `/${collection.name}/${i}/channels/${j}/target`
+                      );
                     }
                   }
                 }
@@ -9292,14 +9632,18 @@ ${image.uri}
     }
   };
 
-  // dist/validators/glb-validator.js
+  // src/validators/glb-validator.ts
   var GLBValidator = class {
     static async parseGLB(data) {
       if (data.length === 0) {
-        throw new Error("GLB_UNEXPECTED_END_OF_HEADER:Unexpected end of header.:1");
+        throw new Error(
+          "GLB_UNEXPECTED_END_OF_HEADER:Unexpected end of header.:1"
+        );
       }
       if (data.length < 12) {
-        throw new Error("GLB_UNEXPECTED_END_OF_HEADER:Unexpected end of header.:" + data.length);
+        throw new Error(
+          "GLB_UNEXPECTED_END_OF_HEADER:Unexpected end of header.:" + data.length
+        );
       }
       const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
       const header = {
@@ -9311,10 +9655,14 @@ ${image.uri}
         // little-endian
       };
       if (header.magic !== 1179937895) {
-        throw new Error(`GLB_INVALID_MAGIC:Invalid GLB magic value (${header.magic}).:0`);
+        throw new Error(
+          `GLB_INVALID_MAGIC:Invalid GLB magic value (${header.magic}).:0`
+        );
       }
       if (header.version !== 2) {
-        throw new Error(`GLB_INVALID_VERSION:Invalid GLB version value ${header.version}.:4`);
+        throw new Error(
+          `GLB_INVALID_VERSION:Invalid GLB version value ${header.version}.:4`
+        );
       }
       const warnings = [];
       const errors = [];
@@ -9327,7 +9675,9 @@ ${image.uri}
             lengthMismatchError = `GLB_LENGTH_MISMATCH:Declared length (${header.length}) does not match GLB length (${data.length}).:${data.length}`;
             actualDataLength = data.length;
           } else {
-            warnings.push(`GLB_EXTRA_DATA:Extra data after the end of GLB stream.:${header.length}`);
+            warnings.push(
+              `GLB_EXTRA_DATA:Extra data after the end of GLB stream.:${header.length}`
+            );
             actualDataLength = header.length;
           }
         } else {
@@ -9346,7 +9696,9 @@ ${image.uri}
       const seenChunkTypes = /* @__PURE__ */ new Set();
       while (offset < actualDataLength) {
         if (offset + 8 > actualDataLength) {
-          throw new Error(`GLB_UNEXPECTED_END_OF_CHUNK_HEADER:Unexpected end of chunk header.:${offset}`);
+          throw new Error(
+            `GLB_UNEXPECTED_END_OF_CHUNK_HEADER:Unexpected end of chunk header.:${offset}`
+          );
         }
         const chunkLength = view.getUint32(offset, true);
         const chunkType = view.getUint32(offset + 4, true);
@@ -9393,7 +9745,9 @@ ${image.uri}
           allMessages.push(msg);
         }
         if (chunkLength % 4 !== 0) {
-          throw new Error(`GLB_CHUNK_LENGTH_UNALIGNED:Length of 0x${chunkType.toString(16)} chunk is not aligned to 4-byte boundaries.:${offset}`);
+          throw new Error(
+            `GLB_CHUNK_LENGTH_UNALIGNED:Length of 0x${chunkType.toString(16)} chunk is not aligned to 4-byte boundaries.:${offset}`
+          );
         }
         let chunkData;
         if (isEmptyChunk) {
@@ -9425,7 +9779,9 @@ ${image.uri}
         allMessages.unshift(firstChunkError);
       }
       if (binChunk) {
-        const binChunkIndex = chunks.findIndex((chunk) => chunk.type === 5130562);
+        const binChunkIndex = chunks.findIndex(
+          (chunk) => chunk.type === 5130562
+        );
         if (binChunkIndex > 1) {
           let binChunkOffset = 12;
           for (let i = 0; i < binChunkIndex; i++) {
@@ -9446,7 +9802,9 @@ ${image.uri}
           try {
             const jsonText2 = new TextDecoder().decode(jsonChunk.data);
             if (jsonChunk.data.length >= 3 && jsonChunk.data[0] === 239 && jsonChunk.data[1] === 187 && jsonChunk.data[2] === 191) {
-              jsonParsingErrors.push("Invalid JSON data. Parser output: BOM found at the beginning of UTF-8 stream.");
+              jsonParsingErrors.push(
+                "Invalid JSON data. Parser output: BOM found at the beginning of UTF-8 stream."
+              );
             } else {
               JSON.parse(jsonText2);
             }
@@ -9454,20 +9812,26 @@ ${image.uri}
             let errorMessage = `${error}`;
             if (errorMessage.includes("Unexpected end of JSON input")) {
               errorMessage = "FormatException: Unexpected end of input (at offset 0)";
-            } else if (errorMessage.includes("Expected property name or '}' in JSON at position 1")) {
+            } else if (errorMessage.includes(
+              "Expected property name or '}' in JSON at position 1"
+            )) {
               errorMessage = "FormatException: Unexpected character (at offset 1)";
             } else if (errorMessage.includes("SyntaxError:")) {
               const positionMatch = errorMessage.match(/at position (\d+)/);
               const offset2 = positionMatch ? positionMatch[1] : "0";
               errorMessage = `FormatException: Unexpected character (at offset ${offset2})`;
             }
-            jsonParsingErrors.push(`Invalid JSON data. Parser output: ${errorMessage}`);
+            jsonParsingErrors.push(
+              `Invalid JSON data. Parser output: ${errorMessage}`
+            );
           }
         }
       }
       if (jsonParsingErrors.length > 0 || !jsonChunk || jsonChunk && jsonChunk.length === 0) {
         if (lengthMismatchError) {
-          const hasChunkTruncationError = allMessages.some((msg) => msg.includes("GLB_UNEXPECTED_END_OF_CHUNK_DATA"));
+          const hasChunkTruncationError = allMessages.some(
+            (msg) => msg.includes("GLB_UNEXPECTED_END_OF_CHUNK_DATA")
+          );
           if (!hasChunkTruncationError) {
             allMessages.push(lengthMismatchError);
           }
@@ -9479,8 +9843,7 @@ ${image.uri}
               return Number.MAX_SAFE_INTEGER;
             }
             const parts = msg.split(":");
-            if (parts.length < 3)
-              return Number.MAX_SAFE_INTEGER;
+            if (parts.length < 3) return Number.MAX_SAFE_INTEGER;
             const offsetStr = parts[parts.length - 1];
             return offsetStr ? parseInt(offsetStr) || 0 : 0;
           };
@@ -9497,7 +9860,9 @@ ${image.uri}
       const jsonText = new TextDecoder().decode(jsonChunk.data);
       let gltf;
       if (jsonChunk.data.length >= 3 && jsonChunk.data[0] === 239 && jsonChunk.data[1] === 187 && jsonChunk.data[2] === 191) {
-        throw new Error(`Invalid JSON data. Parser output: BOM found at the beginning of UTF-8 stream.`);
+        throw new Error(
+          `Invalid JSON data. Parser output: BOM found at the beginning of UTF-8 stream.`
+        );
       }
       try {
         const json = JSON.parse(jsonText);
@@ -9506,7 +9871,9 @@ ${image.uri}
         let errorMessage = `${error}`;
         if (errorMessage.includes("Unexpected end of JSON input")) {
           errorMessage = "FormatException: Unexpected end of input (at offset 0)";
-        } else if (errorMessage.includes("Expected property name or '}' in JSON at position 1")) {
+        } else if (errorMessage.includes(
+          "Expected property name or '}' in JSON at position 1"
+        )) {
           errorMessage = "FormatException: Unexpected character (at offset 1)";
         } else if (errorMessage.includes("SyntaxError:")) {
           const positionMatch = errorMessage.match(/at position (\d+)/);
@@ -9533,7 +9900,9 @@ ${image.uri}
         glbErrors.unshift(firstChunkError);
       }
       if (lengthMismatchError) {
-        const hasChunkTruncationError = glbErrors.some((error) => error.includes("GLB_UNEXPECTED_END_OF_CHUNK_DATA"));
+        const hasChunkTruncationError = glbErrors.some(
+          (error) => error.includes("GLB_UNEXPECTED_END_OF_CHUNK_DATA")
+        );
         if (!hasChunkTruncationError) {
           glbErrors.push(lengthMismatchError);
         }
@@ -9579,14 +9948,14 @@ ${image.uri}
     name: "@dcl/gltf-validator-ts",
     version: "1.0.0",
     description: "A TypeScript implementation of GLTF/GLB validation compatible with the official Khronos validator",
-    main: "dist/index.js",
-    type: "module",
-    types: "dist/index.d.ts",
+    main: "dist/cjs/index.js",
+    module: "dist/esm/index.js",
+    types: "dist/esm/index.d.ts",
     exports: {
       ".": {
-        types: "./dist/index.d.ts",
-        import: "./dist/index.js",
-        require: "./dist/index.js"
+        types: "./dist/esm/index.d.ts",
+        import: "./dist/esm/index.js",
+        require: "./dist/cjs/index.js"
       }
     },
     files: [
@@ -9595,10 +9964,13 @@ ${image.uri}
       "LICENSE"
     ],
     scripts: {
-      build: "tsc",
+      build: "npm run build:esm && npm run build:cjs && npm run build:package-json",
+      "build:esm": "tsc -p tsconfig.esm.json",
+      "build:cjs": "tsc -p tsconfig.cjs.json",
+      "build:package-json": `echo '{"type":"commonjs"}' > dist/cjs/package.json`,
       "build:clean": "rm -rf dist && npm run build",
       "build:web": "npm run build && npm run build:web-bundle",
-      "build:web-bundle": "esbuild dist/index.js --bundle --format=iife --outfile=web/scripts/gltf-validator.js --platform=browser --target=es2020 --global-name=GLTFValidator",
+      "build:web-bundle": "esbuild src/index.ts --bundle --format=iife --outfile=web/scripts/gltf-validator.js --platform=browser --target=es2020 --global-name=GLTFValidator --loader:.json=json",
       "build:web-clean": "rm -rf dist web/scripts/gltf-validator.js && npm run build:web",
       test: "vitest run",
       "test:watch": "vitest",
@@ -9629,18 +10001,14 @@ ${image.uri}
       "animation",
       "extensions"
     ],
-    author: {
-      name: "Nicol\xE1s Echezarreta",
-      url: "https://github.com/nicoecheza"
-    },
     license: "MIT",
-    homepage: "https://github.com/nicoecheza/gltf-validator-ts",
+    homepage: "https://github.com/decentraland/gltf-validator-ts",
     repository: {
       type: "git",
-      url: "https://github.com/nicoecheza/gltf-validator-ts.git"
+      url: "https://github.com/decentraland/gltf-validator-ts.git"
     },
     bugs: {
-      url: "https://github.com/nicoecheza/gltf-validator-ts/issues"
+      url: "https://github.com/decentraland/gltf-validator-ts/issues"
     },
     devDependencies: {
       "@eslint/js": "^9.36.0",
@@ -9651,8 +10019,8 @@ ${image.uri}
       esbuild: "^0.21.5",
       eslint: "^9.0.0",
       prettier: "^3.0.0",
-      typescript: "^5.0.0",
-      vitest: "^2.0.0"
+      typescript: "^5.9.3",
+      vitest: "^2.1.9"
     },
     engines: {
       node: ">=18.0.0"
@@ -9662,10 +10030,18 @@ ${image.uri}
     }
   };
 
-  // dist/validator.js
+  // src/validator.ts
   var VALIDATOR_VERSION = package_default.version;
   async function validateBytes(data, options = {}) {
-    const { uri = "unknown", format, maxIssues = 100, ignoredIssues = [], onlyIssues = [], severityOverrides = {}, externalResourceFunction } = options;
+    const {
+      uri = "unknown",
+      format,
+      maxIssues = 100,
+      ignoredIssues = [],
+      onlyIssues = [],
+      severityOverrides = {},
+      externalResourceFunction
+    } = options;
     let detectedFormat = format;
     if (!detectedFormat) {
       if (uri.toLowerCase().endsWith(".glb")) {
@@ -10014,18 +10390,22 @@ ${image.uri}
     return null;
   }
   function hasMorphTargets(gltf) {
-    if (!gltf.meshes)
-      return false;
-    return gltf.meshes.some((mesh) => mesh && mesh.primitives && Array.isArray(mesh.primitives) && mesh.primitives.some((primitive) => primitive && primitive.targets && primitive.targets.length > 0));
+    if (!gltf.meshes) return false;
+    return gltf.meshes.some(
+      (mesh) => mesh && mesh.primitives && Array.isArray(mesh.primitives) && mesh.primitives.some(
+        (primitive) => primitive && primitive.targets && primitive.targets.length > 0
+      )
+    );
   }
   function calculateDrawCallCount(gltf) {
-    if (!gltf.meshes)
-      return 0;
-    return gltf.meshes.reduce((count, mesh) => count + (mesh && mesh.primitives && Array.isArray(mesh.primitives) ? mesh.primitives.length : 0), 0);
+    if (!gltf.meshes) return 0;
+    return gltf.meshes.reduce(
+      (count, mesh) => count + (mesh && mesh.primitives && Array.isArray(mesh.primitives) ? mesh.primitives.length : 0),
+      0
+    );
   }
   function calculateTotalVertexCount(gltf) {
-    if (!gltf.meshes || !gltf.accessors)
-      return 0;
+    if (!gltf.meshes || !gltf.accessors) return 0;
     let total = 0;
     for (const mesh of gltf.meshes) {
       if (mesh && mesh.primitives && Array.isArray(mesh.primitives)) {
@@ -10042,8 +10422,7 @@ ${image.uri}
     return total;
   }
   function calculateTotalTriangleCount(gltf) {
-    if (!gltf.meshes || !gltf.accessors)
-      return 0;
+    if (!gltf.meshes || !gltf.accessors) return 0;
     let total = 0;
     for (const mesh of gltf.meshes) {
       if (mesh && mesh.primitives && Array.isArray(mesh.primitives)) {
@@ -10069,14 +10448,15 @@ ${image.uri}
     return total;
   }
   function calculateMaxUVs(gltf) {
-    if (!gltf.meshes)
-      return 0;
+    if (!gltf.meshes) return 0;
     let maxUVs = 0;
     for (const mesh of gltf.meshes) {
       if (mesh && mesh.primitives && Array.isArray(mesh.primitives)) {
         for (const primitive of mesh.primitives) {
           if (primitive && primitive.attributes && typeof primitive.attributes === "object") {
-            const uvCount = Object.keys(primitive.attributes).filter((key) => key.startsWith("TEXCOORD_")).length;
+            const uvCount = Object.keys(primitive.attributes).filter(
+              (key) => key.startsWith("TEXCOORD_")
+            ).length;
             maxUVs = Math.max(maxUVs, uvCount);
           }
         }
@@ -10085,14 +10465,15 @@ ${image.uri}
     return maxUVs;
   }
   function calculateMaxInfluences(gltf) {
-    if (!gltf.meshes)
-      return 0;
+    if (!gltf.meshes) return 0;
     let maxInfluences = 0;
     for (const mesh of gltf.meshes) {
       if (mesh && mesh.primitives && Array.isArray(mesh.primitives)) {
         for (const primitive of mesh.primitives) {
           if (primitive && primitive.attributes && typeof primitive.attributes === "object") {
-            const influenceCount = Object.keys(primitive.attributes).filter((key) => key.startsWith("JOINTS_") || key.startsWith("WEIGHTS_")).length / 2;
+            const influenceCount = Object.keys(primitive.attributes).filter(
+              (key) => key.startsWith("JOINTS_") || key.startsWith("WEIGHTS_")
+            ).length / 2;
             maxInfluences = Math.max(maxInfluences, influenceCount);
           }
         }
@@ -10101,8 +10482,7 @@ ${image.uri}
     return maxInfluences;
   }
   function calculateMaxAttributes(gltf) {
-    if (!gltf.meshes)
-      return 0;
+    if (!gltf.meshes) return 0;
     let maxAttributes = 0;
     for (const mesh of gltf.meshes) {
       if (mesh && mesh.primitives && Array.isArray(mesh.primitives)) {
@@ -10434,7 +10814,7 @@ ${image.uri}
     }];
   }
 
-  // dist/index.js
+  // src/index.ts
   var parseGLB = GLBValidator.parseGLB;
-  return __toCommonJS(dist_exports);
+  return __toCommonJS(src_exports);
 })();

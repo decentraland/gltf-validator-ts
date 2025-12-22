@@ -2,6 +2,24 @@
 
 This directory contains practical examples showing how to use GLTF Validator (TypeScript) in different scenarios.
 
+## Table of Contents
+
+- [Examples](#examples)
+  - [Basic Model Validation](#basic-model-validation)
+- [Creating Your Own Examples](#creating-your-own-examples)
+  - [Structure](#structure)
+  - [Template](#template)
+- [Validation Scenarios](#validation-scenarios)
+- [Validation Options](#validation-options)
+  - [Basic Options](#basic-options)
+  - [Advanced Validator](#advanced-validator)
+- [Common Issue Codes](#common-issue-codes)
+  - [Errors (Severity 0)](#errors-severity-0)
+  - [Warnings (Severity 1)](#warnings-severity-1)
+  - [Info (Severity 2)](#info-severity-2)
+- [Tips for Effective Validation](#tips-for-effective-validation)
+- [Support](#support)
+
 ## Examples
 
 ### Basic Model Validation

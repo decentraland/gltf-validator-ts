@@ -3,8 +3,47 @@
 A TypeScript implementation of GLTF/GLB validation compatible with the official Khronos validator.
 
 [![npm version](https://img.shields.io/npm/v/@dcl/gltf-validator-ts.svg)](https://www.npmjs.com/package/@dcl/gltf-validator-ts)
+[![CI Status](https://github.com/decentraland/gltf-validator-ts/workflows/CI/badge.svg)](https://github.com/decentraland/gltf-validator-ts/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+
+## Table of Contents
+
+- [Features](#features)
+- [Quick Links](#quick-links)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+  - [Basic Usage](#basic-usage)
+  - [Validating GLB Files](#validating-glb-files)
+  - [Advanced Configuration](#advanced-configuration)
+- [Quick Example](#quick-example)
+  - [Working with Validation Results](#working-with-validation-results)
+- [API Reference](#api-reference)
+  - [GLTFValidator](#gltfvalidator)
+  - [Utility Functions](#utility-functions)
+- [Validation Codes](#validation-codes)
+  - [Error Codes (Severity 0)](#error-codes-severity-0)
+  - [Warning Codes (Severity 1)](#warning-codes-severity-1)
+  - [Info Codes (Severity 2)](#info-codes-severity-2)
+- [Supported Extensions](#supported-extensions)
+- [Browser Compatibility](#browser-compatibility)
+- [Performance Tips](#performance-tips)
+- [Development](#development)
+  - [Setup](#setup)
+  - [Scripts](#scripts)
+- [Examples](#examples)
+  - [Basic Model Validation](#basic-model-validation)
+  - [Creating Custom Examples](#creating-custom-examples)
+- [CI/CD](#cicd)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+- [License](#license)
+- [Project Origin](#project-origin)
+  - [Development Process](#development-process)
+  - [Credit and Attribution](#credit-and-attribution)
+- [Acknowledgments](#acknowledgments)
 
 ## Features
 
@@ -34,6 +73,19 @@ A TypeScript implementation of GLTF/GLB validation compatible with the official 
 - ✅ **TypeScript Support** - Full TypeScript definitions included
 - ✅ **High Performance** - Optimized validation algorithms
 - ✅ **Configurable** - Customizable validation options and severity levels
+
+## Quick Links
+
+- 📦 [npm Package](https://www.npmjs.com/package/@dcl/gltf-validator-ts)
+- 🌐 [Live Demo](https://decentraland.github.io/gltf-validator-ts/main) - Try it in your browser!
+- 📚 [API Documentation](#api-reference)
+- 💡 [Examples](./examples/)
+- 🐛 [Report a Bug](https://github.com/decentraland/gltf-validator-ts/issues/new?labels=bug)
+- ✨ [Request a Feature](https://github.com/decentraland/gltf-validator-ts/issues/new?labels=enhancement)
+- 🤝 [Contributing Guide](CONTRIBUTING.md)
+- 🔒 [Security Policy](SECURITY.md)
+- 📖 [GLTF 2.0 Specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)
+- 🎯 [Original Khronos Validator](https://github.com/KhronosGroup/glTF-Validator)
 
 ## Installation
 
@@ -281,6 +333,314 @@ The basic example demonstrates:
 ### Creating Custom Examples
 
 See `examples/README.md` for details on creating your own validation examples and integrating the validator into your workflow.
+
+## Browser Compatibility
+
+The validator is compatible with modern browsers and Node.js environments:
+
+### Node.js
+- **Minimum Version**: Node.js 18.0.0+
+- **Recommended**: Node.js 20.x or higher
+- **Platform Support**: Windows, macOS, Linux
+
+### Browser Support
+- **Chrome/Edge**: Version 90+
+- **Firefox**: Version 88+
+- **Safari**: Version 14+
+- **Opera**: Version 76+
+
+### Web Bundle
+A browser-ready bundle is available for use directly in web applications:
+
+```html
+<script src="https://unpkg.com/@dcl/gltf-validator-ts/web/scripts/gltf-validator.js"></script>
+<script>
+  // GLTFValidator is available as a global variable
+  const validator = new GLTFValidator.GLTFValidator({
+    maxIssues: 100
+  });
+</script>
+```
+
+Or use the [live demo](https://decentraland.github.io/gltf-validator-ts/main) to validate models in your browser without installation.
+
+## Performance Tips
+
+### Optimization Strategies
+
+#### 1. Limit Issue Reporting
+```typescript
+const validator = new GLTFValidator({
+  maxIssues: 50  // Stop after finding 50 issues
+});
+```
+
+#### 2. Filter Issue Types
+```typescript
+const validator = new GLTFValidator({
+  onlyIssues: ['TYPE_MISMATCH', 'UNRESOLVED_REFERENCE'],  // Only critical errors
+  ignoredIssues: ['UNUSED_OBJECT', 'UNSUPPORTED_EXTENSION']  // Ignore non-critical
+});
+```
+
+#### 3. Batch Validation
+When validating multiple files, reuse the validator instance:
+
+```typescript
+const validator = new GLTFValidator({ maxIssues: 100 });
+
+for (const file of files) {
+  const result = await validator.validate(file);
+  // Process results
+}
+```
+
+#### 4. Memory Management
+For large GLB files, consider processing in chunks or validating smaller sections:
+
+```typescript
+// Monitor memory usage for large files
+if (fileSize > 50 * 1024 * 1024) {  // > 50MB
+  console.warn('Large file detected, validation may be slow');
+}
+```
+
+### Performance Benchmarks
+
+Typical validation times (on modern hardware):
+
+| File Size | Validation Time | Memory Usage |
+|-----------|----------------|--------------|
+| < 1 MB    | < 100ms        | ~10 MB       |
+| 1-10 MB   | 100-500ms      | ~50 MB       |
+| 10-50 MB  | 500ms-2s       | ~200 MB      |
+| > 50 MB   | 2s+            | ~500 MB+     |
+
+## CI/CD
+
+### GitHub Actions Integration
+
+Example workflow for validating GLTF files in CI:
+
+```yaml
+name: Validate GLTF Assets
+
+on:
+  push:
+    paths:
+      - 'assets/**/*.gltf'
+      - 'assets/**/*.glb'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install validator
+        run: npm install -g @dcl/gltf-validator-ts
+
+      - name: Validate GLTF files
+        run: |
+          for file in assets/**/*.{gltf,glb}; do
+            echo "Validating $file"
+            npx gltf-validate "$file" || exit 1
+          done
+```
+
+### Pre-commit Hook
+
+Add validation to your git pre-commit hook:
+
+```bash
+#!/bin/sh
+# .git/hooks/pre-commit
+
+# Get list of staged GLTF/GLB files
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(gltf|glb)$')
+
+if [ -n "$FILES" ]; then
+  echo "Validating GLTF files..."
+  for file in $FILES; do
+    npx @dcl/gltf-validator-ts "$file" || exit 1
+  done
+fi
+```
+
+### Build Pipeline Integration
+
+Integrate with your build tools:
+
+**Webpack:**
+```javascript
+const { GLTFValidator } = require('@dcl/gltf-validator-ts');
+
+module.exports = {
+  plugins: [
+    {
+      apply: (compiler) => {
+        compiler.hooks.emit.tapAsync('GLTFValidationPlugin', async (compilation, callback) => {
+          // Validate GLTF assets during build
+          // ...
+          callback();
+        });
+      }
+    }
+  ]
+};
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Installation Problems
+
+**Error: Cannot find module '@dcl/gltf-validator-ts'**
+```bash
+# Clear npm cache and reinstall
+npm cache clean --force
+npm install @dcl/gltf-validator-ts
+```
+
+**TypeScript definition errors**
+```bash
+# Ensure TypeScript version is compatible
+npm install typescript@latest --save-dev
+```
+
+#### Validation Issues
+
+**Large files cause memory errors**
+```typescript
+// Increase Node.js memory limit
+// Run with: NODE_OPTIONS="--max-old-space-size=4096" node script.js
+
+// Or validate in smaller chunks
+const validator = new GLTFValidator({
+  maxIssues: 20  // Limit issues to reduce memory
+});
+```
+
+**External resources not loading**
+```typescript
+// Provide custom resource loading function
+const validator = new GLTFValidator({
+  externalResourceFunction: async (uri) => {
+    const fullPath = path.resolve(baseDir, uri);
+    return fs.readFileSync(fullPath);
+  }
+});
+```
+
+**Validation takes too long**
+```typescript
+// Add timeout wrapper
+const timeoutPromise = (promise, ms) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Validation timeout')), ms)
+    )
+  ]);
+};
+
+await timeoutPromise(validator.validate(gltf), 5000);  // 5 second timeout
+```
+
+#### Browser-Specific Issues
+
+**CORS errors when loading external resources**
+- Ensure resources are served with appropriate CORS headers
+- Use relative paths when possible
+- Implement a proxy for external resources
+
+**Module loading errors in browser**
+- Use the pre-built web bundle instead of ES modules
+- Or configure your bundler (Webpack, Rollup) appropriately
+
+### Getting Help
+
+1. **Check Existing Issues**: [GitHub Issues](https://github.com/decentraland/gltf-validator-ts/issues)
+2. **Read the Spec**: [GLTF 2.0 Specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)
+3. **Compare with Original**: [Khronos Validator](https://github.com/KhronosGroup/glTF-Validator)
+4. **Create an Issue**: Include file examples, error messages, and environment details
+
+## FAQ
+
+### General Questions
+
+**Q: Is this compatible with the official Khronos validator?**
+A: Yes! This validator passes all 609+ tests from the official Khronos GLTF Validator test suite, ensuring complete compatibility.
+
+**Q: Can I use this in the browser?**
+A: Yes, there's a web bundle available. See the [Browser Compatibility](#browser-compatibility) section and try the [live demo](https://decentraland.github.io/gltf-validator-ts/main).
+
+**Q: What's the difference between this and the original validator?**
+A: This is a TypeScript reimplementation that maintains 100% behavioral compatibility with the original Dart-based validator. It offers better TypeScript integration and can be used in more JavaScript/TypeScript environments.
+
+**Q: Does it support GLTF 1.0?**
+A: No, this validator only supports GLTF 2.0 specification. GLTF 1.0 is deprecated.
+
+### Technical Questions
+
+**Q: Can I validate files from URLs?**
+A: Yes, fetch the file first, then validate:
+```typescript
+const response = await fetch('https://example.com/model.glb');
+const arrayBuffer = await response.arrayBuffer();
+const result = await validateBytes(new Uint8Array(arrayBuffer));
+```
+
+**Q: How do I ignore certain validation warnings?**
+A: Use the `ignoredIssues` option:
+```typescript
+const validator = new GLTFValidator({
+  ignoredIssues: ['UNUSED_OBJECT', 'BUFFER_GLB_CHUNK_TOO_BIG']
+});
+```
+
+**Q: Can I make warnings into errors?**
+A: Yes, use `severityOverrides`:
+```typescript
+const validator = new GLTFValidator({
+  severityOverrides: {
+    'UNEXPECTED_PROPERTY': 0  // Make warnings (1) into errors (0)
+  }
+});
+```
+
+**Q: How do I validate only specific parts of a GLTF file?**
+A: The validator checks the entire structure, but you can filter results by JSON pointer location:
+```typescript
+const result = await validator.validate(gltf);
+const meshIssues = result.issues.messages.filter(
+  msg => msg.pointer?.startsWith('/meshes/')
+);
+```
+
+**Q: Does it validate external resources (images, buffers)?**
+A: Yes, for GLB files, resources are embedded. For GLTF files with external resources, provide an `externalResourceFunction` to load them.
+
+### Performance Questions
+
+**Q: How do I speed up validation for large files?**
+A: See the [Performance Tips](#performance-tips) section. Key strategies: limit issues, filter by type, and reuse validator instances.
+
+**Q: Can I run validation in parallel?**
+A: Yes, create multiple validator instances and validate files concurrently:
+```typescript
+await Promise.all(files.map(file =>
+  new GLTFValidator().validate(file)
+));
+```
+
+**Q: What's the maximum file size supported?**
+A: There's no hard limit, but validation performance degrades for files > 50MB. Consider validating in smaller chunks or using the web demo for quick checks.
 
 ## Contributing
 

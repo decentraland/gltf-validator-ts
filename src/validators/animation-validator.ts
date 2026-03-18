@@ -440,30 +440,13 @@ export class AnimationValidator {
         ) {
           const actualFormat = `{${outputAccessor.type}, ${this.getComponentTypeName(outputAccessor.componentType)}}`;
           const expectedFormatStr = `{${expectedFormat.type}, ${this.getComponentTypeName(expectedFormat.componentType)}}`;
-          // Find which channel uses this sampler to get the correct pointer
-          let channelIndex = -1;
-          if (gltf.animations?.[animationIndex]?.channels) {
-            for (
-              let i = 0;
-              i < gltf.animations[animationIndex].channels.length;
-              i++
-            ) {
-              if (
-                gltf.animations[animationIndex].channels[i]?.sampler ===
-                samplerIndex
-              ) {
-                channelIndex = i;
-                break;
-              }
-            }
-          }
           messages.push({
             code: "ANIMATION_SAMPLER_OUTPUT_ACCESSOR_INVALID_FORMAT",
             message: `Invalid animation sampler output accessor format '${actualFormat}' for path '${expectedFormat.path}'. Must be one of ('${expectedFormatStr}').`,
             severity: Severity.ERROR,
             pointer:
-              channelIndex >= 0
-                ? `/animations/${animationIndex}/channels/${channelIndex}/sampler`
+              expectedFormat.channelIndex >= 0
+                ? `/animations/${animationIndex}/channels/${expectedFormat.channelIndex}/sampler`
                 : `/animations/${animationIndex}/samplers/${samplerIndex}/output`,
           });
         } else if (expectedFormat) {
@@ -475,32 +458,36 @@ export class AnimationValidator {
             sampler.interpolation !== "CUBICSPLINE" &&
             inputAccessor.count !== outputAccessor.count
           ) {
-            // Find which channel uses this sampler to get the correct pointer
-            let channelIndex = -1;
-            if (gltf.animations?.[animationIndex]?.channels) {
-              for (
-                let i = 0;
-                i < gltf.animations[animationIndex].channels.length;
-                i++
+            // For "weights" path, the expected output count is
+            // inputCount * numberOfMorphTargets (per glTF 2.0 spec)
+            let isValidWeightsCount = false;
+            if (
+              expectedFormat.path === "weights" &&
+              expectedFormat.nodeIndex !== undefined
+            ) {
+              const morphTargetCount = this.getMorphTargetCount(
+                gltf,
+                expectedFormat.nodeIndex,
+              );
+              if (
+                morphTargetCount > 0 &&
+                outputAccessor.count === inputAccessor.count * morphTargetCount
               ) {
-                if (
-                  gltf.animations[animationIndex].channels[i]?.sampler ===
-                  samplerIndex
-                ) {
-                  channelIndex = i;
-                  break;
-                }
+                isValidWeightsCount = true;
               }
             }
-            messages.push({
-              code: "ANIMATION_SAMPLER_OUTPUT_ACCESSOR_INVALID_COUNT",
-              message: `Animation sampler output accessor of count ${inputAccessor.count} expected. Found ${outputAccessor.count}.`,
-              severity: Severity.ERROR,
-              pointer:
-                channelIndex >= 0
-                  ? `/animations/${animationIndex}/channels/${channelIndex}/sampler`
-                  : `/animations/${animationIndex}/samplers/${samplerIndex}/output`,
-            });
+
+            if (!isValidWeightsCount) {
+              messages.push({
+                code: "ANIMATION_SAMPLER_OUTPUT_ACCESSOR_INVALID_COUNT",
+                message: `Animation sampler output accessor of count ${inputAccessor.count} expected. Found ${outputAccessor.count}.`,
+                severity: Severity.ERROR,
+                pointer:
+                  expectedFormat.channelIndex >= 0
+                    ? `/animations/${animationIndex}/channels/${expectedFormat.channelIndex}/sampler`
+                    : `/animations/${animationIndex}/samplers/${samplerIndex}/output`,
+              });
+            }
           }
         }
       }
@@ -605,40 +592,77 @@ export class AnimationValidator {
     }
   }
 
+  private findChannelIndexForSampler(
+    gltf: GLTF,
+    animationIndex: number,
+    samplerIndex: number,
+  ): number {
+    const channels = gltf.animations?.[animationIndex]?.channels;
+    if (!channels) return -1;
+    for (let i = 0; i < channels.length; i++) {
+      if (channels[i]?.sampler === samplerIndex) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   private getExpectedOutputFormat(
     gltf: GLTF,
     animationIndex: number,
     samplerIndex: number,
-  ): { type: string; componentType: number; path: string } | null {
-    const animation = gltf.animations?.[animationIndex];
-    if (!animation || !animation.channels) {
-      return null;
+  ): { type: string; componentType: number; path: string; channelIndex: number; nodeIndex?: number } | null {
+    const channels = gltf.animations?.[animationIndex]?.channels;
+    if (!channels) return null;
+
+    const channelIndex = this.findChannelIndexForSampler(
+      gltf,
+      animationIndex,
+      samplerIndex,
+    );
+    if (channelIndex < 0) return null;
+
+    const channel = channels[channelIndex];
+    if (!channel?.target?.path) return null;
+
+    const path = channel.target.path;
+    const nodeIndex = channel.target.node;
+
+    // Return expected format based on the animation path
+    switch (path) {
+      case "translation":
+      case "scale":
+        return { type: "VEC3", componentType: 5126, path, channelIndex, nodeIndex }; // FLOAT
+      case "rotation":
+        return { type: "VEC4", componentType: 5126, path, channelIndex, nodeIndex }; // FLOAT (quaternion)
+      case "weights":
+        return { type: "SCALAR", componentType: 5126, path, channelIndex, nodeIndex }; // FLOAT
+      default:
+        return null;
     }
+  }
 
-    // Find the channel that uses this sampler
-    for (const channel of animation.channels) {
-      if (
-        channel.sampler === samplerIndex &&
-        channel.target &&
-        channel.target.path
-      ) {
-        const path = channel.target.path;
+  private getMorphTargetCount(
+    gltf: GLTF,
+    nodeIndex: number,
+  ): number {
+    if (typeof nodeIndex !== "number" || nodeIndex < 0) return 0;
+    if (!gltf.nodes || nodeIndex >= gltf.nodes.length) return 0;
 
-        // Return expected format based on the animation path
-        switch (path) {
-          case "translation":
-          case "scale":
-            return { type: "VEC3", componentType: 5126, path }; // FLOAT
-          case "rotation":
-            return { type: "VEC4", componentType: 5126, path }; // FLOAT (quaternion)
-          case "weights":
-            return { type: "SCALAR", componentType: 5126, path }; // FLOAT
-          default:
-            return null;
-        }
+    const node = gltf.nodes[nodeIndex];
+    if (node?.mesh === undefined || typeof node.mesh !== "number" || node.mesh < 0) return 0;
+    if (!gltf.meshes || node.mesh >= gltf.meshes.length) return 0;
+
+    const mesh = gltf.meshes[node.mesh];
+    if (!mesh?.primitives) return 0;
+
+    let morphTargetCount = 0;
+    for (const primitive of mesh.primitives) {
+      if (primitive?.targets && Array.isArray(primitive.targets)) {
+        morphTargetCount = Math.max(morphTargetCount, primitive.targets.length);
       }
     }
 
-    return null;
+    return morphTargetCount;
   }
 }

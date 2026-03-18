@@ -146,6 +146,8 @@ jobs:
     needs: [version, publish]
     if: ${{ github.event.pull_request.number && needs.version.outputs.changed == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: find Comment
         uses: peter-evans/find-comment@v1

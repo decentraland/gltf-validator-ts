@@ -611,7 +611,13 @@ export class AnimationValidator {
     gltf: GLTF,
     animationIndex: number,
     samplerIndex: number,
-  ): { type: string; componentType: number; path: string; channelIndex: number; nodeIndex?: number } | null {
+  ): {
+    type: string;
+    componentType: number;
+    path: string;
+    channelIndex: number;
+    nodeIndex?: number;
+  } | null {
     const channels = gltf.animations?.[animationIndex]?.channels;
     if (!channels) return null;
 
@@ -632,25 +638,45 @@ export class AnimationValidator {
     switch (path) {
       case "translation":
       case "scale":
-        return { type: "VEC3", componentType: 5126, path, channelIndex, nodeIndex }; // FLOAT
+        return {
+          type: "VEC3",
+          componentType: 5126,
+          path,
+          channelIndex,
+          nodeIndex,
+        }; // FLOAT
       case "rotation":
-        return { type: "VEC4", componentType: 5126, path, channelIndex, nodeIndex }; // FLOAT (quaternion)
+        return {
+          type: "VEC4",
+          componentType: 5126,
+          path,
+          channelIndex,
+          nodeIndex,
+        }; // FLOAT (quaternion)
       case "weights":
-        return { type: "SCALAR", componentType: 5126, path, channelIndex, nodeIndex }; // FLOAT
+        return {
+          type: "SCALAR",
+          componentType: 5126,
+          path,
+          channelIndex,
+          nodeIndex,
+        }; // FLOAT
       default:
         return null;
     }
   }
 
-  private getMorphTargetCount(
-    gltf: GLTF,
-    nodeIndex: number,
-  ): number {
+  private getMorphTargetCount(gltf: GLTF, nodeIndex: number): number {
     if (typeof nodeIndex !== "number" || nodeIndex < 0) return 0;
     if (!gltf.nodes || nodeIndex >= gltf.nodes.length) return 0;
 
     const node = gltf.nodes[nodeIndex];
-    if (node?.mesh === undefined || typeof node.mesh !== "number" || node.mesh < 0) return 0;
+    if (
+      node?.mesh === undefined ||
+      typeof node.mesh !== "number" ||
+      node.mesh < 0
+    )
+      return 0;
     if (!gltf.meshes || node.mesh >= gltf.meshes.length) return 0;
 
     const mesh = gltf.meshes[node.mesh];

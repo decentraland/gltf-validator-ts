@@ -14,3 +14,18 @@ export { validateBytes as validate } from './validator';
 // Utility functions
 import { GLBValidator } from './validators/glb-validator';
 export const parseGLB = GLBValidator.parseGLB;
+
+// Texture validation and fixing
+export {
+  validateTextures,
+  fixGlbTextures,
+  isPowerOfTwo,
+  nextPowerOfTwo,
+} from './texture-utils';
+export type {
+  TextureImageInfo,
+  TextureIssue,
+  TextureValidationResult,
+  TextureValidationOptions,
+  ResizeImageFunction,
+} from './texture-utils';

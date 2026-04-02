@@ -239,6 +239,72 @@ Parses GLB binary data into GLTF object and resources.
 
 **Returns:** `{ gltf?: GLTF, resources: ResourceReference[], errors?: string[] }`
 
+### Texture Validation
+
+#### validateTextures(data, options?)
+
+Validates textures in a GLB or glTF model. Checks for non-power-of-two dimensions, non-square textures, and layer-size mismatches within materials. Image dimensions are read from PNG/JPEG binary headers — no browser APIs required.
+
+**Parameters:**
+- `data: Uint8Array` - GLB or glTF file data
+- `options?: TextureValidationOptions`
+  - `format?: 'glb' | 'gltf'` - Force format (auto-detected if omitted)
+  - `externalResourceFunction?: (uri: string) => Promise<Uint8Array>` - Load external images
+
+**Returns:** `Promise<TextureValidationResult>`
+
+```typescript
+import { validateTextures } from '@dcl/gltf-validator-ts';
+
+const glbData = new Uint8Array(/* GLB file */);
+const result = await validateTextures(glbData);
+
+for (const issue of result.issues) {
+  console.log(`${issue.type}: ${issue.message}`);
+}
+```
+
+#### fixGlbTextures(data, images, issues, resizeImage)
+
+Fixes embedded GLB textures by resizing images and rebuilding the binary. The `resizeImage` function is provided by the caller, keeping the library platform-agnostic.
+
+**Parameters:**
+- `data: Uint8Array` - GLB file data
+- `images: TextureImageInfo[]` - Image info from `validateTextures`
+- `issues: TextureIssue[]` - Issues from `validateTextures`
+- `resizeImage: ResizeImageFunction` - `(imageData, mimeType, targetWidth, targetHeight) => Promise<Uint8Array>`
+
+**Returns:** `Promise<ArrayBuffer>` - Rebuilt GLB
+
+```typescript
+import { validateTextures, fixGlbTextures } from '@dcl/gltf-validator-ts';
+
+const { images, issues } = await validateTextures(glbData);
+
+if (issues.length > 0) {
+  const fixed = await fixGlbTextures(glbData, images, issues, async (data, mime, w, h) => {
+    // Browser example using OffscreenCanvas:
+    const blob = new Blob([data], { type: mime });
+    const bitmap = await createImageBitmap(blob);
+    const canvas = new OffscreenCanvas(w, h);
+    canvas.getContext('2d')!.drawImage(bitmap, 0, 0, w, h);
+    const out = await canvas.convertToBlob({ type: mime });
+    return new Uint8Array(await out.arrayBuffer());
+  });
+}
+```
+
+#### isPowerOfTwo(n) / nextPowerOfTwo(n)
+
+Utility functions for power-of-two calculations.
+
+```typescript
+isPowerOfTwo(256)     // true
+isPowerOfTwo(100)     // false
+nextPowerOfTwo(100)   // 128
+nextPowerOfTwo(1024)  // 1024
+```
+
 ## Validation Codes
 
 The validator reports various types of issues with specific codes:

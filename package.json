@@ -70,12 +70,12 @@
     "@types/node": "^22.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "@vitest/coverage-v8": "^2.1.9",
-    "esbuild": "^0.21.5",
+    "@vitest/coverage-v8": "^4.0.2",
+    "esbuild": "^0.25.11",
     "eslint": "^9.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.9"
+    "vitest": "^4.0.2"
   },
   "engines": {
     "node": ">=18.0.0"
